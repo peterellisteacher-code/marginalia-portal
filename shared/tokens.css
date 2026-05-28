@@ -52,6 +52,24 @@
     --font-body: 'Spectral', Georgia, serif;
     --font-marginalia: 'Caveat', 'Spectral', cursive;
     --font-ui: 'Inter', system-ui, sans-serif;
+
+    /* --- Motion: canonical timings used across the site --- */
+    --motion-fast: 200ms;
+    --motion-slow: 600ms;
+    --motion-ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+
+    /* --- Surface variants ---
+       --paper is an alias for the page background (--ground), kept here so
+       components written against an undefined `--paper` no longer fall back
+       to white. --paper-warm is a slightly more saturated cream used as a
+       subtle differentiator (e.g. the student's own messages in chat). */
+    --paper: var(--ground);
+    --paper-warm: #F0E2C2;
+
+    /* --- Status colours ---
+       --error is a darker variant of marginalia-red, used for inline form
+       errors. Kept close to --marginalia so it does not break the palette. */
+    --error: #8B2E22;
 }
 
 /* ============================================================

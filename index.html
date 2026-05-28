@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-AU">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -150,14 +150,22 @@
             cursor: pointer;
             text-align: left;
             line-height: 1.15;
-            transition: border-color 120ms ease, transform 120ms ease;
+            transition: border-color var(--motion-fast) var(--motion-ease),
+                        transform var(--motion-fast) var(--motion-ease);
         }
 
         .name-btn:hover,
         .name-btn:focus-visible {
             border-color: var(--marginalia);
             transform: translateY(-1px);
-            outline: none;
+            outline: 2px solid var(--marginalia);
+            outline-offset: 2px;
+        }
+
+        .name-btn[aria-pressed="true"] {
+            border-color: var(--marginalia);
+            border-left-width: 3px;
+            background: var(--ground);
         }
 
         .name-btn__house {
@@ -165,72 +173,70 @@
             font-family: var(--font-ui);
             font-size: var(--text-xs);
             font-weight: 400;
-            color: var(--aged);
+            color: var(--aged-strong);
             letter-spacing: 0.06em;
             text-transform: uppercase;
             margin-top: var(--space-xs);
         }
 
-        /* Login dialog */
-        .login-dialog {
-            border: none;
-            padding: 0;
-            background: transparent;
-            max-width: 440px;
-            width: 90vw;
+        /* Login panel — inline expansion, not a modal.
+           Brief commitment: "no modal overlays. Information unfolds inline." */
+        .login-panel {
+            margin-top: var(--space-lg);
+            padding: var(--space-lg);
+            background: var(--paper-dark);
+            border: 1px solid var(--aged-soft);
+            border-left: 3px solid var(--marginalia);
+            max-width: 520px;
+            animation: panelIn var(--motion-fast) var(--motion-ease) both;
         }
 
-        .login-dialog::backdrop {
-            background: rgba(26, 22, 18, 0.55);
+        @keyframes panelIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
 
-        .login-dialog__card {
-            background: var(--paper);
-            padding: var(--space-xl);
-            box-shadow: 0 8px 32px rgba(26, 22, 18, 0.18);
-            font-family: var(--font-body);
-        }
-
-        .login-dialog__title {
+        .login-panel__title {
             font-family: var(--font-display);
             font-size: var(--text-xl);
             color: var(--ink);
             margin-bottom: var(--space-xs);
         }
 
-        .login-dialog__lead {
+        .login-panel__lead {
+            font-family: var(--font-body);
             font-size: var(--text-base);
             color: var(--ink-soft);
             margin-bottom: var(--space-md);
             line-height: 1.5;
         }
 
-        .login-dialog__field {
+        .login-panel__field {
             display: block;
             width: 100%;
             font-family: var(--font-body);
             font-size: var(--text-lg);
             padding: var(--space-sm) var(--space-md);
             border: 1px solid var(--aged-soft);
-            background: var(--paper-dark);
+            background: var(--ground);
             color: var(--ink);
             margin-bottom: var(--space-md);
             box-sizing: border-box;
         }
 
-        .login-dialog__field:focus-visible {
+        .login-panel__field:focus-visible {
             outline: 2px solid var(--marginalia);
             outline-offset: 1px;
         }
 
-        .login-dialog__error {
-            color: #a3262c;
+        .login-panel__error {
+            color: var(--error);
             font-size: var(--text-sm);
             min-height: 1.25em;
             margin-bottom: var(--space-sm);
         }
 
-        .login-dialog__actions {
+        .login-panel__actions {
             display: flex;
             gap: var(--space-sm);
             justify-content: flex-end;
@@ -239,12 +245,14 @@
         .name-grid__loading {
             font-family: var(--font-ui);
             font-size: var(--text-sm);
-            color: var(--aged);
+            color: var(--aged-strong);
             font-style: italic;
         }
     </style>
 </head>
 <body>
+    <a href="#portalEntry" class="skip-link">Skip to portal</a>
+
     <div class="page-shell">
 
         <header class="site-header">
@@ -269,11 +277,11 @@
                     </h1>
 
                     <p class="hero__intro">
-                        The Issues Study is the only assessment in your Stage 1 Philosophy course that asks you to choose your <em>own</em> philosophical question — and then defend your <em>own</em> answer.
+                        The <button class="term" popovertarget="def-issues-study" aria-describedby="def-issues-study">Issues Study</button> is the only assessment in your Stage 1 Philosophy course that asks you to choose your <em>own</em> philosophical question — and then defend your <em>own</em> answer.
                     </p>
 
                     <p class="hero__intro">
-                        This site is a workspace. You'll find an exhaustive bank of philosophical questions across ethics, epistemology, and metaphysics; a Socratic chamber where an AI interlocutor will press you to refine your thinking; a library of readings drawn from the Western tradition; and a drafting scaffold for when you're ready to write.
+                        This site is a workspace. You will find an exhaustive bank of philosophical questions across ethics, <button class="term" popovertarget="def-epistemology" aria-describedby="def-epistemology">epistemology</button>, and <button class="term" popovertarget="def-metaphysics" aria-describedby="def-metaphysics">metaphysics</button>. You will meet a <button class="term" popovertarget="def-socratic-chamber" aria-describedby="def-socratic-chamber">Socratic</button> chamber where an AI <button class="term" popovertarget="def-interlocutor" aria-describedby="def-interlocutor">interlocutor</button> presses you to sharpen your thinking. You will find a library of readings and a drafting scaffold for when you are ready to write.
                     </p>
 
                     <div class="hero__cta">
@@ -312,6 +320,31 @@
                 <div class="name-grid" id="nameGrid">
                     <p class="name-grid__loading">Loading the class roster&hellip;</p>
                 </div>
+
+                <aside class="login-panel" id="loginPanel" hidden aria-labelledby="loginPanelTitle">
+                    <form class="login-panel__form" id="loginForm">
+                        <h3 class="login-panel__title" id="loginPanelTitle">Enter your password</h3>
+                        <p class="login-panel__lead" id="loginPanelLead">
+                            Type your last name. Capital letters do not matter.
+                        </p>
+                        <label for="loginPassword" class="visually-hidden">Password</label>
+                        <input
+                            type="password"
+                            id="loginPassword"
+                            name="password"
+                            class="login-panel__field"
+                            autocomplete="off"
+                            autocapitalize="off"
+                            spellcheck="false"
+                            required
+                        />
+                        <p class="login-panel__error" id="loginError" role="alert"></p>
+                        <div class="login-panel__actions">
+                            <button type="button" class="btn btn--ghost btn--small" id="loginCancel">Cancel</button>
+                            <button type="submit" class="btn btn--clarity btn--small" id="loginSubmit">Enter</button>
+                        </div>
+                    </form>
+                </aside>
             </section>
         </main>
 
@@ -322,39 +355,22 @@
 
     </div>
 
-    <dialog class="login-dialog" id="loginDialog" aria-labelledby="loginDialogTitle">
-        <form method="dialog" class="login-dialog__card" id="loginForm">
-            <h2 class="login-dialog__title" id="loginDialogTitle">Enter your password</h2>
-            <p class="login-dialog__lead" id="loginDialogLead">
-                Type your last name. Capital letters do not matter.
-            </p>
-            <label for="loginPassword" class="visually-hidden">Password</label>
-            <input
-                type="password"
-                id="loginPassword"
-                name="password"
-                class="login-dialog__field"
-                autocomplete="off"
-                autocapitalize="off"
-                spellcheck="false"
-                required
-            />
-            <p class="login-dialog__error" id="loginError" role="alert"></p>
-            <div class="login-dialog__actions">
-                <button type="button" class="btn btn--ghost btn--small" id="loginCancel">Cancel</button>
-                <button type="submit" class="btn btn--clarity btn--small" id="loginSubmit">Enter</button>
-            </div>
-        </form>
-    </dialog>
+    <!-- Term-definition popovers -->
+    <div id="def-issues-study" popover="hint">Assessment Type 3 in Stage 1 Philosophy. You pick your own philosophical question, take a position, and defend it in 800 words or 5 minutes oral.</div>
+    <div id="def-epistemology" popover="hint">The branch of philosophy that asks how we know things — what counts as knowledge, when belief becomes truth, and when to trust your senses.</div>
+    <div id="def-metaphysics" popover="hint">The branch of philosophy that asks what is real — minds, time, free will, what makes you the same person tomorrow as today.</div>
+    <div id="def-socratic-chamber" popover="hint">A page where you chat with an AI that uses the Socratic method — it asks questions rather than giving you the answer.</div>
+    <div id="def-interlocutor" popover="hint">Someone you have a conversation with. The AI here is your interlocutor — a sparring partner for your ideas.</div>
 
     <script>
         (function () {
             'use strict';
 
             const nameGrid = document.getElementById('nameGrid');
-            const loginDialog = document.getElementById('loginDialog');
+            const loginPanel = document.getElementById('loginPanel');
+            const loginPanelTitle = document.getElementById('loginPanelTitle');
             const loginForm = document.getElementById('loginForm');
-            const loginLead = document.getElementById('loginDialogLead');
+            const loginLead = document.getElementById('loginPanelLead');
             const loginPassword = document.getElementById('loginPassword');
             const loginError = document.getElementById('loginError');
             const loginCancel = document.getElementById('loginCancel');
@@ -394,29 +410,31 @@
                 }).join('');
             }
 
+            function setActiveButton(id) {
+                Array.from(nameGrid.querySelectorAll('.name-btn')).forEach(function (b) {
+                    if (b.dataset.id === id) b.setAttribute('aria-pressed', 'true');
+                    else b.removeAttribute('aria-pressed');
+                });
+            }
+
             function openLogin(student) {
                 pendingStudent = student;
                 const houseSuffix = student.house ? ' (' + student.house + ')' : '';
-                document.getElementById('loginDialogTitle').textContent =
-                    'Welcome, ' + student.firstName + houseSuffix;
+                loginPanelTitle.textContent = 'Welcome, ' + student.firstName + houseSuffix;
                 loginLead.textContent = 'Type your last name to enter your portal. Capital letters do not matter.';
                 loginError.textContent = '';
                 loginPassword.value = '';
-                if (typeof loginDialog.showModal === 'function') {
-                    loginDialog.showModal();
-                } else {
-                    loginDialog.setAttribute('open', '');
-                }
+                setActiveButton(student.id);
+                loginPanel.hidden = false;
+                /* Scroll the panel into view if the page is long enough that it sits below the fold */
+                loginPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 setTimeout(function () { loginPassword.focus(); }, 50);
             }
 
             function closeLogin() {
                 pendingStudent = null;
-                if (typeof loginDialog.close === 'function') {
-                    loginDialog.close();
-                } else {
-                    loginDialog.removeAttribute('open');
-                }
+                loginPanel.hidden = true;
+                setActiveButton(null);
             }
 
             async function submitLogin(ev) {
@@ -464,7 +482,13 @@
             });
             loginCancel.addEventListener('click', closeLogin);
             loginForm.addEventListener('submit', submitLogin);
-            loginDialog.addEventListener('cancel', function () { pendingStudent = null; });
+            /* Escape closes the panel when focus is inside it */
+            loginPanel.addEventListener('keydown', function (ev) {
+                if (ev.key === 'Escape') {
+                    ev.preventDefault();
+                    closeLogin();
+                }
+            });
 
             // ---- load roster ----
             fetch('/.netlify/functions/auth', {

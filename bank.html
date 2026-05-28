@@ -289,11 +289,11 @@
                     </header>
 
                     <div class="filter-bar">
-                        <span class="filter-bar__label">Key area:</span>
+                        <span class="filter-bar__label"><button class="term" popovertarget="def-key-area" aria-describedby="def-key-area">Key area</button>:</span>
                         <button class="chip chip--active" data-filter-area="all">all</button>
-                        <button class="chip chip--ethics" data-filter-area="ethics">ethics</button>
-                        <button class="chip chip--epistemology" data-filter-area="epistemology">epistemology</button>
-                        <button class="chip chip--metaphysics" data-filter-area="metaphysics">metaphysics</button>
+                        <button class="chip chip--ethics" data-filter-area="ethics" popovertarget="def-ethics" aria-describedby="def-ethics">ethics</button>
+                        <button class="chip chip--epistemology" data-filter-area="epistemology" popovertarget="def-epistemology" aria-describedby="def-epistemology">epistemology</button>
+                        <button class="chip chip--metaphysics" data-filter-area="metaphysics" popovertarget="def-metaphysics" aria-describedby="def-metaphysics">metaphysics</button>
                         <span class="filter-bar__label">Difficulty:</span>
                         <button class="chip chip--active" data-filter-diff="all">all</button>
                         <button class="chip" data-filter-diff="entry">entry</button>
@@ -333,6 +333,12 @@
         </footer>
 
     </div>
+
+    <!-- Term-definition popovers -->
+    <div id="def-key-area" popover="hint">One of the three main branches of philosophy you can choose your question from: ethics, epistemology, or metaphysics.</div>
+    <div id="def-ethics" popover="hint">The branch of philosophy that asks how we should live — what's right and wrong, what we owe each other, what makes an action good.</div>
+    <div id="def-epistemology" popover="hint">The branch of philosophy that asks how we know things — what counts as knowledge, when belief becomes truth, and when to trust your senses.</div>
+    <div id="def-metaphysics" popover="hint">The branch of philosophy that asks what is real — minds, time, free will, what makes you the same person tomorrow as today.</div>
 
     <script src="shared/pins.js"></script>
     <script>

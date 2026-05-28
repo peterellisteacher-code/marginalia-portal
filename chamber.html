@@ -329,7 +329,7 @@
                 <aside class="chat-panel">
                     <header class="chat-header">
                         <h2 class="chat-header__title">In the margin</h2>
-                        <p class="chat-header__subtitle">A Socratic interlocutor. Will not write for you.</p>
+                        <p class="chat-header__subtitle">A <button class="term" popovertarget="def-socratic" aria-describedby="def-socratic">Socratic</button> <button class="term" popovertarget="def-interlocutor" aria-describedby="def-interlocutor">interlocutor</button>. Will not write for you.</p>
                     </header>
 
                     <div class="agent-warning">
@@ -368,6 +368,10 @@
         </footer>
 
     </div>
+
+    <!-- Term-definition popovers -->
+    <div id="def-socratic" popover="hint">Asking short, focused questions to make you sharpen what you already half-think. Named after Socrates, the philosopher who never gave answers — only asked better questions.</div>
+    <div id="def-interlocutor" popover="hint">Someone you have a conversation with. The AI here is your interlocutor — a sparring partner for your ideas.</div>
 
     <script src="shared/pins.js"></script>
     <script>

@@ -377,9 +377,12 @@
     function embedYouTube(card, ytId) {
         /* Replace thumbnail img (if present) with iframe; disable Watch button */
         const thumb = card.querySelector('.res-card__thumb');
+        const titleEl = card.querySelector('.res-card__title');
+        const cardTitle = titleEl ? titleEl.textContent.trim() : 'YouTube video';
         const iframe = document.createElement('iframe');
         iframe.className = 'yt-embed';
         iframe.src = 'https://www.youtube.com/embed/' + ytId + '?rel=0';
+        iframe.title = 'YouTube video: ' + cardTitle;  /* WCAG SC 4.1.2 — name */
         iframe.allowFullscreen = true;
         iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
         if (thumb) {

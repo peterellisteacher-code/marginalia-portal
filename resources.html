@@ -159,7 +159,7 @@
                 </header>
 
                 <p class="cache-legend">
-                    <strong>Cache status</strong> — Some readings are cached server-side so the agent can reference them quickly. <strong>cached</strong> means the agent has direct access to that reading; <strong>not yet cached</strong> means the reading is in your class folder and you can read it yourself, but the agent may have less detailed knowledge of it. See <em>_design/03-cache-rebuild-instructions.md</em> for how to extend the cache.
+                    <strong>✓ <button class="term" popovertarget="def-cached" aria-describedby="def-cached">cached</button></strong> — this reading is loaded into the agent's working memory so it can quote directly from it. Readings without this mark are in your class folder; you can still read them, but the agent knows them less precisely.
                 </p>
 
                 <section class="topic-section">
@@ -257,7 +257,7 @@
                     <div class="reading-grid">
                         <article class="reading-card">
                             <span class="reading-card__author">Wimsatt &amp; Beardsley</span>
-                            <h3 class="reading-card__title">The Intentional Fallacy</h3>
+                            <h3 class="reading-card__title">The <button class="term" popovertarget="def-intentional-fallacy" aria-describedby="def-intentional-fallacy">Intentional Fallacy</button></h3>
                             <p class="reading-card__orient">The argument that what an author intended is neither available nor desirable as a standard for interpretation. The poem is a public object; meaning lives in the work, not the maker.</p>
                             <div class="reading-card__actions">
                                 <a href="chamber.html?pack=stage1_aesthetics" class="btn btn--small btn--clarity">Discuss in chamber →</a>
@@ -396,5 +396,8 @@
         </footer>
 
     </div>
+    <!-- Term-definition popovers -->
+    <div id="def-intentional-fallacy" popover="hint">The idea that what an artist meant by their work does not decide what the work actually means. Meaning lives in the artwork, not the artist's head.</div>
+    <div id="def-cached" popover="hint">Loaded into the agent's working memory so it can quote directly from these readings.</div>
 </body>
 </html>
