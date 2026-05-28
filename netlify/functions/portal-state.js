@@ -214,10 +214,13 @@ async function actionRemoveResource(studentId, payload, context) {
 
 // ── Handler ───────────────────────────────────────────────────────────────────
 
-exports.handler = async (event, netlifyContext) => {
-    // Bridge v1 CommonJS handler context into the @netlify/blobs runtime
-    // so subsequent getStore('name') calls auto-resolve credentials.
-    try { connectLambda(netlifyContext); } catch (e) { /* no-op locally */ }
+exports.handler = async (event, _netlifyContext) => {
+    // Lambda-compat mode bridge for @netlify/blobs. Per the SDK README,
+    // connectLambda needs the Lambda EVENT (not the context) -- it reads
+    // event.blobs as a base64-encoded {url, token, siteID} payload.
+    try { connectLambda(event); } catch (e) {
+        console.warn('connectLambda(event) skipped:', e.message);
+    }
 
     if (event.httpMethod === 'OPTIONS') {
         return { statusCode: 204, headers: CORS };

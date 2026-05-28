@@ -650,10 +650,15 @@ function respond(statusCode, body) {
 }
 
 exports.handler = async (event, netlifyContext) => {
-    // Bridge v1 CommonJS handler context into the @netlify/blobs runtime
-    // so subsequent getStore('name') calls auto-resolve credentials. Without
-    // this, v8 of the SDK throws "environment not configured" in production.
-    try { connectLambda(netlifyContext); } catch (e) { /* no-op locally */ }
+    // Lambda-compat mode bridge for @netlify/blobs. The SDK reads the blob
+    // context from event.blobs (a base64-encoded {url, token, siteID} blob),
+    // NOT from the function's context arg. Per the SDK README's Lambda
+    // compatibility section, connectLambda must be passed the Lambda EVENT.
+    try { connectLambda(event); } catch (e) {
+        // Only logs in genuine misconfiguration; absent context in netlify-dev
+        // is fine because getStore() falls through to env-based config there.
+        console.warn('connectLambda(event) skipped:', e.message);
+    }
 
     if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: CORS };
     if (event.httpMethod !== 'POST') return respond(405, { error: 'POST only' });
