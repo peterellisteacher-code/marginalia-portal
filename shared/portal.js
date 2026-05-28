@@ -21,6 +21,7 @@
     const shelf          = document.getElementById('shelf');
     const shelfEmpty     = document.getElementById('shelfEmpty');
     const pinnedStrip    = document.getElementById('pinnedStrip');
+    const pinnedSection  = document.getElementById('pinnedSection');
     const chatStream     = document.getElementById('chatStream');
     const chatInput      = document.getElementById('chatInput');
     const chatSendBtn    = document.getElementById('chatSendBtn');
@@ -548,6 +549,9 @@
         const pins = window.pins.list();
         if (!pins || pins.length === 0) return; /* leave hidden */
 
+        /* The section wrapper holds the hidden attribute (so the heading and
+           hint are revealed together with the chips). The chips themselves
+           append into the inner #pinnedStrip flex container. */
         pins.forEach(function (pin) {
             /* Look up full question text; fall back to the text stored in the pin */
             const found = findQuestion(pin.id);
@@ -570,7 +574,7 @@
             pinnedStrip.appendChild(chip);
         });
 
-        pinnedStrip.removeAttribute('hidden');
+        if (pinnedSection) pinnedSection.removeAttribute('hidden');
     }
 
     /* ================================================================
