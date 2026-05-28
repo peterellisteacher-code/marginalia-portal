@@ -29,15 +29,13 @@ If no pack file exists, the agent still works — it falls back to a one-line to
 | `stage1_religion_ethics` | ~20K | Full coverage: three Haidt depths + Righteous Mind fragments |
 | `stage1_aesthetics` | ~28K | Full coverage: Wimsatt & Beardsley, Intentional/Unintentional, Theme 4, VCE Art chapter, Freeland |
 | `stage1_mind_simulation` | ~37K | Full coverage: Identity Theory, Functionalism, Dualism, Materialism, Sim/Human-Being slides, Ravenscroft trio, Nagel |
-| `lab_applied_normative_ethics` | ~22K | **Partial coverage** — see below |
+| `lab_applied_normative_ethics` | ~29K | Full coverage (OCR gap closed 2026-05-28) |
 
-### lab_applied_normative_ethics — known gap
+### OCR-gap resolution (2026-05-28)
 
-Three readings in `readings_source/` are scanned-image PDFs (no extractable text layer): `judith.pdf` (Thomson — *A Defence of Abortion*), `marquis.pdf` (Marquis — *Why Abortion is Immoral*), and `Singer Abortion.pdf`. OCR via tesseract is technically feasible but slow on the build host (~2-12 min per page × 25 pages).
+Five readings in `readings_source/` were originally scanned-image PDFs with no text layer: `Nussbaum - Compassion and Reason.pdf`, `Singer Abortion.pdf`, `marquis.pdf` (Marquis — *Why Abortion is Immoral*), `judith.pdf` (Thomson — *A Defence of Abortion*), and `Genetic Supermarket.pdf`. Mistral OCR via OpenRouter resolved all five at ~$0.03 total. Cleaned outputs live at `_design/ocr-overrides/<reading-id>.md` and are preferred by `_design/build-packs.py` over any PDF auto-extract. To rebuild the OCR overrides, re-OCR the source PDFs and overwrite the `.md` files; the build script picks them up on the next run.
 
-The lab pack therefore currently grounds the agent in: Brave New World Ch. 16, *When We Die*, Gilligan's *In a Different Voice*, and an excerpt of Singer's *Practical Ethics*. Claude has all three missing readings in its training data and can discuss Thomson's violinist, Marquis's future-like-ours argument, and Singer's personhood criteria without grounded text — it just can't quote specific lines from the class PDFs the way it does for the other 5 packs.
-
-To enrich this pack later: OCR the three PDFs into `extracted/readings_source/{judith,marquis,Singer Abortion}.txt` (the tooling lives at `/tmp/run_ocr4.sh` in this build, but any OCR pipeline works) and re-run the assembly script.
+Caveat on Singer: the class PDF of his abortion chapter starts partway through the chapter (mid-sentence about animal ethics). The OCR is verbatim — the source itself is the limitation. If a cleaner Singer chapter PDF becomes available, drop it in and re-run the build.
 
 ## Cost model
 
