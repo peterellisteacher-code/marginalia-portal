@@ -17,7 +17,7 @@
 'use strict';
 
 const crypto = require('crypto');
-const { getStore } = require('@netlify/blobs');
+const { getStore, connectLambda } = require('@netlify/blobs');
 const { authenticate } = require('./_lib/session');
 
 const STORE_NAME     = 'marginalia-students';
@@ -215,6 +215,10 @@ async function actionRemoveResource(studentId, payload, context) {
 // ── Handler ───────────────────────────────────────────────────────────────────
 
 exports.handler = async (event, netlifyContext) => {
+    // Bridge v1 CommonJS handler context into the @netlify/blobs runtime
+    // so subsequent getStore('name') calls auto-resolve credentials.
+    try { connectLambda(netlifyContext); } catch (e) { /* no-op locally */ }
+
     if (event.httpMethod === 'OPTIONS') {
         return { statusCode: 204, headers: CORS };
     }

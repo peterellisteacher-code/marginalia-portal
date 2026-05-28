@@ -22,7 +22,7 @@ const Anthropic = require('@anthropic-ai/sdk');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const { getStore } = require('@netlify/blobs');
+const { getStore, connectLambda } = require('@netlify/blobs');
 const { YoutubeTranscript } = require('youtube-transcript');
 
 const { authenticate } = require('./_lib/session');
@@ -259,11 +259,10 @@ function loadAllPacks() {
 // Per-student state (Netlify Blobs)
 // ----------------------------------------------------------------------
 
-function studentStore(_netlifyContext) {
-    // @netlify/blobs v8 auto-resolves credentials from the function's
-    // env. Passing an explicit context object via netlifyContext is the
-    // legacy v1-v2 escape hatch and is silently ignored on v8. The
-    // simplest, most portable form is just (name, consistency).
+function studentStore() {
+    // @netlify/blobs v8.2 with the connectLambda() bootstrap (called once
+    // per handler invocation, see the exports.handler below) -- getStore by
+    // name resolves credentials from the lambda context the bootstrap reads.
     return getStore({ name: 'marginalia-students', consistency: 'strong' });
 }
 
@@ -651,6 +650,11 @@ function respond(statusCode, body) {
 }
 
 exports.handler = async (event, netlifyContext) => {
+    // Bridge v1 CommonJS handler context into the @netlify/blobs runtime
+    // so subsequent getStore('name') calls auto-resolve credentials. Without
+    // this, v8 of the SDK throws "environment not configured" in production.
+    try { connectLambda(netlifyContext); } catch (e) { /* no-op locally */ }
+
     if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: CORS };
     if (event.httpMethod !== 'POST') return respond(405, { error: 'POST only' });
 
