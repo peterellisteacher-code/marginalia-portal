@@ -23,6 +23,7 @@
 
 const { YoutubeTranscript } = require('youtube-transcript');
 const { authenticate } = require('./_lib/session');
+const { corsHeaders } = require('./_lib/cors');
 
 const RATE_LIMIT_MAX = 10;
 const RATE_LIMIT_WINDOW_MS = 5 * 60_000;
@@ -56,20 +57,16 @@ function getClientIp(event) {
 }
 
 exports.handler = async (event) => {
-    const corsHeaders = {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS'
-    };
+    const cors = corsHeaders(event);
 
     if (event.httpMethod === 'OPTIONS') {
-        return { statusCode: 204, headers: corsHeaders };
+        return { statusCode: 204, headers: cors };
     }
 
     if (event.httpMethod !== 'POST') {
         return {
             statusCode: 405,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            headers: { ...cors, 'Content-Type': 'application/json' },
             body: JSON.stringify({ ok: false, error: 'POST only' })
         };
     }
@@ -79,7 +76,7 @@ exports.handler = async (event) => {
     if (!studentId) {
         return {
             statusCode: 401,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            headers: { ...cors, 'Content-Type': 'application/json' },
             body: JSON.stringify({ ok: false, error: 'Invalid or expired session token.' })
         };
     }
@@ -90,7 +87,7 @@ exports.handler = async (event) => {
     if (!limit.ok) {
         return {
             statusCode: 429,
-            headers: { ...corsHeaders, 'Retry-After': String(limit.retryAfter), 'Content-Type': 'application/json' },
+            headers: { ...cors, 'Retry-After': String(limit.retryAfter), 'Content-Type': 'application/json' },
             body: JSON.stringify({ ok: false, error: `Too many requests — try again in ${limit.retryAfter}s.` })
         };
     }
@@ -102,7 +99,7 @@ exports.handler = async (event) => {
     } catch (e) {
         return {
             statusCode: 400,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            headers: { ...cors, 'Content-Type': 'application/json' },
             body: JSON.stringify({ ok: false, error: 'Invalid JSON body.' })
         };
     }
@@ -112,7 +109,7 @@ exports.handler = async (event) => {
     if (typeof videoId !== 'string' || !VIDEO_ID_RE.test(videoId)) {
         return {
             statusCode: 400,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            headers: { ...cors, 'Content-Type': 'application/json' },
             body: JSON.stringify({ ok: false, error: '`videoId` must be an 11-character YouTube video ID.' })
         };
     }
@@ -125,7 +122,7 @@ exports.handler = async (event) => {
         if (!Array.isArray(segments) || segments.length === 0) {
             return {
                 statusCode: 200,
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                headers: { ...cors, 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     ok: false,
                     error: 'No captions available for this video. The student can describe what they saw and the agent will work from that.'
@@ -162,7 +159,7 @@ exports.handler = async (event) => {
 
         return {
             statusCode: 200,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            headers: { ...cors, 'Content-Type': 'application/json' },
             body: JSON.stringify({ ok: true, transcript, duration_seconds, language })
         };
     } catch (err) {
@@ -170,7 +167,7 @@ exports.handler = async (event) => {
         console.warn('youtube-transcript: caption fetch failed', videoId, err.message);
         return {
             statusCode: 200, // deliberate 200 — the caller handles ok:false gracefully
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            headers: { ...cors, 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 ok: false,
                 error: 'No captions available for this video. The student can describe what they saw and the agent will work from that.'

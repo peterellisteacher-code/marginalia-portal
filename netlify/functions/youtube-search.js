@@ -13,6 +13,7 @@
 'use strict';
 
 const { authenticate } = require('./_lib/session');
+const { corsHeaders } = require('./_lib/cors');
 
 const FETCH_TIMEOUT_MS = 8000;
 
@@ -92,20 +93,16 @@ async function fetchJson(url) {
 }
 
 exports.handler = async (event) => {
-    const corsHeaders = {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS'
-    };
+    const cors = corsHeaders(event);
 
     if (event.httpMethod === 'OPTIONS') {
-        return { statusCode: 204, headers: corsHeaders };
+        return { statusCode: 204, headers: cors };
     }
 
     if (event.httpMethod !== 'POST') {
         return {
             statusCode: 405,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            headers: { ...cors, 'Content-Type': 'application/json' },
             body: JSON.stringify({ ok: false, error: 'POST only' })
         };
     }
@@ -115,7 +112,7 @@ exports.handler = async (event) => {
     if (!studentId) {
         return {
             statusCode: 401,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            headers: { ...cors, 'Content-Type': 'application/json' },
             body: JSON.stringify({ ok: false, error: 'Invalid or expired session token.' })
         };
     }
@@ -126,7 +123,7 @@ exports.handler = async (event) => {
     if (!limit.ok) {
         return {
             statusCode: 429,
-            headers: { ...corsHeaders, 'Retry-After': String(limit.retryAfter), 'Content-Type': 'application/json' },
+            headers: { ...cors, 'Retry-After': String(limit.retryAfter), 'Content-Type': 'application/json' },
             body: JSON.stringify({ ok: false, error: `Too many requests — try again in ${limit.retryAfter}s.` })
         };
     }
@@ -138,7 +135,7 @@ exports.handler = async (event) => {
     } catch (e) {
         return {
             statusCode: 400,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            headers: { ...cors, 'Content-Type': 'application/json' },
             body: JSON.stringify({ ok: false, error: 'Invalid JSON body.' })
         };
     }
@@ -148,7 +145,7 @@ exports.handler = async (event) => {
     if (typeof query !== 'string' || !query.trim()) {
         return {
             statusCode: 400,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            headers: { ...cors, 'Content-Type': 'application/json' },
             body: JSON.stringify({ ok: false, error: '`query` must be a non-empty string.' })
         };
     }
@@ -164,7 +161,7 @@ exports.handler = async (event) => {
         console.error('youtube-search: YOUTUBE_API_KEY env var is not set');
         return {
             statusCode: 500,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            headers: { ...cors, 'Content-Type': 'application/json' },
             body: JSON.stringify({ ok: false, error: 'YouTube API is not configured on the server. Set YOUTUBE_API_KEY in Netlify site settings.' })
         };
     }
@@ -191,7 +188,7 @@ exports.handler = async (event) => {
             console.error('youtube-search: YouTube API error', data.error.code, data.error.message);
             return {
                 statusCode: 502,
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                headers: { ...cors, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ok: false, error: 'YouTube search failed. The API may be over quota or misconfigured.' })
             };
         }
@@ -219,14 +216,14 @@ exports.handler = async (event) => {
 
         return {
             statusCode: 200,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            headers: { ...cors, 'Content-Type': 'application/json' },
             body: JSON.stringify({ ok: true, results })
         };
     } catch (err) {
         console.error('youtube-search: fetch error', err.message);
         return {
             statusCode: 502,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            headers: { ...cors, 'Content-Type': 'application/json' },
             body: JSON.stringify({ ok: false, error: 'Failed to reach YouTube API.' })
         };
     }

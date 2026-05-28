@@ -15,13 +15,7 @@
 
 const { listStudents, getStudent, verifyPassword } = require('./_lib/registry');
 const { issueToken, verifyToken } = require('./_lib/session');
-
-const CORS = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Content-Type': 'application/json',
-};
+const { corsHeaders } = require('./_lib/cors');
 
 // Per-IP rate limit on login attempts. 9 students with low-entropy
 // surnames as passwords means brute-force is otherwise trivial.
@@ -53,11 +47,10 @@ function checkLoginRateLimit(ip) {
     return { ok: true };
 }
 
-function respond(statusCode, body) {
-    return { statusCode, headers: CORS, body: JSON.stringify(body) };
-}
-
 exports.handler = async (event) => {
+    const CORS = corsHeaders(event);
+    const respond = (statusCode, body) => ({ statusCode, headers: CORS, body: JSON.stringify(body) });
+
     if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: CORS };
     if (event.httpMethod !== 'POST') return respond(405, { error: 'POST only' });
 
@@ -86,6 +79,8 @@ exports.handler = async (event) => {
                 }),
             };
         }
+        // (CORS is captured by the respond closure above; the extra Retry-After
+        //  header is merged in for this single 429 path.)
         const id = String(payload.id || '').trim().toLowerCase();
         const password = payload.password;
         if (!id || typeof password !== 'string') {

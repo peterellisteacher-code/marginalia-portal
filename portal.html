@@ -303,6 +303,37 @@
             min-height: 1.25em;
         }
 
+        /* ---- Pack chips (reading-focus selector) ---- */
+        .pack-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-xs);
+        }
+
+        .pack-chip {
+            font-family: var(--font-body);
+            font-size: var(--text-sm);
+            background: var(--paper-dark);
+            color: var(--ink);
+            border: 1px solid var(--aged-soft);
+            padding: var(--space-sm);
+            cursor: pointer;
+            line-height: 1.3;
+            text-align: left;
+            min-height: 40px;
+        }
+
+        .pack-chip:hover,
+        .pack-chip:focus-visible {
+            border-color: var(--marginalia);
+        }
+
+        .pack-chip[aria-pressed="true"] {
+            background: var(--marginalia);
+            color: var(--ground);
+            border-color: var(--marginalia);
+        }
+
         /* ---- Pinned chips ---- */
         .pinned-chips {
             display: flex;
@@ -520,6 +551,21 @@
                         placeholder="What question keeps you up at night?"
                     ></textarea>
                     <p class="working-status" id="workingQStatus" aria-live="polite"></p>
+                </section>
+
+                <section class="sidebar__section" aria-labelledby="packHeading">
+                    <h2 class="sidebar__heading" id="packHeading">Reading focus</h2>
+                    <p class="sidebar__hint">
+                        Click a topic to give the agent the matching readings to quote from. Click the same one again to unfocus.
+                    </p>
+                    <div class="pack-chips" id="packChips" role="group" aria-labelledby="packHeading">
+                        <button class="pack-chip" type="button" data-pack="stage1_existentialism" aria-pressed="false">Existentialism</button>
+                        <button class="pack-chip" type="button" data-pack="stage1_virtue_compassion" aria-pressed="false">Virtue &amp; compassion</button>
+                        <button class="pack-chip" type="button" data-pack="stage1_religion_ethics" aria-pressed="false">Religion &amp; ethics</button>
+                        <button class="pack-chip" type="button" data-pack="stage1_aesthetics" aria-pressed="false">Aesthetics</button>
+                        <button class="pack-chip" type="button" data-pack="stage1_mind_simulation" aria-pressed="false">Mind &amp; simulation</button>
+                        <button class="pack-chip" type="button" data-pack="lab_applied_normative_ethics" aria-pressed="false">Applied ethics</button>
+                    </div>
                 </section>
 
                 <section class="sidebar__section" aria-labelledby="pinnedHeading" id="pinnedSection" hidden>

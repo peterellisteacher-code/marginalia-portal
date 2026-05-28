@@ -39,6 +39,7 @@ const { YoutubeTranscript } = require('youtube-transcript');
 
 const { authenticate } = require('./_lib/session');
 const { getStudent } = require('./_lib/registry');
+const { corsHeaders } = require('./_lib/cors');
 
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 const MODEL = 'anthropic/claude-haiku-4.5';
@@ -667,18 +668,10 @@ async function runAgent({ systemMessage, conversation, ctx, ip }) {
 // Handler
 // ----------------------------------------------------------------------
 
-const CORS = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Content-Type': 'application/json',
-};
-
-function respond(statusCode, body) {
-    return { statusCode, headers: CORS, body: JSON.stringify(body) };
-}
-
 exports.handler = async (event, _ctx) => {
+    const CORS = corsHeaders(event);
+    const respond = (statusCode, body) => ({ statusCode, headers: CORS, body: JSON.stringify(body) });
+
     // Lambda-compat bridge so getStore('name') auto-resolves credentials.
     // Per @netlify/blobs v8 README, this takes the Lambda EVENT.
     try { connectLambda(event); } catch (e) {

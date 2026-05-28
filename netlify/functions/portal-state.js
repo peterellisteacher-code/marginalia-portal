@@ -19,6 +19,7 @@
 const crypto = require('crypto');
 const { getStore, connectLambda } = require('@netlify/blobs');
 const { authenticate } = require('./_lib/session');
+const { corsHeaders } = require('./_lib/cors');
 
 const STORE_NAME     = 'marginalia-students';
 const SHELF_CAP      = 30;
@@ -28,21 +29,9 @@ const MAX_Q_LEN      = 500;
 const VALID_KINDS    = new Set(['web', 'youtube', 'note']);
 const VALID_ADDED_BY = new Set(['agent', 'student']);
 
-// ── CORS ────────────────────────────────────────────────────────────────────
-
-const CORS = {
-    'Access-Control-Allow-Origin':  '*',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS'
-};
-
-function json(statusCode, body, extra = {}) {
-    return {
-        statusCode,
-        headers: { ...CORS, 'Content-Type': 'application/json', ...extra },
-        body: JSON.stringify(body)
-    };
-}
+// CORS is built per-request from the shared allowlist. The json() helper
+// below is bound to the event inside the handler so the existing call sites
+// stay unchanged.
 
 // ── Blob helpers ─────────────────────────────────────────────────────────────
 
@@ -61,11 +50,21 @@ function stateKey(studentId) {
     return `students/${studentId}/state.json`;
 }
 
+const VALID_PACKS = new Set([
+    'stage1_existentialism',
+    'stage1_virtue_compassion',
+    'stage1_religion_ethics',
+    'stage1_aesthetics',
+    'stage1_mind_simulation',
+    'lab_applied_normative_ethics',
+]);
+
 const EMPTY_STATE = () => ({
     workingQuestion: '',
     resources: [],
     chatHistory: [],
     progressNotes: '',
+    activePack: null,
     updatedAt: 0,
 });
 
@@ -80,6 +79,7 @@ async function loadState(studentId, context) {
             resources: Array.isArray(data.resources) ? data.resources : [],
             chatHistory: Array.isArray(data.chatHistory) ? data.chatHistory : [],
             progressNotes: typeof data.progressNotes === 'string' ? data.progressNotes : '',
+            activePack: VALID_PACKS.has(data.activePack) ? data.activePack : null,
             updatedAt: typeof data.updatedAt === 'number' ? data.updatedAt : 0
         };
     } catch (err) {
@@ -168,7 +168,7 @@ function validateResource(raw) {
 
 // ── Action handlers ───────────────────────────────────────────────────────────
 
-async function actionLoad(studentId, _payload, context) {
+async function actionLoad(studentId, _payload, context, json) {
     const state = await loadState(studentId, context);
     return json(200, {
         ok: true,
@@ -176,10 +176,28 @@ async function actionLoad(studentId, _payload, context) {
         resources: state.resources,
         chatHistory: state.chatHistory,
         progressNotes: state.progressNotes,
+        activePack: state.activePack,
     });
 }
 
-async function actionSetWorkingQuestion(studentId, payload, context) {
+async function actionSetActivePack(studentId, payload, context, json) {
+    // null/empty clears the active pack — the agent goes back to training-data
+    // knowledge. Non-null must match a known pack id.
+    const requested = payload.activePack;
+    let activePack = null;
+    if (typeof requested === 'string' && requested) {
+        if (!VALID_PACKS.has(requested)) {
+            return json(400, { error: `Unknown pack id: ${requested}` });
+        }
+        activePack = requested;
+    }
+    const state = await loadState(studentId, context);
+    state.activePack = activePack;
+    await saveState(studentId, state, context);
+    return json(200, { ok: true, activePack });
+}
+
+async function actionSetWorkingQuestion(studentId, payload, context, json) {
     const wq = trimCap(payload.workingQuestion, MAX_Q_LEN);
     if (!wq) {
         return json(400, { error: 'workingQuestion must be a non-empty string under 500 characters' });
@@ -190,7 +208,7 @@ async function actionSetWorkingQuestion(studentId, payload, context) {
     return json(200, { ok: true });
 }
 
-async function actionAddResource(studentId, payload, context) {
+async function actionAddResource(studentId, payload, context, json) {
     const { error, resource } = validateResource(payload.resource);
     if (error) return json(400, { error });
 
@@ -203,7 +221,7 @@ async function actionAddResource(studentId, payload, context) {
     return json(200, { ok: true, resource });
 }
 
-async function actionRemoveResource(studentId, payload, context) {
+async function actionRemoveResource(studentId, payload, context, json) {
     const { resourceId } = payload;
     if (typeof resourceId !== 'string' || !resourceId) {
         return json(400, { error: 'resourceId is required' });
@@ -219,6 +237,13 @@ async function actionRemoveResource(studentId, payload, context) {
 // ── Handler ───────────────────────────────────────────────────────────────────
 
 exports.handler = async (event, _netlifyContext) => {
+    const CORS = corsHeaders(event);
+    const json = (statusCode, body, extra = {}) => ({
+        statusCode,
+        headers: { ...CORS, ...extra },
+        body: JSON.stringify(body),
+    });
+
     // Lambda-compat mode bridge for @netlify/blobs. Per the SDK README,
     // connectLambda needs the Lambda EVENT (not the context) -- it reads
     // event.blobs as a base64-encoded {url, token, siteID} payload.
@@ -252,15 +277,17 @@ exports.handler = async (event, _netlifyContext) => {
     try {
         switch (action) {
             case 'load':
-                return await actionLoad(studentId, payload);
+                return await actionLoad(studentId, payload, undefined, json);
             case 'set_working_question':
-                return await actionSetWorkingQuestion(studentId, payload);
+                return await actionSetWorkingQuestion(studentId, payload, undefined, json);
             case 'add_resource':
-                return await actionAddResource(studentId, payload);
+                return await actionAddResource(studentId, payload, undefined, json);
             case 'remove_resource':
-                return await actionRemoveResource(studentId, payload);
+                return await actionRemoveResource(studentId, payload, undefined, json);
+            case 'set_active_pack':
+                return await actionSetActivePack(studentId, payload, undefined, json);
             default:
-                return json(400, { error: `Unknown action: "${action}". Valid: load, set_working_question, add_resource, remove_resource` });
+                return json(400, { error: `Unknown action: "${action}". Valid: load, set_working_question, add_resource, remove_resource, set_active_pack` });
         }
     } catch (err) {
         if (err && err.isBlobError) {

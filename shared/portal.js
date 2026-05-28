@@ -10,6 +10,7 @@
     let session = null;          // { token, id, firstName }
     let questionsCache = null;   // array from data/questions.json
     let chatHistory = [];        // in-memory: [{role, content}, ...] last 6 kept
+    let activePack = null;       // pack id (e.g. 'stage1_existentialism') or null
     let currentResources = [];   // the server's current resource list (refetched after chat)
     let workingQLastSaved = '';  // tracks last successfully saved value to detect changes
     let saveDebounceTimer = null;
@@ -21,6 +22,7 @@
     const shelf          = document.getElementById('shelf');
     const shelfEmpty     = document.getElementById('shelfEmpty');
     const pinnedStrip    = document.getElementById('pinnedStrip');
+    const packChips      = document.getElementById('packChips');
     const pinnedSection  = document.getElementById('pinnedSection');
     const chatStream     = document.getElementById('chatStream');
     const chatInput      = document.getElementById('chatInput');
@@ -109,6 +111,7 @@
 
         /* 7. Wire up events */
         wireEvents();
+        wirePackChips();
     }
 
     /* ================================================================
@@ -157,6 +160,11 @@
         const wq = data.workingQuestion || '';
         workingQInput.value = wq;
         workingQLastSaved = wq;
+
+        /* Hydrate active pack chip from server state */
+        if (data.activePack) {
+            renderActivePack(data.activePack);
+        }
 
         currentResources = Array.isArray(data.resources) ? data.resources : [];
         renderShelf(currentResources);
@@ -492,6 +500,7 @@
                     token: session.token,
                     message: messageText,
                     history: historySlice,
+                    pack: activePack,
                 }),
             });
             const data = await r.json();
@@ -587,6 +596,47 @@
     /* ================================================================
        EVENT WIRING
     ================================================================ */
+
+    /* ================================================================
+       PACK CHIPS (reading-focus selector)
+    ================================================================ */
+
+    function renderActivePack(packId) {
+        activePack = packId || null;
+        if (!packChips) return;
+        Array.from(packChips.querySelectorAll('.pack-chip')).forEach(function (c) {
+            c.setAttribute('aria-pressed', c.dataset.pack === activePack ? 'true' : 'false');
+        });
+    }
+
+    async function persistActivePack(packId) {
+        try {
+            await fetch('/.netlify/functions/portal-state', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'set_active_pack',
+                    token: session.token,
+                    activePack: packId,
+                }),
+            });
+        } catch (e) {
+            /* Non-fatal — chip is set optimistically; reload will resync */
+        }
+    }
+
+    function wirePackChips() {
+        if (!packChips) return;
+        packChips.addEventListener('click', function (ev) {
+            const chip = ev.target.closest('.pack-chip');
+            if (!chip) return;
+            const requested = chip.dataset.pack;
+            /* Clicking the active chip again clears the focus */
+            const next = (activePack === requested) ? null : requested;
+            renderActivePack(next);
+            persistActivePack(next);
+        });
+    }
 
     function wireEvents() {
         /* Logout */
