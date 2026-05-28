@@ -5,6 +5,29 @@
 [functions]
   node_bundler = "esbuild"
 
+# Bundle the cached readings into the chat function so loadAllPacks() can
+# read them from data/packs/*.txt at request time. Without this, the cache
+# breakpoint sits on a near-empty system prompt and the agent cannot quote
+# primary text. Flagged by the consensus panel; verifying here.
+[functions.chat]
+  included_files = ["data/packs/*.txt"]
+
+# Block public web access to the raw reading PDFs / DOCX source folder and
+# the pre-extracted text-pack PDFs. They are committed for the build but
+# should not be browsable. Without these, anyone could pull the full Murdoch /
+# Nussbaum / Singer Abortion scans via direct URL.
+[[redirects]]
+  from = "/readings_source/*"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/text_packs/*"
+  to = "/404.html"
+  status = 404
+  force = true
+
 [[headers]]
   for = "/*.html"
   [headers.values]
