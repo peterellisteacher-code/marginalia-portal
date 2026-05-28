@@ -263,7 +263,10 @@ function studentStore() {
     // @netlify/blobs v8.2 with the connectLambda() bootstrap (called once
     // per handler invocation, see the exports.handler below) -- getStore by
     // name resolves credentials from the lambda context the bootstrap reads.
-    return getStore({ name: 'marginalia-students', consistency: 'strong' });
+    // Edge access (eventual consistency, ~60s drift). Strong consistency needs
+    // a personal access token Lambda-compat doesn't auto-wire. Eventual is
+    // fine for a 9-student classroom — same trade-off as portal-state.js.
+    return getStore({ name: 'marginalia-students' });
 }
 
 async function loadStudentState(store, studentId) {

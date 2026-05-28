@@ -50,7 +50,11 @@ function store(_context) {
     // @netlify/blobs v8 auto-resolves credentials from the function env in
     // production. The explicit-context branch was for v1/v2; on v8 it is
     // ignored and confuses local dev. Use the minimal form everywhere.
-    return getStore({ name: STORE_NAME, consistency: 'strong' });
+    // Edge access (eventual consistency, ~60s drift) is the only mode Lambda-
+    // compat connectLambda wires up. Strong consistency needs API-access setup
+    // with a Netlify personal access token, which we don't have here. For
+    // per-student state in a 9-student classroom, edge eventual is fine.
+    return getStore({ name: STORE_NAME });
 }
 
 function stateKey(studentId) {
@@ -243,20 +247,18 @@ exports.handler = async (event, _netlifyContext) => {
 
     const { action } = payload;
 
-    // Netlify Blobs needs site context from the function's netlifyContext in local dev;
-    // in production it auto-resolves from the deployment environment.
-    const blobContext = netlifyContext?.blobs || undefined;
-
+    // The store() helper now reads its config from the @netlify/blobs runtime
+    // wired up via connectLambda(event) above. No context threading needed.
     try {
         switch (action) {
             case 'load':
-                return await actionLoad(studentId, payload, blobContext);
+                return await actionLoad(studentId, payload);
             case 'set_working_question':
-                return await actionSetWorkingQuestion(studentId, payload, blobContext);
+                return await actionSetWorkingQuestion(studentId, payload);
             case 'add_resource':
-                return await actionAddResource(studentId, payload, blobContext);
+                return await actionAddResource(studentId, payload);
             case 'remove_resource':
-                return await actionRemoveResource(studentId, payload, blobContext);
+                return await actionRemoveResource(studentId, payload);
             default:
                 return json(400, { error: `Unknown action: "${action}". Valid: load, set_working_question, add_resource, remove_resource` });
         }
