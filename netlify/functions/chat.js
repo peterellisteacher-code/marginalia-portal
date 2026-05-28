@@ -209,32 +209,30 @@ const TOOLS = [
 // Caches (per Lambda container; soft, fine at class scale)
 // ----------------------------------------------------------------------
 
-let cachedPacksText = null;
+const packCache = new Map();   // packId -> text | null
 const rateBuckets = new Map();
 
-function loadAllPacks() {
-    if (cachedPacksText !== null) return cachedPacksText;
-    const packsDir = path.join(__dirname, '..', '..', 'data', 'packs');
-    let combined = '';
+// Load a SINGLE pack on demand. The earlier "concatenate all 6" approach
+// blew Haiku's 200K context (the packs total ~180K tokens together once
+// main's added Ned Block / second-pass enrichments are factored in).
+// Pack passes as `pack` in the request body — chamber.html topic chips
+// already supply it; portal.html can pass it once topic-detection is added.
+function loadPackText(packId) {
+    if (!packId || packId === 'auto') return null;
+    if (!/^[a-z0-9_]+$/i.test(packId)) return null;  // path-traversal guard
+    if (packCache.has(packId)) return packCache.get(packId);
+    const file = path.join(__dirname, '..', '..', 'data', 'packs', `${packId}.txt`);
     try {
-        const files = fs.readdirSync(packsDir).filter(f => f.endsWith('.txt'));
-        for (const f of files) {
-            try {
-                const body = fs.readFileSync(path.join(packsDir, f), 'utf8');
-                combined += `\n\n${body}\n`;
-            } catch (e) {
-                console.error('loadAllPacks: read failed', f, e.message);
-            }
-        }
+        const text = fs.readFileSync(file, 'utf8');
+        packCache.set(packId, text);
+        return text;
     } catch (e) {
-        console.error(
-            'loadAllPacks: packs directory not readable. ' +
-            'Check netlify.toml [functions.chat].included_files includes data/packs/*.txt.',
-            e.message
-        );
+        packCache.set(packId, null);
+        if (e.code !== 'ENOENT') {
+            console.error('loadPackText: read failed', packId, e.message);
+        }
+        return null;
     }
-    cachedPacksText = combined;
-    return combined;
 }
 
 function approxTokens(text) {
@@ -462,17 +460,20 @@ async function dispatchTool(name, input, ctx) {
 // Message builders
 // ----------------------------------------------------------------------
 
-function buildSystemMessage(student, state) {
+function buildSystemMessage(student, state, packId) {
     // Block 1: stable Socratic prompt
     const blocks = [{ type: 'text', text: SOCRATIC_SYSTEM_PROMPT }];
 
-    // Block 2: cached readings (with cache_control if big enough)
-    const packs = loadAllPacks();
-    if (packs && packs.length > 4000) {
+    // Block 2: a SINGLE topic-relevant readings pack, if one was specified.
+    // Loading all 6 would exceed Haiku's 200K window. Default behaviour
+    // (no pack) lets the agent reason from training-data knowledge of the
+    // canonical texts.
+    const packText = loadPackText(packId);
+    if (packText && packText.length > 4000) {
         const text =
-            '\n\n--- CACHED READINGS ---\n' +
-            'Quote these primary sources when pointing the student to a specific argument.\n' +
-            packs;
+            '\n\n--- READINGS FOR THIS TOPIC ---\n' +
+            'Quote these primary sources when pointing the student to a specific argument. Do not summarise unprompted.\n' +
+            packText;
         const block = { type: 'text', text };
         if (approxTokens(SOCRATIC_SYSTEM_PROMPT) + approxTokens(text) >= HAIKU_CACHE_MIN_TOKENS) {
             // 1h TTL — student think-time often exceeds 5min between turns.
@@ -699,10 +700,11 @@ exports.handler = async (event, _ctx) => {
     try { payload = JSON.parse(event.body || '{}'); } catch (e) {
         return respond(400, { error: 'Invalid JSON' });
     }
-    // Portal mode: {token, message, history}
+    // Portal mode: {token, message, history, pack?}
     // Legacy chamber mode: {messages: [{role,text}...], pack}
     let message = payload.message;
     let history = payload.history;
+    const packId = typeof payload.pack === 'string' ? payload.pack : null;
     if (!message && Array.isArray(payload.messages) && payload.messages.length) {
         const lastUser = [...payload.messages].reverse().find(m => m.role === 'user');
         message = lastUser ? (lastUser.text || lastUser.content) : '';
@@ -720,7 +722,7 @@ exports.handler = async (event, _ctx) => {
             state = await loadStudentState(store, studentId);
         }
 
-        const systemMessage = buildSystemMessage(student, state);
+        const systemMessage = buildSystemMessage(student, state, packId);
         // Use server-persisted history as source of truth for signed-in students
         const historyForAgent = student && state.chatHistory && state.chatHistory.length
             ? state.chatHistory
