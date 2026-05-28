@@ -1,24 +1,36 @@
 /**
- * chat.js -- Netlify Function: Socratic agent + research tools
+ * chat.js -- Marginalia Stage 1 Issues Study: per-student Socratic agent.
  *
  * POST /.netlify/functions/chat
- * Body: { token, message, history }
+ * Body: { token, message, history }   (portal mode)
+ *    or { messages: [{role,text}...], pack }   (legacy chamber mode)
  * Returns: { reply, resources_added?, working_question_set? }
  *
- * - Routes Claude Haiku 4.5 via OpenRouter (single billing surface).
- * - Multi-turn tool-use loop. Tools: youtube_search, youtube_transcript,
- *   add_resource, set_working_question.
- * - Inlines the six Stage 1 cache packs as a single cached system block
- *   so the agent can quote primary texts when the student needs them.
- * - Per-student state (working question + resources) lives in Netlify Blobs,
- *   loaded once at start of each chat call.
+ * Wire pattern: direct fetch to OpenRouter's OpenAI-compatible
+ * /chat/completions endpoint. NOT the @anthropic-ai/sdk -- it has known
+ * cache_control propagation bugs against OpenRouter and produced
+ * "Connection error" with no diagnostic in production.
  *
- * Env: OPENROUTER_API_KEY, YOUTUBE_API_KEY, SESSION_SECRET
+ * Routing: anthropic/claude-haiku-4.5, provider-pinned to Anthropic-only,
+ * no fallbacks -- cache pool integrity.
+ *
+ * Tools (OpenAI tool-use format): youtube_search, youtube_transcript,
+ * add_resource, set_working_question, update_progress_notes. Tool-use loop
+ * runs up to MAX_TOOL_LOOPS iterations per chat turn.
+ *
+ * Per-student state: Netlify Blobs via connectLambda(event) (Lambda-compat
+ * bridge per @netlify/blobs v8 README). State key students/<id>/state.json
+ * holds workingQuestion, resources, chatHistory (last 40), progressNotes.
+ *
+ * Cached readings: all 6 Stage 1 packs concatenated, attached to the system
+ * message as a single cache_control breakpoint with ttl:"1h". Below 4096
+ * tokens the cache marker is dropped (silent no-op + wastes a breakpoint).
+ *
+ * Env vars: OPENROUTER_API_KEY, YOUTUBE_API_KEY, SESSION_SECRET.
  */
 
 'use strict';
 
-const Anthropic = require('@anthropic-ai/sdk');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -28,27 +40,27 @@ const { YoutubeTranscript } = require('youtube-transcript');
 const { authenticate } = require('./_lib/session');
 const { getStudent } = require('./_lib/registry');
 
-// Pinned to a specific Haiku version for the duration of the unit; latest-
-// pointer slugs can silently drift to a new model mid-term, changing
-// behaviour without notice.
+const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 const MODEL = 'anthropic/claude-haiku-4.5';
 const MAX_OUTPUT_TOKENS = 800;
 const HISTORY_TURN_LIMIT = 6;
 const MAX_TOOL_LOOPS = 6;
+const HAIKU_CACHE_MIN_TOKENS = 4096;
 const RATE_LIMIT_MAX = 40;
 const RATE_LIMIT_WINDOW_MS = 5 * 60_000;
 const SHELF_CAP = 30;
 
+const PROVIDER_PIN = {
+    only: ['anthropic'],
+    allow_fallbacks: false,
+};
+
 // ----------------------------------------------------------------------
-// Socratic system prompt -- shaped by:
-//   - SACE Stage 1 Issues Study tasksheet (AT3, 800w/5min/multimodal)
-//   - "Writing Clear Instructions for Complex Tasks" guide (FK 7-9, active
-//     voice imperative, one concept = one word, define-on-first-use)
-//   - "When and How to Reveal Information" guide (just-in-time definitions,
-//     no front-loading, click-triggered popovers when the student asks)
+// Socratic system prompt (unchanged from prior version, just smaller copy
+// of the doc here for clarity)
 // ----------------------------------------------------------------------
 
-const SOCRATIC_SYSTEM_PROMPT = `You are the agent (the student's name for you on the site) — a Socratic interlocutor for a Year 11 student doing the SACE Stage 1 Philosophy Issues Study (Assessment Type 3).
+const SOCRATIC_SYSTEM_PROMPT = `You are the agent — a Socratic interlocutor for a Year 11 student doing the SACE Stage 1 Philosophy Issues Study (Assessment Type 3).
 
 THE ASSESSMENT THE STUDENT IS WORKING TOWARD
 800 words written, or 5 minutes oral, or equivalent multimodal. The student must:
@@ -65,7 +77,7 @@ YOUR JOB
 Help the student sharpen what they already half-think. You ask one short question at a time. You do not write any part of the essay. You do not tell the student what to think.
 
 WHEN TO USE YOUR TOOLS
-You have four tools. Use them sparingly and only when they help.
+You have five tools. Use them sparingly and only when they help.
 
 - youtube_search: Use when the student needs an entry point — a thinker they have not met, a position they cannot name, a debate they are gesturing at. Search returns up to 5 videos. Pick the best one or two and add them to the shelf using add_resource.
 - youtube_transcript: Use AFTER the student has watched a video they named. Read the transcript so you can ask them what they took from it. Do not read it before — that ruins the watch.
@@ -74,15 +86,15 @@ You have four tools. Use them sparingly and only when they help.
 - update_progress_notes: After any meaningful shift in the student's thinking — a position they are now taking seriously, a reading they have processed, a refined question — save a short snapshot (≤500 chars) of where they are up to and how they are approaching the problem. These notes feed back into your context on every future turn, so future-you can pick up where past-you left off. Update them as a snapshot (replaces previous), not a log (do not accumulate).
 
 PLAIN-LANGUAGE RULES — WHEN YOU EXPLAIN HARD IDEAS
-The cached readings below are academic philosophy (Murdoch, Sartre, Haidt, Nussbaum, Wimsatt & Beardsley, etc.). They are written for adults. The student reads at about Year 8 level when tired or anxious.
+The cached readings below are academic philosophy. They are written for adults. The student reads at about Year 8 level when tired or anxious.
 
 If the student asks you to explain a passage, or asks "what does that mean?", or clicks "Explain plainly":
 - Sentences average around 14 words. Never longer than 25.
 - Active voice. Use "you" or the thinker's name as the subject — not "one" or "it is the case that".
 - Define any hard word on first use, inline, in parentheses: "a *veil* (a thin cover that hides what's behind it)".
 - Use the same word for the same concept throughout. Do not switch between "the unconscious", "below awareness", and "the hidden mind".
-- Give a concrete example or scene when it helps. ("Imagine you have walked into a room and felt that someone there does not like you. Murdoch is saying that what you 'see' in that moment is already a moral act.")
-- Keep the philosophical move intact. Plain language is not dumbing down. Murdoch's claim still needs to be Murdoch's claim — just in words a 16-year-old can carry.
+- Give a concrete example or scene when it helps.
+- Keep the philosophical move intact. Plain language is not dumbing down.
 
 WHEN YOU QUOTE A READING
 - Quote at most three short sentences at a time.
@@ -91,11 +103,11 @@ WHEN YOU QUOTE A READING
 
 HOW YOU ASK QUESTIONS
 - One question per turn. Then stop.
-- When the student gives a topic ("ethics", "the brain", "art"), press: "What about that catches your attention? Was there a moment, a story, a piece of news that drew you in?"
+- When the student gives a topic, press: "What about that catches your attention?"
 - When the student gives a position, ask: "What is the strongest objection?"
 - When the student wants to know what a philosopher thinks, point them at a reading or video — do not summarise unprompted.
-- Use philosophical terminology accurately. If the student gestures at a concept without knowing the word, name it once: "There's a word for that. Sartre calls it *bad faith* — lying to yourself about how free you are."
-- Register thinking, not effort: "That's a sharper formulation." "But what would [other position] say to that?" Avoid generic praise ("great question!", "well done!").
+- Use philosophical terminology accurately. If the student gestures at a concept without knowing the word, name it once: "There's a word for that. Sartre calls it *bad faith*."
+- Register thinking, not effort: "That's a sharper formulation." Avoid generic praise ("great question!", "well done!").
 
 LIMITS
 - 2–4 sentences per turn, unless you are reporting back on a tool call.
@@ -103,128 +115,102 @@ LIMITS
 - Never write any portion of the essay.
 - If the student asks you to write it: "That would do the thinking the assessment is asking you to do. Let me ask a question that might help instead…"
 
-The student's identity, working question, and current resource shelf appear in the context block before their first message. Use them.`;
+The student's identity, working question, progress notes, and current resource shelf appear in the context block before their first message. Use them.`;
 
 // ----------------------------------------------------------------------
-// Tool definitions
+// Tool definitions (OpenAI tool-use format — function calling)
 // ----------------------------------------------------------------------
 
 const TOOLS = [
     {
-        name: 'youtube_search',
-        description:
-            'Search YouTube for educational videos on a philosophical topic, thinker, or argument. Returns up to 5 videos with title, description, thumbnail, and videoId. Use sparingly — only when the student needs an entry point they do not have.',
-        input_schema: {
-            type: 'object',
-            properties: {
-                query: {
-                    type: 'string',
-                    description: 'Search query. Be specific: "Thomson violinist argument abortion", not just "abortion".',
+        type: 'function',
+        function: {
+            name: 'youtube_search',
+            description:
+                'Search YouTube for educational videos on a philosophical topic, thinker, or argument. Returns up to 5 videos with title, description, thumbnail, videoId. Use sparingly — only when the student needs an entry point they do not have.',
+            parameters: {
+                type: 'object',
+                properties: {
+                    query: { type: 'string', description: 'Search query. Be specific.' },
+                    max_results: { type: 'integer', description: 'Up to 5. Default 5.', default: 5 },
                 },
-                max_results: {
-                    type: 'integer',
-                    description: 'Up to 5. Default 5.',
-                    default: 5,
-                },
+                required: ['query'],
             },
-            required: ['query'],
         },
     },
     {
-        name: 'youtube_transcript',
-        description:
-            'Fetch the transcript of a YouTube video the student says they have watched. Use only AFTER the student names a video they watched — never before, so you do not spoil it. Returns transcript text or an explanation if captions are unavailable.',
-        input_schema: {
-            type: 'object',
-            properties: {
-                videoId: {
-                    type: 'string',
-                    description: 'The 11-character YouTube video id (NOT the full URL).',
+        type: 'function',
+        function: {
+            name: 'youtube_transcript',
+            description:
+                'Fetch the transcript of a YouTube video the student has watched. Use only AFTER the student names a video they watched.',
+            parameters: {
+                type: 'object',
+                properties: {
+                    videoId: { type: 'string', description: 'The 11-character YouTube video id.' },
                 },
+                required: ['videoId'],
             },
-            required: ['videoId'],
         },
     },
     {
-        name: 'add_resource',
-        description:
-            'Add a resource (web link or YouTube video) to the student\'s shelf so they can find it later. The student can remove it with a click. Always tell the student in your reply what you added and why.',
-        input_schema: {
-            type: 'object',
-            properties: {
-                kind: {
-                    type: 'string',
-                    enum: ['web', 'youtube', 'note'],
-                    description: '"youtube" for videos, "web" for articles/pages, "note" for a key idea worth pinning.',
+        type: 'function',
+        function: {
+            name: 'add_resource',
+            description:
+                'Add a resource (web link or YouTube video) to the student\'s shelf. Always tell the student in your reply what you added and why.',
+            parameters: {
+                type: 'object',
+                properties: {
+                    kind: { type: 'string', enum: ['web', 'youtube', 'note'] },
+                    title: { type: 'string', description: '≤140 chars.' },
+                    url: { type: 'string', description: 'Full http(s) URL.' },
+                    description: { type: 'string', description: 'Why this helps, ≤280 chars, plain Year-11 language.' },
+                    videoId: { type: 'string', description: 'YouTube videoId (required if kind=youtube).' },
+                    thumbnail: { type: 'string', description: 'Thumbnail URL (optional).' },
                 },
-                title: { type: 'string', description: 'Title of the resource. ≤140 characters.' },
-                url: { type: 'string', description: 'Full http(s) URL.' },
-                description: {
-                    type: 'string',
-                    description: 'Why this resource is useful, in plain Year-11-friendly language. ≤280 characters.',
-                },
-                videoId: { type: 'string', description: 'YouTube videoId (required if kind=youtube).' },
-                thumbnail: { type: 'string', description: 'Thumbnail URL (optional, for YouTube).' },
+                required: ['kind', 'title', 'description'],
             },
-            required: ['kind', 'title', 'description'],
         },
     },
     {
-        name: 'set_working_question',
-        description:
-            'Update the student\'s saved working question. Use ONLY when the student has explicitly committed to a refined version. Confirm in your reply.',
-        input_schema: {
-            type: 'object',
-            properties: {
-                question: {
-                    type: 'string',
-                    description: 'The refined philosophical question, ≤500 characters, ending with "?".',
+        type: 'function',
+        function: {
+            name: 'set_working_question',
+            description:
+                'Update the student\'s saved working question. Use ONLY when the student has explicitly committed.',
+            parameters: {
+                type: 'object',
+                properties: {
+                    question: { type: 'string', description: '≤500 chars.' },
                 },
+                required: ['question'],
             },
-            required: ['question'],
         },
     },
     {
-        name: 'update_progress_notes',
-        description:
-            'Save a short running summary of where this student is up to, what their current question is, and how they are approaching it. Replaces the previous notes entirely (it is a snapshot, not a log). Update after meaningful shifts in their thinking — a new position they are taking seriously, a reading they have processed, a refined question. ≤500 characters. The notes feed back into your context on every future turn, so be specific and dated in your phrasing.',
-        input_schema: {
-            type: 'object',
-            properties: {
-                notes: {
-                    type: 'string',
-                    description: 'Snapshot of the student\'s current state and approach. ≤500 chars.',
+        type: 'function',
+        function: {
+            name: 'update_progress_notes',
+            description:
+                'Save a short running summary (snapshot, replaces previous; ≤500 chars) of where this student is up to, what their current question is, and how they are approaching it. Feeds back into your context on every future turn.',
+            parameters: {
+                type: 'object',
+                properties: {
+                    notes: { type: 'string', description: 'Snapshot, ≤500 chars.' },
                 },
+                required: ['notes'],
             },
-            required: ['notes'],
         },
     },
 ];
 
 // ----------------------------------------------------------------------
-// Module-level caches (warm across invocations within a Function container)
+// Caches (per Lambda container; soft, fine at class scale)
 // ----------------------------------------------------------------------
 
-let anthropicClient = null;
 let cachedPacksText = null;
 const rateBuckets = new Map();
-
-function getClient() {
-    if (anthropicClient) return anthropicClient;
-    const apiKey = process.env.OPENROUTER_API_KEY;
-    if (!apiKey) {
-        throw new Error('OPENROUTER_API_KEY is not set. Configure in Netlify env vars.');
-    }
-    anthropicClient = new Anthropic({
-        apiKey,
-        baseURL: 'https://openrouter.ai/api/v1',
-        defaultHeaders: {
-            'HTTP-Referer': 'https://marginalia.netlify.app',
-            'X-Title': 'Marginalia — Stage 1 Issues Study',
-        },
-    });
-    return anthropicClient;
-}
 
 function loadAllPacks() {
     if (cachedPacksText !== null) return cachedPacksText;
@@ -237,35 +223,80 @@ function loadAllPacks() {
                 const body = fs.readFileSync(path.join(packsDir, f), 'utf8');
                 combined += `\n\n${body}\n`;
             } catch (e) {
-                console.error('loadAllPacks: failed to read pack file', f, e.message);
+                console.error('loadAllPacks: read failed', f, e.message);
             }
         }
     } catch (e) {
-        // Most likely cause: data/packs/*.txt not included in netlify.toml
-        // [functions].included_files. The agent will still answer, but it
-        // cannot quote primary text.
         console.error(
-            'loadAllPacks: packs directory not readable. Check that ' +
-            'netlify.toml includes data/packs/*.txt in [functions].included_files.',
+            'loadAllPacks: packs directory not readable. ' +
+            'Check netlify.toml [functions.chat].included_files includes data/packs/*.txt.',
             e.message
         );
-        combined = '';
     }
     cachedPacksText = combined;
     return combined;
 }
 
+function approxTokens(text) {
+    return Math.ceil((text || '').length / 4);
+}
+
 // ----------------------------------------------------------------------
-// Per-student state (Netlify Blobs)
+// API headers
+// ----------------------------------------------------------------------
+
+function getApiKey() {
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    if (!apiKey) {
+        throw new Error('OPENROUTER_API_KEY env var is not set.');
+    }
+    return apiKey;
+}
+
+function getHeaders() {
+    return {
+        'Authorization': `Bearer ${getApiKey()}`,
+        'Content-Type': 'application/json',
+        // Canonical header names per OpenRouter docs.
+        'HTTP-Referer': 'https://marginalia-issues-study.netlify.app',
+        'X-OpenRouter-Title': 'Marginalia — Stage 1 Issues Study',
+    };
+}
+
+// ----------------------------------------------------------------------
+// Rate limit
+// ----------------------------------------------------------------------
+
+function getClientIp(event) {
+    const xff = event.headers?.['x-forwarded-for'] || event.headers?.['X-Forwarded-For'];
+    if (xff) return String(xff).split(',')[0].trim();
+    return event.headers?.['client-ip'] || 'unknown';
+}
+
+function checkRateLimit(ip) {
+    const now = Date.now();
+    const cutoff = now - RATE_LIMIT_WINDOW_MS;
+    const recent = (rateBuckets.get(ip) || []).filter(t => t > cutoff);
+    if (recent.length >= RATE_LIMIT_MAX) {
+        const retryAfterMs = recent[0] + RATE_LIMIT_WINDOW_MS - now;
+        return { ok: false, retryAfter: Math.max(1, Math.ceil(retryAfterMs / 1000)) };
+    }
+    recent.push(now);
+    rateBuckets.set(ip, recent);
+    if (rateBuckets.size > 100 && Math.random() < 0.02) {
+        for (const [k, v] of rateBuckets) {
+            if (v.filter(t => t > cutoff).length === 0) rateBuckets.delete(k);
+        }
+    }
+    return { ok: true };
+}
+
+// ----------------------------------------------------------------------
+// Per-student state (Netlify Blobs, edge access)
 // ----------------------------------------------------------------------
 
 function studentStore() {
-    // @netlify/blobs v8.2 with the connectLambda() bootstrap (called once
-    // per handler invocation, see the exports.handler below) -- getStore by
-    // name resolves credentials from the lambda context the bootstrap reads.
-    // Edge access (eventual consistency, ~60s drift). Strong consistency needs
-    // a personal access token Lambda-compat doesn't auto-wire. Eventual is
-    // fine for a 9-student classroom — same trade-off as portal-state.js.
+    // connectLambda(event) must have been called before this fires.
     return getStore({ name: 'marginalia-students' });
 }
 
@@ -292,6 +323,15 @@ async function saveStudentState(store, studentId, state) {
 // Tool executors
 // ----------------------------------------------------------------------
 
+function stripEntities(s) {
+    return String(s)
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'");
+}
+
 async function execYoutubeSearch({ query, max_results }) {
     const apiKey = process.env.YOUTUBE_API_KEY;
     if (!apiKey) return { error: 'YouTube search is not configured.' };
@@ -305,9 +345,10 @@ async function execYoutubeSearch({ query, max_results }) {
         videoEmbeddable: 'true',
         key: apiKey,
     });
-    const url = `https://www.googleapis.com/youtube/v3/search?${params.toString()}`;
     try {
-        const r = await fetch(url);
+        const r = await fetch(`https://www.googleapis.com/youtube/v3/search?${params}`, {
+            signal: AbortSignal.timeout(8000),
+        });
         if (!r.ok) return { error: `YouTube returned ${r.status}.` };
         const data = await r.json();
         const results = (data.items || []).map(item => ({
@@ -315,14 +356,11 @@ async function execYoutubeSearch({ query, max_results }) {
             title: stripEntities(item.snippet?.title || ''),
             description: stripEntities((item.snippet?.description || '').slice(0, 280)),
             channelTitle: item.snippet?.channelTitle || '',
-            publishedAt: item.snippet?.publishedAt || '',
             thumbnail:
                 item.snippet?.thumbnails?.high?.url ||
                 item.snippet?.thumbnails?.medium?.url ||
                 item.snippet?.thumbnails?.default?.url || '',
-            url: item.id?.videoId
-                ? `https://www.youtube.com/watch?v=${item.id.videoId}`
-                : '',
+            url: item.id?.videoId ? `https://www.youtube.com/watch?v=${item.id.videoId}` : '',
         })).filter(v => v.videoId);
         return { results };
     } catch (e) {
@@ -337,13 +375,13 @@ async function execYoutubeTranscript({ videoId }) {
     try {
         const segments = await YoutubeTranscript.fetchTranscript(videoId, { lang: 'en' });
         if (!segments || !segments.length) {
-            return { error: 'No captions available for this video. Ask the student what they saw and work from that.' };
+            return { error: 'No captions available. Ask the student what they saw.' };
         }
         let transcript = segments.map(s => s.text).join(' ');
         if (transcript.length > 30000) transcript = transcript.slice(0, 30000) + '… [truncated]';
         return { transcript };
     } catch (e) {
-        return { error: 'Could not fetch captions for this video. Ask the student what they saw and work from that.' };
+        return { error: 'Could not fetch captions. Ask the student what they saw.' };
     }
 }
 
@@ -363,8 +401,6 @@ async function execAddResource(store, studentId, state, input) {
     if (kind === 'web' || kind === 'youtube') {
         try {
             const parsed = new URL(url);
-            // Reject javascript:, data:, file:, etc. — only http(s) goes on
-            // the shelf because the URL renders as <a href> on the client.
             if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
                 return { error: 'Only http(s) URLs are allowed.' };
             }
@@ -413,91 +449,40 @@ async function dispatchTool(name, input, ctx) {
         return { error: 'This tool is only available when the student is signed in.' };
     }
     switch (name) {
-        case 'youtube_search':
-            return execYoutubeSearch(input);
-        case 'youtube_transcript':
-            return execYoutubeTranscript(input);
-        case 'add_resource':
-            return execAddResource(ctx.store, ctx.studentId, ctx.state, input);
-        case 'set_working_question':
-            return execSetWorkingQuestion(ctx.store, ctx.studentId, ctx.state, input);
-        case 'update_progress_notes':
-            return execUpdateProgressNotes(ctx.store, ctx.studentId, ctx.state, input);
-        default:
-            return { error: `Unknown tool: ${name}` };
+        case 'youtube_search': return execYoutubeSearch(input);
+        case 'youtube_transcript': return execYoutubeTranscript(input);
+        case 'add_resource': return execAddResource(ctx.store, ctx.studentId, ctx.state, input);
+        case 'set_working_question': return execSetWorkingQuestion(ctx.store, ctx.studentId, ctx.state, input);
+        case 'update_progress_notes': return execUpdateProgressNotes(ctx.store, ctx.studentId, ctx.state, input);
+        default: return { error: `Unknown tool: ${name}` };
     }
 }
 
 // ----------------------------------------------------------------------
-// Helpers
+// Message builders
 // ----------------------------------------------------------------------
 
-function stripEntities(s) {
-    return String(s)
-        .replace(/&amp;/g, '&')
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>')
-        .replace(/&quot;/g, '"')
-        .replace(/&#39;/g, "'");
-}
-
-function checkRateLimit(ip) {
-    const now = Date.now();
-    const cutoff = now - RATE_LIMIT_WINDOW_MS;
-    const recent = (rateBuckets.get(ip) || []).filter(t => t > cutoff);
-    if (recent.length >= RATE_LIMIT_MAX) {
-        const retryAfterMs = recent[0] + RATE_LIMIT_WINDOW_MS - now;
-        return { ok: false, retryAfter: Math.max(1, Math.ceil(retryAfterMs / 1000)) };
-    }
-    recent.push(now);
-    rateBuckets.set(ip, recent);
-    // Opportunistic cleanup: every ~50th call, evict empty buckets so the
-    // Map does not grow unboundedly across a warm container's lifetime.
-    if (rateBuckets.size > 100 && Math.random() < 0.02) {
-        for (const [k, v] of rateBuckets) {
-            if (v.filter(t => t > cutoff).length === 0) rateBuckets.delete(k);
-        }
-    }
-    return { ok: true };
-}
-
-function getIp(event) {
-    const xff = event.headers?.['x-forwarded-for'] || event.headers?.['X-Forwarded-For'];
-    if (xff) return String(xff).split(',')[0].trim();
-    return event.headers?.['client-ip'] || 'unknown';
-}
-
-function buildSystem(student, state) {
-    // Layout the system blocks so the cache breakpoint sits on the LARGE,
-    // SLOW-CHANGING readings block. The student-context block comes AFTER
-    // the breakpoint -- uncached, small, freshly rebuilt on every turn
-    // with the latest working question, shelf, and progress notes.
-    //
-    // Without this discipline, any state change (a resource added, a
-    // working-question edit, the agent updating its progress notes) would
-    // invalidate the 103K-token readings cache and force a fresh write at
-    // 1.25x input rate. With it, the readings stay cached for the 5-min
-    // ephemeral TTL and only the small student-context block is recharged.
+function buildSystemMessage(student, state) {
+    // Block 1: stable Socratic prompt
     const blocks = [{ type: 'text', text: SOCRATIC_SYSTEM_PROMPT }];
 
+    // Block 2: cached readings (with cache_control if big enough)
     const packs = loadAllPacks();
     if (packs && packs.length > 4000) {
-        blocks.push({
-            type: 'text',
-            text:
-                '\n\n--- CACHED READINGS ---\n' +
-                'The following passages are available as primary-source material. Quote them ' +
-                'when pointing the student toward a specific argument. Always pair a quote with ' +
-                'a one-sentence plain-language version when the language is hard.\n' +
-                packs,
-            cache_control: { type: 'ephemeral' },  // <-- CACHE BREAKPOINT HERE
-        });
-    } else {
-        // No readings -> cache breakpoint goes on the Socratic prompt block
-        blocks[0].cache_control = { type: 'ephemeral' };
+        const text =
+            '\n\n--- CACHED READINGS ---\n' +
+            'Quote these primary sources when pointing the student to a specific argument.\n' +
+            packs;
+        const block = { type: 'text', text };
+        if (approxTokens(SOCRATIC_SYSTEM_PROMPT) + approxTokens(text) >= HAIKU_CACHE_MIN_TOKENS) {
+            // 1h TTL — student think-time often exceeds 5min between turns.
+            block.cache_control = { type: 'ephemeral', ttl: '1h' };
+        }
+        blocks.push(block);
     }
 
-    // ---- Per-turn student context (UNCACHED, fresh every call) ----
+    // Block 3: per-turn student context (UNCACHED — fresh every turn so the
+    // agent always sees the latest working question / shelf / progress notes)
     if (student) {
         const lines = [
             `--- THIS STUDENT (refreshed each turn) ---`,
@@ -508,12 +493,12 @@ function buildSystem(student, state) {
             ``,
         ];
         if (state.progressNotes) {
-            lines.push(`Your last progress notes about where they are up to and how they are approaching it:`);
+            lines.push(`Your last progress notes about where they are up to:`);
             lines.push(`  ${state.progressNotes}`);
             lines.push(``);
-            lines.push(`Use these notes to pick up where you left off. Update them with update_progress_notes when their thinking shifts.`);
+            lines.push(`Update them with update_progress_notes when their thinking shifts.`);
         } else {
-            lines.push(`No progress notes yet. After this turn, call update_progress_notes with a short snapshot of where they are.`);
+            lines.push(`No progress notes yet. After this turn, call update_progress_notes with a short snapshot.`);
         }
         lines.push(``);
         if (state.resources.length) {
@@ -528,100 +513,144 @@ function buildSystem(student, state) {
     } else {
         blocks.push({
             type: 'text',
-            text: '--- ANONYMOUS CHAMBER VISIT ---\nThis student is browsing without signing in. You cannot save resources, update their working question, or maintain progress notes. Help them think, point them at readings if relevant, and suggest they sign in if they want their work to follow them.',
+            text: '--- ANONYMOUS CHAMBER VISIT ---\nThis student is browsing without signing in. You cannot save resources, working question, or progress notes. Suggest they sign in if they want their work to follow them.',
         });
     }
 
-    return blocks;
+    return { role: 'system', content: blocks };
 }
 
-function buildHistory(history, currentMessage) {
+function buildConversationMessages(history, currentMessage) {
     const truncated = Array.isArray(history) ? history.slice(-HISTORY_TURN_LIMIT * 2) : [];
     const out = truncated.map(m => ({
         role: m.role === 'model' || m.role === 'assistant' ? 'assistant' : 'user',
-        // Coalesce empty-string content correctly (the || form skips '' which
-        // falls through to undefined — sending an empty user message to the
-        // API breaks the tool-use loop)
         content: (m.content != null ? m.content : (m.text != null ? m.text : '')),
     }));
     out.push({ role: 'user', content: String(currentMessage || '') });
     return out;
 }
 
-function extractText(response) {
-    return (response.content || [])
-        .filter(b => b && b.type === 'text')
-        .map(b => b.text)
-        .join('')
-        .trim();
+// ----------------------------------------------------------------------
+// OpenRouter call (with retry on 408/429/503)
+// ----------------------------------------------------------------------
+
+async function callOpenRouter(body, attempt = 0) {
+    const maxAttempts = 3;
+    let response;
+    try {
+        response = await fetch(OPENROUTER_URL, {
+            method: 'POST',
+            headers: getHeaders(),
+            body: JSON.stringify(body),
+            signal: AbortSignal.timeout(45_000),
+        });
+    } catch (err) {
+        if (attempt < 1) {
+            await new Promise(r => setTimeout(r, 1000));
+            return callOpenRouter(body, attempt + 1);
+        }
+        throw err;
+    }
+
+    const retryable = [408, 429, 503];
+    if (retryable.includes(response.status) && attempt < maxAttempts - 1) {
+        const retryAfter = parseInt(response.headers.get('Retry-After') || '0', 10);
+        const backoffMs = retryAfter > 0 ? retryAfter * 1000 : Math.min(30_000, 1000 * Math.pow(2, attempt));
+        await new Promise(r => setTimeout(r, backoffMs));
+        return callOpenRouter(body, attempt + 1);
+    }
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+        const code = response.status;
+        const message = data?.error?.message || `HTTP ${code}`;
+        const error = new Error(`OpenRouter ${code}: ${message}`);
+        error.status = code;
+        error.metadata = data?.error?.metadata || null;
+        throw error;
+    }
+    return data;
+}
+
+function logUsage(data, ip, studentId, loop, finishReason) {
+    const u = data?.usage || {};
+    const cached = u.prompt_tokens_details?.cached_tokens || 0;
+    const cacheWrite = u.prompt_tokens_details?.cache_write_tokens || 0;
+    console.log(JSON.stringify({
+        event: 'chat.usage',
+        ip,
+        studentId,
+        loop,
+        finish_reason: finishReason,
+        prompt_tokens: u.prompt_tokens,
+        completion_tokens: u.completion_tokens,
+        cached_tokens: cached,
+        cache_write_tokens: cacheWrite,
+        cost: u.cost || 0,
+        cache_ratio: cacheWrite > 0 ? Number((cached / cacheWrite).toFixed(2)) : null,
+    }));
 }
 
 // ----------------------------------------------------------------------
-// Agentic loop
+// Agentic tool-use loop (OpenAI format)
 // ----------------------------------------------------------------------
 
-async function runAgent({ system, messages, ctx, ip }) {
-    const client = getClient();
+async function runAgent({ systemMessage, conversation, ctx, ip }) {
+    const messages = [systemMessage, ...conversation];
     const resourcesAdded = [];
     let workingQuestionSet = null;
-    let lastResponse = null;
 
-    // Anonymous (chamber.html) mode: drop state-mutating tools.
+    // Strip tools that mutate state in anonymous mode.
     const activeTools = ctx.anonymous
-        ? TOOLS.filter(t => t.name === 'youtube_search' || t.name === 'youtube_transcript')
+        ? TOOLS.filter(t => t.function.name === 'youtube_search' || t.function.name === 'youtube_transcript')
         : TOOLS;
 
+    let lastChoice = null;
     for (let loop = 0; loop < MAX_TOOL_LOOPS; loop++) {
-        const response = await client.messages.create({
+        const body = {
             model: MODEL,
             max_tokens: MAX_OUTPUT_TOKENS,
-            system,
-            tools: activeTools,
             messages,
-        });
-        lastResponse = response;
+            tools: activeTools,
+            tool_choice: 'auto',
+            provider: PROVIDER_PIN,
+            ...(ctx.studentId ? { user: ctx.studentId } : {}),
+        };
+        const data = await callOpenRouter(body);
+        const choice = data.choices?.[0];
+        if (!choice) break;
+        lastChoice = choice;
+        logUsage(data, ip, ctx.studentId, loop, choice.finish_reason);
 
-        const usage = response.usage || {};
-        console.log(JSON.stringify({
-            event: 'chat.usage',
-            ip,
-            studentId: ctx.studentId,
-            loop,
-            stop_reason: response.stop_reason,
-            input_tokens: usage.input_tokens,
-            output_tokens: usage.output_tokens,
-            cache_creation_input_tokens: usage.cache_creation_input_tokens,
-            cache_read_input_tokens: usage.cache_read_input_tokens,
-        }));
-
-        if (response.stop_reason !== 'tool_use') break;
-
-        // Execute tools and feed results back
-        messages.push({ role: 'assistant', content: response.content });
-        const toolResults = [];
-        for (const block of response.content) {
-            if (block.type !== 'tool_use') continue;
-            const result = await dispatchTool(block.name, block.input, ctx);
-            if (block.name === 'add_resource' && result.ok && result.resource) {
-                resourcesAdded.push(result.resource);
+        if (choice.finish_reason === 'tool_calls' && Array.isArray(choice.message?.tool_calls)) {
+            // Push the assistant message (with tool_calls) onto the convo
+            messages.push(choice.message);
+            // Execute each tool call and push results back
+            for (const tc of choice.message.tool_calls) {
+                const name = tc.function?.name;
+                let args = {};
+                try { args = JSON.parse(tc.function?.arguments || '{}'); } catch (e) { /* leave empty */ }
+                const result = await dispatchTool(name, args, ctx);
+                if (name === 'add_resource' && result.ok && result.resource) {
+                    resourcesAdded.push(result.resource);
+                }
+                if (name === 'set_working_question' && result.ok) {
+                    workingQuestionSet = result.workingQuestion;
+                }
+                messages.push({
+                    role: 'tool',
+                    tool_call_id: tc.id,
+                    content: JSON.stringify(result),
+                });
             }
-            if (block.name === 'set_working_question' && result.ok) {
-                workingQuestionSet = result.workingQuestion;
-            }
-            toolResults.push({
-                type: 'tool_result',
-                tool_use_id: block.id,
-                content: JSON.stringify(result),
-            });
+            continue;
         }
-        messages.push({ role: 'user', content: toolResults });
+        // Any other finish_reason: stop, length, content_filter, etc.
+        break;
     }
 
-    // If we exited the loop while still asking for tool use, the agent
-    // hit MAX_TOOL_LOOPS without producing a text reply. Give the student
-    // a human-readable fallback instead of "(no reply)".
-    let text = lastResponse ? extractText(lastResponse) : '';
-    if (!text && lastResponse && lastResponse.stop_reason === 'tool_use') {
+    let text = lastChoice?.message?.content || '';
+    if (!text && lastChoice?.finish_reason === 'tool_calls') {
         text = 'I went down a research rabbit hole and ran out of steps for this turn. Ask me something more focused, or tell me which lead to follow first.';
         console.warn(JSON.stringify({
             event: 'chat.max_tool_loops_reached',
@@ -630,11 +659,7 @@ async function runAgent({ system, messages, ctx, ip }) {
     }
     if (!text) text = '(The agent paused. Try rephrasing.)';
 
-    return {
-        text,
-        resourcesAdded,
-        workingQuestionSet,
-    };
+    return { text, resourcesAdded, workingQuestionSet };
 }
 
 // ----------------------------------------------------------------------
@@ -652,40 +677,30 @@ function respond(statusCode, body) {
     return { statusCode, headers: CORS, body: JSON.stringify(body) };
 }
 
-exports.handler = async (event, netlifyContext) => {
-    // Lambda-compat mode bridge for @netlify/blobs. The SDK reads the blob
-    // context from event.blobs (a base64-encoded {url, token, siteID} blob),
-    // NOT from the function's context arg. Per the SDK README's Lambda
-    // compatibility section, connectLambda must be passed the Lambda EVENT.
+exports.handler = async (event, _ctx) => {
+    // Lambda-compat bridge so getStore('name') auto-resolves credentials.
+    // Per @netlify/blobs v8 README, this takes the Lambda EVENT.
     try { connectLambda(event); } catch (e) {
-        // Only logs in genuine misconfiguration; absent context in netlify-dev
-        // is fine because getStore() falls through to env-based config there.
         console.warn('connectLambda(event) skipped:', e.message);
     }
 
     if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: CORS };
     if (event.httpMethod !== 'POST') return respond(405, { error: 'POST only' });
 
-    const ip = getIp(event);
+    const ip = getClientIp(event);
     const lim = checkRateLimit(ip);
     if (!lim.ok) return respond(429, { error: `Slow down — try again in ${lim.retryAfter}s.` });
 
-    // Token is optional: with a token, the agent runs in per-student "portal
-    // mode" with tools that mutate the student's shelf and working question.
-    // Without a token (anonymous chamber.html visits), the agent runs in
-    // read-only "chamber mode": search/transcript tools work, state-mutating
-    // tools are dropped, and the system prompt skips the student context block.
     const studentId = authenticate(event);
     const student = studentId ? getStudent(studentId) : null;
     if (studentId && !student) return respond(401, { error: 'Student not found.' });
 
     let payload;
-    try {
-        payload = JSON.parse(event.body || '{}');
-    } catch (e) {
+    try { payload = JSON.parse(event.body || '{}'); } catch (e) {
         return respond(400, { error: 'Invalid JSON' });
     }
-    // Accept either {message, history} (portal) or {messages: [{role,text},...]} (legacy chamber)
+    // Portal mode: {token, message, history}
+    // Legacy chamber mode: {messages: [{role,text}...], pack}
     let message = payload.message;
     let history = payload.history;
     if (!message && Array.isArray(payload.messages) && payload.messages.length) {
@@ -701,55 +716,50 @@ exports.handler = async (event, netlifyContext) => {
         let store = null;
         let state = { workingQuestion: '', resources: [], chatHistory: [], progressNotes: '' };
         if (student) {
-            store = studentStore(netlifyContext);
+            store = studentStore();
             state = await loadStudentState(store, studentId);
         }
-        const system = buildSystem(student, state);
 
-        // Build the messages array from PERSISTED chatHistory (preferred when
-        // signed in) rather than the client-sent history. This guarantees the
-        // server has the canonical record even if the client dropped state
-        // (e.g. tab reload mid-session). Falls back to client-sent history
-        // for anonymous mode.
+        const systemMessage = buildSystemMessage(student, state);
+        // Use server-persisted history as source of truth for signed-in students
         const historyForAgent = student && state.chatHistory && state.chatHistory.length
             ? state.chatHistory
             : history;
-        const messages = buildHistory(historyForAgent, message);
+        const conversation = buildConversationMessages(historyForAgent, message);
 
         const result = await runAgent({
-            system,
-            messages,
+            systemMessage,
+            conversation,
             ctx: { store, studentId, state, anonymous: !student },
             ip,
         });
 
-        const reply = result.text || '(The agent paused. Try rephrasing.)';
-
-        // Persist updated chat history (signed-in students only). Cap at 40
-        // turns (20 user + 20 assistant) so the Blob stays bounded. The
-        // agent's tool-use back-and-forth is not stored — only the user-
-        // facing turns, so the next session's replay stays clean.
+        // Persist updated chat history (signed-in only). Cap at 40 turns.
         if (student && store) {
             const newHistory = Array.isArray(state.chatHistory) ? state.chatHistory.slice() : [];
             newHistory.push({ role: 'user', content: message, ts: Date.now() });
-            newHistory.push({ role: 'assistant', content: reply, ts: Date.now() });
+            newHistory.push({ role: 'assistant', content: result.text, ts: Date.now() });
             state.chatHistory = newHistory.slice(-40);
             try {
                 await saveStudentState(store, studentId, state);
             } catch (e) {
-                console.error('chat: failed to persist chatHistory', e);
-                // Non-fatal — reply still returns
+                console.error('chat: failed to persist chatHistory', e.message);
             }
         }
 
-        const body = { reply };
+        const body = { reply: result.text };
         if (result.resourcesAdded.length) body.resources_added = result.resourcesAdded;
         if (result.workingQuestionSet !== null) body.working_question_set = result.workingQuestionSet;
         return respond(200, body);
     } catch (err) {
         console.error('chat function error:', err && err.stack || err);
-        const status = (err && typeof err.status === 'number' && err.status >= 400 && err.status < 600)
-            ? err.status : 500;
+        const status = (err.status >= 400 && err.status < 600) ? err.status : 500;
+        if (status === 402) {
+            return respond(503, { error: 'The classroom AI is temporarily unavailable. Please tell your teacher.' });
+        }
+        if (status === 429) {
+            return respond(429, { error: 'The agent is briefly overloaded. Try again in a few seconds.' });
+        }
         return respond(status, { error: err.message || 'Internal error' });
     }
 };
