@@ -259,7 +259,7 @@ function getHeaders() {
         'Content-Type': 'application/json',
         // Canonical header names per OpenRouter docs.
         'HTTP-Referer': 'https://marginalia-issues-study.netlify.app',
-        'X-OpenRouter-Title': 'Marginalia — Stage 1 Issues Study',
+        'X-OpenRouter-Title': 'Marginalia - Stage 1 Issues Study',
     };
 }
 
