@@ -9,7 +9,9 @@
     "deploy": "netlify deploy --prod"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.40.0"
+    "@anthropic-ai/sdk": "^0.40.0",
+    "@netlify/blobs": "^8.0.0",
+    "youtube-transcript": "^1.2.0"
   },
   "engines": {
     "node": ">=20"
