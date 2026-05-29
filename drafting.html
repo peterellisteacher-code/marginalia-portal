@@ -12,6 +12,139 @@
     <link rel="stylesheet" href="shared/tokens.css">
     <link rel="stylesheet" href="shared/marginalia.css">
 
+    <!-- =====================================================================
+         PRINT STYLES — @media print
+         Hides all chrome; shows working question + five scaffold sections +
+         total word count. Textareas are mirrored into .print-mirror divs
+         so content is visible in print (textareas print unreliably).
+         ===================================================================== -->
+    <style>
+        /* ---- print mirror (hidden on screen) ---- */
+        .print-mirror {
+            display: none;
+        }
+
+        @media print {
+            /* --- reset page --- */
+            @page {
+                margin: 2cm 2.5cm;
+            }
+
+            body, .page-shell {
+                background: #fff !important;
+                color: #111 !important;
+                font-family: Georgia, 'Times New Roman', serif !important;
+                font-size: 11pt !important;
+            }
+
+            /* --- hide all chrome --- */
+            .site-header,
+            .site-nav,
+            .site-footer,
+            .draft-rail,
+            .scaffold-section__criterion,
+            .draft-header__lead,
+            .word-count,
+            .draft-textarea {
+                display: none !important;
+            }
+
+            /* hide the criterion-code marg-note at the top of draft-main */
+            .draft-main > .marg-note {
+                display: none !important;
+            }
+
+            /* --- layout: single column, no overflow clipping --- */
+            .page-main,
+            .draft-grid,
+            .draft-main {
+                display: block !important;
+                overflow: visible !important;
+                height: auto !important;
+                max-width: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                border: none !important;
+            }
+
+            /* --- printed title --- */
+            .draft-header__title::before {
+                content: 'Issues Study — working draft';
+                display: block;
+                font-family: Georgia, 'Times New Roman', serif;
+                font-size: 18pt;
+                font-weight: bold;
+                margin-bottom: 4pt;
+            }
+            /* override the on-screen heading text */
+            .draft-header__title {
+                font-size: 0 !important; /* hide the screen text */
+                display: block !important;
+                color: #111 !important;
+            }
+            .draft-header__title::before {
+                font-size: 18pt;
+                color: #111;
+            }
+
+            /* --- scaffold sections --- */
+            .scaffold-section {
+                background: transparent !important;
+                border-left: 2pt solid #888 !important;
+                padding: 6pt 10pt !important;
+                margin-bottom: 18pt !important;
+                page-break-inside: avoid;
+            }
+
+            .scaffold-section__title {
+                font-family: Georgia, 'Times New Roman', serif !important;
+                font-size: 13pt !important;
+                font-weight: bold !important;
+                color: #111 !important;
+                margin-bottom: 4pt !important;
+            }
+
+            .scaffold-section__guide {
+                display: none !important;
+            }
+
+            /* --- print mirrors (shown in print, hidden on screen) --- */
+            .print-mirror {
+                display: block !important;
+                font-family: Georgia, 'Times New Roman', serif;
+                font-size: 11pt;
+                color: #111;
+                line-height: 1.55;
+                white-space: pre-wrap;
+                word-break: break-word;
+                border: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            .print-mirror--empty {
+                color: #888;
+                font-style: italic;
+            }
+
+            /* --- print total word count --- */
+            .print-word-total {
+                display: block !important;
+                margin-top: 18pt;
+                font-family: Georgia, 'Times New Roman', serif;
+                font-size: 10pt;
+                color: #555;
+                border-top: 1pt solid #ccc;
+                padding-top: 6pt;
+            }
+        }
+
+        /* ensure print-word-total is hidden on screen */
+        .print-word-total {
+            display: none;
+        }
+    </style>
+
     <style>
         .draft-grid {
             display: grid;
@@ -218,6 +351,7 @@
                             <p class="scaffold-section__guide">State your philosophical question. Phrase it so that taking a position is unavoidable. Briefly say why this question is philosophical (not psychological, not sociological, not historical).</p>
                         </header>
                         <textarea class="draft-textarea" data-section="question" rows="3" placeholder="My question is: ..."></textarea>
+                        <div class="print-mirror" data-mirror-for="question"></div>
                         <p class="word-count" data-count-for="question">0 words</p>
                     </article>
 
@@ -228,6 +362,7 @@
                             <p class="scaffold-section__guide">Identify at least two philosophical positions on your question. For each, name a philosopher or tradition associated with it, and explain — in their own terms — why someone holds it.</p>
                         </header>
                         <textarea class="draft-textarea" data-section="positions" rows="6" placeholder="Position 1: ... (held by ...). The reasoning is: ...&#10;&#10;Position 2: ... (held by ...). The reasoning is: ..."></textarea>
+                        <div class="print-mirror" data-mirror-for="positions"></div>
                         <p class="word-count" data-count-for="positions">0 words</p>
                     </article>
 
@@ -238,6 +373,7 @@
                             <p class="scaffold-section__guide">For each position above, identify its strongest point and its most damaging weakness. This is the section that most distinguishes A from C — be specific.</p>
                         </header>
                         <textarea class="draft-textarea" data-section="analysis" rows="8" placeholder="Position 1's strongest point: ...&#10;Position 1's most damaging weakness: ...&#10;&#10;Position 2's strongest point: ...&#10;Position 2's most damaging weakness: ..."></textarea>
+                        <div class="print-mirror" data-mirror-for="analysis"></div>
                         <p class="word-count" data-count-for="analysis">0 words</p>
                     </article>
 
@@ -248,6 +384,7 @@
                             <p class="scaffold-section__guide">State your own answer to the question. Defend it with reasoning that follows from your analysis above. Anticipate the strongest objection and respond to it.</p>
                         </header>
                         <textarea class="draft-textarea" data-section="position" rows="6" placeholder="My position is: ...&#10;&#10;The reasons I find this most defensible are: ...&#10;&#10;The strongest objection I can imagine is: ... My response is: ..."></textarea>
+                        <div class="print-mirror" data-mirror-for="position"></div>
                         <p class="word-count" data-count-for="position">0 words</p>
                     </article>
 
@@ -258,8 +395,12 @@
                             <p class="scaffold-section__guide">List the readings (and any other sources) you've drawn on. Use a consistent referencing style.</p>
                         </header>
                         <textarea class="draft-textarea" data-section="bibliography" rows="5" placeholder="Author, A. (Year). Title. Publisher.&#10;..."></textarea>
+                        <div class="print-mirror" data-mirror-for="bibliography"></div>
                         <p class="word-count" data-count-for="bibliography">0 words</p>
                     </article>
+
+                    <!-- print-only total word count, updated by JS -->
+                    <p class="print-word-total" id="printWordTotal"></p>
 
                 </section>
 
@@ -281,12 +422,13 @@
 
                     <div class="marg-note">
                         <span class="marg-note__author">Save as you go</span>
-                        Your draft auto-saves to this browser session. To keep it permanently, export below.
+                        Your draft auto-saves to this browser — it will still be here next time you open this page on the same device. To move it to another device or share it, export below.
                     </div>
 
                     <div class="export-actions">
                         <button class="btn btn--clarity btn--small" id="exportMd">Export as Markdown</button>
                         <button class="btn btn--ghost btn--small" id="exportTxt">Export as plain text</button>
+                        <button class="btn btn--clarity btn--small" id="exportPdf">Save as PDF</button>
                         <button class="btn btn--ghost btn--small" id="clearDraft">Clear draft</button>
                     </div>
                 </aside>
@@ -307,23 +449,52 @@
             const textareas = document.querySelectorAll('[data-section]');
             const totalValue = document.getElementById('totalValue');
             const totalCounter = document.getElementById('totalCounter');
+            const printWordTotal = document.getElementById('printWordTotal');
 
             const wordCount = (s) => (s || '').trim().split(/\s+/).filter(Boolean).length;
 
+            // -----------------------------------------------------------------
+            // FEATURE 2: localStorage persistence with sessionStorage migration
+            // -----------------------------------------------------------------
             function load() {
                 try {
-                    const saved = JSON.parse(sessionStorage.getItem(KEY)) || {};
+                    // Migrate from old sessionStorage key if localStorage is empty
+                    if (!localStorage.getItem(KEY) && sessionStorage.getItem(KEY)) {
+                        localStorage.setItem(KEY, sessionStorage.getItem(KEY));
+                        sessionStorage.removeItem(KEY);
+                    }
+                    const saved = JSON.parse(localStorage.getItem(KEY)) || {};
                     textareas.forEach(t => {
                         if (saved[t.dataset.section]) t.value = saved[t.dataset.section];
                     });
-                } catch (e) { /* ignore */ }
+                } catch (e) { /* ignore corrupt data */ }
                 updateCounts();
+                updateMirrors();
             }
 
             function save() {
                 const obj = {};
                 textareas.forEach(t => { obj[t.dataset.section] = t.value; });
-                sessionStorage.setItem(KEY, JSON.stringify(obj));
+                localStorage.setItem(KEY, JSON.stringify(obj));
+            }
+
+            // -----------------------------------------------------------------
+            // FEATURE 1: Print mirrors — keep .print-mirror divs in sync so
+            // textareas print legibly (browsers print textarea content poorly).
+            // -----------------------------------------------------------------
+            function updateMirrors() {
+                textareas.forEach(t => {
+                    const mirror = document.querySelector(`[data-mirror-for="${t.dataset.section}"]`);
+                    if (!mirror) return;
+                    const val = t.value.trim();
+                    if (val) {
+                        mirror.textContent = val;
+                        mirror.classList.remove('print-mirror--empty');
+                    } else {
+                        mirror.textContent = '(not yet written)';
+                        mirror.classList.add('print-mirror--empty');
+                    }
+                });
             }
 
             function updateCounts() {
@@ -332,19 +503,27 @@
                     const c = wordCount(t.value);
                     total += c;
                     const counter = document.querySelector(`[data-count-for="${t.dataset.section}"]`);
-                    counter.textContent = `${c} words`;
+                    if (counter) counter.textContent = `${c} words`;
                 });
                 totalValue.textContent = total;
                 totalCounter.classList.toggle('total-counter--over', total > 800);
+                // Update print-only word total
+                if (printWordTotal) {
+                    printWordTotal.textContent = `Total word count: ${total} / 800`;
+                }
             }
 
             textareas.forEach(t => {
                 t.addEventListener('input', () => {
                     save();
                     updateCounts();
+                    updateMirrors();
                 });
             });
 
+            // -----------------------------------------------------------------
+            // Export helpers (unchanged behaviour)
+            // -----------------------------------------------------------------
             function getDraftMarkdown() {
                 const sections = [
                     { key: 'question', title: 'My question' },
@@ -383,11 +562,23 @@
                 const plain = getDraftMarkdown().replace(/^#+\s*/gm, '').replace(/_\(empty\)_/g, '(empty)');
                 download('issues-study-draft.txt', plain, 'text/plain');
             };
+
+            // -----------------------------------------------------------------
+            // FEATURE 1: Save as PDF — mirrors are already up to date;
+            // window.print() triggers @media print which hides chrome and
+            // shows .print-mirror content.
+            // -----------------------------------------------------------------
+            document.getElementById('exportPdf').onclick = () => {
+                updateMirrors(); // ensure mirrors are current before print dialog
+                window.print();
+            };
+
             document.getElementById('clearDraft').onclick = () => {
                 if (!confirm('Clear all sections of your draft? This cannot be undone.')) return;
                 textareas.forEach(t => { t.value = ''; });
                 save();
                 updateCounts();
+                updateMirrors();
             };
 
             load();
