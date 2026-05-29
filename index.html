@@ -15,30 +15,30 @@
 
     <style>
         /* Landing-specific composition */
+        .page-main--landing {
+            overflow-y: auto;
+            padding: var(--space-lg) var(--space-md);
+        }
+
         .hero {
             display: grid;
-            grid-template-columns: repeat(12, 1fr);
-            gap: var(--space-lg);
-            max-width: 1600px;
+            grid-template-columns: minmax(0, 1.1fr) minmax(420px, 0.9fr);
+            gap: var(--space-2xl);
+            max-width: none;
             margin: 0 auto;
-            height: 100%;
+            min-height: 100%;
             align-items: center;
-            padding: var(--space-2xl) var(--space-lg);
+            padding: 0;
         }
 
         .hero__main {
-            grid-column: 2 / 9;
+            max-width: 56ch;
         }
 
-        .hero__rail {
-            grid-column: 9 / 13;
+        .hero__entry {
             border-left: 1px solid var(--aged-soft);
-            padding-left: var(--space-lg);
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-md);
-            align-self: stretch;
-            justify-content: center;
+            padding-left: var(--space-xl);
+            align-self: center;
         }
 
         .hero__question {
@@ -107,8 +107,18 @@
         }
 
         @media (max-width: 1100px) {
-            .hero__main { grid-column: 2 / 13; }
-            .hero__rail { display: none; }
+            .hero {
+                grid-template-columns: 1fr;
+                align-items: start;
+                gap: var(--space-lg);
+            }
+            .hero__main { max-width: none; }
+            .hero__entry {
+                border-left: none;
+                padding-left: 0;
+                border-top: 1px solid var(--aged-soft);
+                padding-top: var(--space-lg);
+            }
         }
 
         /* ----- Portal entry: name picker + password modal ----- */
@@ -269,7 +279,7 @@
             </nav>
         </header>
 
-        <main class="page-main" style="padding: 0;">
+        <main class="page-main page-main--landing" id="main">
             <section class="hero">
                 <div class="hero__main ink-appear">
                     <h1 class="hero__question">
@@ -277,73 +287,52 @@
                     </h1>
 
                     <p class="hero__intro">
-                        The <button class="term" popovertarget="def-issues-study" aria-describedby="def-issues-study">Issues Study</button> is the only assessment in your Stage 1 Philosophy course that asks you to choose your <em>own</em> philosophical question — and then defend your <em>own</em> answer.
-                    </p>
-
-                    <p class="hero__intro">
-                        This site is a workspace. You will find an exhaustive bank of philosophical questions across ethics, <button class="term" popovertarget="def-epistemology" aria-describedby="def-epistemology">epistemology</button>, and <button class="term" popovertarget="def-metaphysics" aria-describedby="def-metaphysics">metaphysics</button>. You will meet a <button class="term" popovertarget="def-socratic-chamber" aria-describedby="def-socratic-chamber">Socratic</button> chamber where an AI <button class="term" popovertarget="def-interlocutor" aria-describedby="def-interlocutor">interlocutor</button> presses you to sharpen your thinking. You will find a library of readings and a drafting scaffold for when you are ready to write.
+                        The <button class="term" popovertarget="def-issues-study" aria-describedby="def-issues-study">Issues Study</button> is the only assessment in your Stage 1 Philosophy course that asks you to choose your <em>own</em> philosophical question — and defend your <em>own</em> answer. This site is your workspace for finding it.
                     </p>
 
                     <div class="hero__cta">
-                        <a href="explainer.html" class="btn btn--clarity">Begin &rarr;</a>
-                        <span class="hero__cta-detail">Roughly 8 minutes to read.</span>
+                        <a href="explainer.html" class="btn btn--clarity">New here? Start with the task &rarr;</a>
                     </div>
+
+                    <p class="rail-quote" style="margin-top: var(--space-lg);">
+                        "The unexamined life is not worth living."
+                    </p>
+                    <p class="rail-attribution">Socrates, Apology 38a</p>
                 </div>
 
-                <aside class="hero__rail ink-appear" style="animation-delay: 200ms;">
-                    <div>
-                        <p class="rail-quote">
-                            "The unexamined life is not worth living."
-                        </p>
-                        <p class="rail-attribution">Socrates, Apology 38a</p>
+                <aside class="hero__entry ink-appear" id="portalEntry" aria-labelledby="portalEntryHeading">
+                    <h2 class="portal-entry__heading" id="portalEntryHeading">Find your portal</h2>
+                    <p class="portal-entry__lead">
+                        Click your name, then type your password &mdash; your last name. Capital letters do not matter.
+                    </p>
+                    <div class="name-grid" id="nameGrid">
+                        <p class="name-grid__loading">Loading the class roster&hellip;</p>
                     </div>
-                    <div>
-                        <p class="rail-quote">
-                            "Philosophy begins in wonder."
-                        </p>
-                        <p class="rail-attribution">Aristotle, Metaphysics</p>
-                    </div>
-                    <div>
-                        <p class="rail-quote">
-                            "We are condemned to be free."
-                        </p>
-                        <p class="rail-attribution">Sartre, Existentialism is a Humanism</p>
-                    </div>
-                </aside>
-            </section>
 
-            <section class="portal-entry" id="portalEntry">
-                <h2 class="portal-entry__heading">Find your portal</h2>
-                <p class="portal-entry__lead">
-                    Click your name. Then enter your password. Your password is your last name. Capital letters do not matter.
-                </p>
-                <div class="name-grid" id="nameGrid">
-                    <p class="name-grid__loading">Loading the class roster&hellip;</p>
-                </div>
-
-                <aside class="login-panel" id="loginPanel" hidden aria-labelledby="loginPanelTitle">
-                    <form class="login-panel__form" id="loginForm">
-                        <h3 class="login-panel__title" id="loginPanelTitle">Enter your password</h3>
-                        <p class="login-panel__lead" id="loginPanelLead">
-                            Type your last name. Capital letters do not matter.
-                        </p>
-                        <label for="loginPassword" class="visually-hidden">Password</label>
-                        <input
-                            type="password"
-                            id="loginPassword"
-                            name="password"
-                            class="login-panel__field"
-                            autocomplete="off"
-                            autocapitalize="off"
-                            spellcheck="false"
-                            required
-                        />
-                        <p class="login-panel__error" id="loginError" role="alert"></p>
-                        <div class="login-panel__actions">
-                            <button type="button" class="btn btn--ghost btn--small" id="loginCancel">Cancel</button>
-                            <button type="submit" class="btn btn--clarity btn--small" id="loginSubmit">Enter</button>
-                        </div>
-                    </form>
+                    <aside class="login-panel" id="loginPanel" hidden aria-labelledby="loginPanelTitle">
+                        <form class="login-panel__form" id="loginForm">
+                            <h3 class="login-panel__title" id="loginPanelTitle">Enter your password</h3>
+                            <p class="login-panel__lead" id="loginPanelLead">
+                                Type your last name. Capital letters do not matter.
+                            </p>
+                            <label for="loginPassword" class="visually-hidden">Password</label>
+                            <input
+                                type="password"
+                                id="loginPassword"
+                                name="password"
+                                class="login-panel__field"
+                                autocomplete="off"
+                                autocapitalize="off"
+                                spellcheck="false"
+                                required
+                            />
+                            <p class="login-panel__error" id="loginError" role="alert"></p>
+                            <div class="login-panel__actions">
+                                <button type="button" class="btn btn--ghost btn--small" id="loginCancel">Cancel</button>
+                                <button type="submit" class="btn btn--clarity btn--small" id="loginSubmit">Enter</button>
+                            </div>
+                        </form>
+                    </aside>
                 </aside>
             </section>
         </main>
