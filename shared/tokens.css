@@ -15,15 +15,15 @@
     --space-3xl: 96px;
     --space-4xl: 128px;
 
-    /* --- Type: Perfect Fourth scale from 18px base --- */
-    --text-xs: clamp(0.75rem, 0.7vw + 0.2rem, 0.813rem);   /* 12-13px — captions */
-    --text-sm: clamp(0.813rem, 0.9vw + 0.2rem, 0.875rem);  /* 13-14px — UI chrome */
-    --text-base: clamp(1.125rem, 1.2vw + 0.5rem, 1.25rem); /* 18-20px — body */
-    --text-lg: clamp(1.35rem, 1.5vw + 0.6rem, 1.5rem);     /* 22-24px — subheadings */
-    --text-xl: clamp(1.8rem, 2vw + 0.8rem, 2rem);          /* 29-32px — sections */
-    --text-2xl: clamp(2.2rem, 2.5vw + 1rem, 2.688rem);     /* 35-43px — page titles */
-    --text-3xl: clamp(3rem, 3.5vw + 1rem, 3.563rem);       /* 48-57px — hero */
-    --text-display: clamp(3.8rem, 5vw + 1.5rem, 4.75rem);  /* 60-76px — pull quotes */
+    /* --- Type: densified scale — smaller across the board, 12px floor --- */
+    --text-xs:      clamp(0.75rem,   0.30vw + 0.60rem, 0.8125rem);  /* 12–13px — captions (12px floor) */
+    --text-sm:      clamp(0.8125rem, 0.30vw + 0.66rem, 0.875rem);   /* 13–14px — UI chrome */
+    --text-base:    clamp(1rem,      0.35vw + 0.85rem, 1.0625rem);  /* 16–17px — body / work text */
+    --text-lg:      clamp(1.125rem,  0.50vw + 0.93rem, 1.1875rem);  /* 18–19px — subheadings */
+    --text-xl:      clamp(1.3rem,    0.70vw + 1.07rem, 1.4375rem);  /* 21–23px — sections */
+    --text-2xl:     clamp(1.6rem,    0.90vw + 1.30rem, 1.75rem);    /* 26–28px — page titles */
+    --text-3xl:     clamp(2rem,      1.20vw + 1.60rem, 2.25rem);    /* 32–36px — h1 */
+    --text-display: clamp(2.5rem,    1.80vw + 2.00rem, 2.875rem);   /* 40–46px — hero / pull quotes */
 
     /* --- Marginalia palette: aged paper, iron ink, scholar's red --- */
     --ground: #F4ECD8;          /* Aged cream paper — page background */
