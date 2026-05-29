@@ -34,7 +34,7 @@
     --marginalia-soft: #C8867A; /* Faded scholar's red — hover states, dividers */
     --clarity: #2952A3;         /* Cobalt — the colour of an argument crystallising */
     --clarity-soft: #6B89C2;    /* Faded cobalt — link hover */
-    --aged: #9C8569;            /* Sepia — citation text, dividers, captions */
+    --aged: #6E5A41;            /* Sepia — AA-compliant (>=4.5:1 as text on --ground and --paper-dark); also dividers/captions */
     --aged-soft: #C2B49B;       /* Pale sepia — borders, faint dividers */
 
     /* --- Function tokens (semantic aliases) --- */

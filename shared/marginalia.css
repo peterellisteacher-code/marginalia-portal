@@ -576,11 +576,12 @@ html, body {
     border: 0;
 }
 
-/* Contrast lift: --aged (#9C8569) at --text-xs sits below AA 4.5:1 on the
-   cream ground. Swap to --aged-strong for any caption/label using --text-xs.
-   Existing rules can opt in by using this token. */
+/* Contrast lift: --aged is now AA-compliant as text (see tokens.css). This
+   --aged-strong alias is kept at the same AA-safe value for any caption/label
+   that opts into it — including small text on --paper-dark panels (e.g. the
+   explainer chat turn-labels), where the older #7A6549 was only 4.03:1. */
 :root {
-    --aged-strong: #7A6549;  /* darker sepia — meets 4.5:1 on --ground */
+    --aged-strong: #6E5A41;  /* AA: >=4.5:1 on --ground AND --paper-dark */
 }
 
 /* Universal reduced-motion override */

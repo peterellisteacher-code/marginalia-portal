@@ -272,6 +272,7 @@
     </style>
 </head>
 <body>
+    <a href="#main" class="skip-link">Skip to main content</a>
     <div class="page-shell">
 
         <header class="site-header">
@@ -288,7 +289,7 @@
             </nav>
         </header>
 
-        <main class="page-main">
+        <main class="page-main" id="main">
             <div class="chamber-grid">
 
                 <section class="working-panel">
@@ -336,7 +337,7 @@
                         Tip: the agent works best when you give it something to push against. Try writing your half-formed thought above, then asking the agent: <em>"What's the strongest objection to this?"</em>
                     </div>
 
-                    <div class="chat-transcript" id="transcript" aria-live="polite">
+                    <div class="chat-transcript" id="transcript" aria-live="polite" tabindex="0">
                         <p class="empty-chat">
                             <strong>Begin when ready.</strong> A good first prompt: tell the agent your topic, and ask what philosophical questions it suggests within that topic. The agent will not give you a question — but it will help you find one.
                         </p>

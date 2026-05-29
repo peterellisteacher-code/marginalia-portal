@@ -320,6 +320,7 @@
     </style>
 </head>
 <body>
+    <a href="#main" class="skip-link">Skip to main content</a>
     <div class="page-shell">
 
         <header class="site-header">
@@ -336,7 +337,7 @@
             </nav>
         </header>
 
-        <main class="page-main">
+        <main class="page-main" id="main">
             <div class="draft-grid">
 
                 <section class="draft-main">
@@ -364,7 +365,7 @@
                             <h2 class="scaffold-section__title">Your question</h2>
                             <p class="scaffold-section__guide">State your philosophical question. Phrase it so that taking a position is unavoidable. Briefly say why this question is philosophical (not psychological, not sociological, not historical).</p>
                         </header>
-                        <textarea class="draft-textarea" data-section="question" rows="3" placeholder="My question is: ..."></textarea>
+                        <textarea class="draft-textarea" data-section="question" rows="3" placeholder="My question is: ..." aria-label="Your question"></textarea>
                         <div class="print-mirror" data-mirror-for="question"></div>
                         <p class="word-count" data-count-for="question">0 words</p>
                     </article>
@@ -375,7 +376,7 @@
                             <h2 class="scaffold-section__title">The positions on this question</h2>
                             <p class="scaffold-section__guide">Identify at least two philosophical positions on your question. For each, name a philosopher or tradition associated with it, and explain — in their own terms — why someone holds it.</p>
                         </header>
-                        <textarea class="draft-textarea" data-section="positions" rows="6" placeholder="Position 1: ... (held by ...). The reasoning is: ...&#10;&#10;Position 2: ... (held by ...). The reasoning is: ..."></textarea>
+                        <textarea class="draft-textarea" data-section="positions" rows="6" placeholder="Position 1: ... (held by ...). The reasoning is: ...&#10;&#10;Position 2: ... (held by ...). The reasoning is: ..." aria-label="The positions on this question"></textarea>
                         <div class="print-mirror" data-mirror-for="positions"></div>
                         <p class="word-count" data-count-for="positions">0 words</p>
                     </article>
@@ -386,7 +387,7 @@
                             <h2 class="scaffold-section__title">Critical analysis</h2>
                             <p class="scaffold-section__guide">For each position above, identify its strongest point and its most damaging weakness. This is the section that most distinguishes A from C — be specific.</p>
                         </header>
-                        <textarea class="draft-textarea" data-section="analysis" rows="8" placeholder="Position 1's strongest point: ...&#10;Position 1's most damaging weakness: ...&#10;&#10;Position 2's strongest point: ...&#10;Position 2's most damaging weakness: ..."></textarea>
+                        <textarea class="draft-textarea" data-section="analysis" rows="8" placeholder="Position 1's strongest point: ...&#10;Position 1's most damaging weakness: ...&#10;&#10;Position 2's strongest point: ...&#10;Position 2's most damaging weakness: ..." aria-label="Critical analysis"></textarea>
                         <div class="print-mirror" data-mirror-for="analysis"></div>
                         <p class="word-count" data-count-for="analysis">0 words</p>
                     </article>
@@ -397,7 +398,7 @@
                             <h2 class="scaffold-section__title">Your position, defended</h2>
                             <p class="scaffold-section__guide">State your own answer to the question. Defend it with reasoning that follows from your analysis above. Anticipate the strongest objection and respond to it.</p>
                         </header>
-                        <textarea class="draft-textarea" data-section="position" rows="6" placeholder="My position is: ...&#10;&#10;The reasons I find this most defensible are: ...&#10;&#10;The strongest objection I can imagine is: ... My response is: ..."></textarea>
+                        <textarea class="draft-textarea" data-section="position" rows="6" placeholder="My position is: ...&#10;&#10;The reasons I find this most defensible are: ...&#10;&#10;The strongest objection I can imagine is: ... My response is: ..." aria-label="Your position, defended"></textarea>
                         <div class="print-mirror" data-mirror-for="position"></div>
                         <p class="word-count" data-count-for="position">0 words</p>
                     </article>
@@ -408,7 +409,7 @@
                             <h2 class="scaffold-section__title">Sources you've engaged</h2>
                             <p class="scaffold-section__guide">List the readings (and any other sources) you've drawn on. Use a consistent referencing style.</p>
                         </header>
-                        <textarea class="draft-textarea" data-section="bibliography" rows="5" placeholder="Author, A. (Year). Title. Publisher.&#10;..."></textarea>
+                        <textarea class="draft-textarea" data-section="bibliography" rows="5" placeholder="Author, A. (Year). Title. Publisher.&#10;..." aria-label="Sources you've engaged"></textarea>
                         <div class="print-mirror" data-mirror-for="bibliography"></div>
                         <p class="word-count" data-count-for="bibliography">0 words</p>
                     </article>

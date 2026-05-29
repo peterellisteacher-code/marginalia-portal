@@ -260,6 +260,7 @@
     </style>
 </head>
 <body>
+    <a href="#main" class="skip-link">Skip to main content</a>
     <div class="page-shell">
 
         <header class="site-header">
@@ -276,7 +277,7 @@
             </nav>
         </header>
 
-        <main class="page-main">
+        <main class="page-main" id="main">
             <div class="bank-grid">
 
                 <section class="bank-main">
@@ -450,8 +451,8 @@
                             <ul>${readings}</ul>
                         </div>
                         <div class="question__actions">
-                            <button class="btn btn--small ${isPinned ? 'btn--ghost' : ''}" data-action="pin">${isPinned ? '✓ Pinned' : 'Pin this'}</button>
-                            <a class="btn btn--clarity btn--small" href="chamber.html?q=${encodeURIComponent(q.id)}" data-action="chamber">Discuss in chamber &rarr;</a>
+                            <button class="btn btn--small ${isPinned ? 'btn--ghost' : ''}" data-action="pin" aria-label="Pin this question: ${escape(q.question)}">${isPinned ? '✓ Pinned' : 'Pin this'}</button>
+                            <a class="btn btn--clarity btn--small" href="chamber.html?q=${encodeURIComponent(q.id)}" data-action="chamber" aria-label="Discuss in the Socratic chamber: ${escape(q.question)}">Discuss in chamber &rarr;</a>
                         </div>
                     </div>
                 </article>`;
