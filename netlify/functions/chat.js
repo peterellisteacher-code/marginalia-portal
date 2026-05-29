@@ -119,6 +119,30 @@ LIMITS
 The student's identity, working question, progress notes, and current resource shelf appear in the context block before their first message. Use them.`;
 
 // ----------------------------------------------------------------------
+// Task Explainer system prompt — used by the shared "Explain the task"
+// agent (mode:'explain'). Anonymous; grounded in the cached
+// tasksheet_explainer pack. UNLIKE the Socratic agent this one DOES
+// explain the task clearly; it still never writes any part of the essay.
+// ----------------------------------------------------------------------
+
+const EXPLAINER_SYSTEM_PROMPT = `You are the Task Explainer for the SACE Stage 1 Philosophy "Issues Study" (Assessment Type 3). A Year 11 student has clicked "Explain the task". Your one job is to make every element of the task sheet clear.
+
+WHAT YOU DO
+- Explain any part of the task sheet: choosing a philosophical question, the "more than one position" requirement, critical analysis, justifying with evidence, referencing, the word count and due dates, the format options, and the four criteria (Knowledge & Understanding, Reasoning, Critical Analysis, Communication).
+- Explain what separates an A from a C, using the grade descriptions and the A-grade and C-grade exemplars in the cached materials below.
+- Ground every answer in the cached materials. Quote them or point to them. They are authoritative.
+- Use plain Year-11 language. Sentences average about 14 words; never over 25. Define any hard word on first use, in parentheses. Australian spelling.
+- Keep answers short — 2 to 5 sentences — unless the student asks for a step-by-step walk-through. End by offering one concrete next step.
+
+WHAT YOU DO NOT DO
+- You do not write, draft, outline, or rephrase any part of a student's essay.
+- You do not choose the student's issue, question, or position for them.
+- You do not invent requirements, dates, or facts that are not in the cached materials. If something is not covered, say: "The task sheet doesn't specify that — check with your teacher."
+- You do not discuss anything unrelated to the Issues Study. Redirect politely.
+
+If a student asks "what should I write" or "give me an example for my topic", explain the relevant requirement, then point them to the Socratic chamber (to sharpen their own question) and the drafting scaffold (to structure it). Do not produce essay content yourself.`;
+
+// ----------------------------------------------------------------------
 // Tool definitions (OpenAI tool-use format — function calling)
 // ----------------------------------------------------------------------
 
@@ -522,6 +546,28 @@ function buildSystemMessage(student, state, packId) {
     return { role: 'system', content: blocks };
 }
 
+function buildExplainerSystemMessage() {
+    // Block 1: stable explainer instructions.
+    const blocks = [{ type: 'text', text: EXPLAINER_SYSTEM_PROMPT }];
+    // Block 2: the cached tasksheet + criteria + grade descriptions + A/C
+    // exemplars (the "choice cuts"). Bundled together so the stable prefix
+    // clears Haiku's 4096-token cache minimum — the task sheet alone would
+    // not — giving a 1h-TTL cache hit across the class's questions.
+    const packText = loadPackText('tasksheet_explainer');
+    if (packText && packText.length > 2000) {
+        const text =
+            '\n\n--- THE TASK SHEET, CRITERIA, GRADE DESCRIPTIONS & A/C EXEMPLARS ---\n' +
+            'These are authoritative. Ground every answer in them; quote or point to them. Do not invent requirements not stated here.\n' +
+            packText;
+        const block = { type: 'text', text };
+        if (approxTokens(EXPLAINER_SYSTEM_PROMPT) + approxTokens(text) >= HAIKU_CACHE_MIN_TOKENS) {
+            block.cache_control = { type: 'ephemeral', ttl: '1h' };
+        }
+        blocks.push(block);
+    }
+    return { role: 'system', content: blocks };
+}
+
 function buildConversationMessages(history, currentMessage) {
     const truncated = Array.isArray(history) ? history.slice(-HISTORY_TURN_LIMIT * 2) : [];
     const out = truncated.map(m => ({
@@ -693,6 +739,45 @@ exports.handler = async (event, _ctx) => {
     try { payload = JSON.parse(event.body || '{}'); } catch (e) {
         return respond(400, { error: 'Invalid JSON' });
     }
+
+    // Task-explainer mode: shared + anonymous, no tools, no per-student state.
+    // Grounded in the cached tasksheet_explainer pack. Triggered by the
+    // "Explain the task" agent with { mode: 'explain', message, history }.
+    if (payload.mode === 'explain') {
+        let exMessage = payload.message;
+        let exHistory = payload.history;
+        if (!exMessage && Array.isArray(payload.messages) && payload.messages.length) {
+            const lastUser = [...payload.messages].reverse().find(m => m.role === 'user');
+            exMessage = lastUser ? (lastUser.text || lastUser.content) : '';
+            exHistory = payload.messages.slice(0, -1);
+        }
+        if (typeof exMessage !== 'string' || !exMessage.trim()) {
+            return respond(400, { error: 'message required' });
+        }
+        try {
+            const systemMessage = buildExplainerSystemMessage();
+            const conversation = buildConversationMessages(exHistory, exMessage);
+            const data = await callOpenRouter({
+                model: MODEL,
+                max_tokens: MAX_OUTPUT_TOKENS,
+                messages: [systemMessage, ...conversation],
+                provider: PROVIDER_PIN,
+            });
+            const choice = data.choices?.[0];
+            logUsage(data, ip, 'explainer', 0, choice?.finish_reason);
+            const reply = (choice?.message?.content) ||
+                '(The explainer paused. Try rephrasing your question about the task.)';
+            return respond(200, { reply });
+        } catch (err) {
+            console.error('explain function error:', err && err.stack || err);
+            const status = (err.status >= 400 && err.status < 600) ? err.status : 500;
+            if (status === 402) {
+                return respond(503, { error: 'The classroom AI is temporarily unavailable. Please tell your teacher.' });
+            }
+            return respond(status, { error: err.message || 'Internal error' });
+        }
+    }
+
     // Portal mode: {token, message, history, pack?}
     // Legacy chamber mode: {messages: [{role,text}...], pack}
     let message = payload.message;

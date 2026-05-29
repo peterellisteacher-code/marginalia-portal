@@ -179,6 +179,74 @@
         .footer-link:hover {
             color: var(--ink);
         }
+
+        /* ---- Task-explainer chat (the AI agent; static principles sit below) ---- */
+        .explain-panel {
+            border: 1px solid var(--aged-soft);
+            border-left: 3px solid var(--marginalia);
+            background: var(--paper-dark);
+            padding: var(--space-md);
+            margin: var(--space-md) 0 var(--space-2xl);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+        }
+        .explain-intro {
+            font-family: var(--font-body);
+            font-size: var(--text-base);
+            color: var(--ink);
+            line-height: 1.55;
+            margin: 0;
+        }
+        .explain-transcript {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+            max-height: 42vh;
+            overflow-y: auto;
+        }
+        .explain-transcript:empty { display: none; }
+        .ex-turn {
+            font-family: var(--font-body);
+            font-size: var(--text-base);
+            line-height: 1.55;
+            padding-left: var(--space-md);
+            border-left: 2px solid var(--aged-soft);
+            color: var(--ink);
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+        .ex-turn--agent { border-left-color: var(--marginalia); }
+        .ex-turn--you { border-left-color: var(--clarity); color: var(--ink-soft); }
+        .ex-turn__who {
+            font-family: var(--font-ui);
+            font-size: var(--text-xs);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--aged-strong);
+            display: block;
+            margin-bottom: 2px;
+        }
+        .explain-form { display: flex; gap: var(--space-sm); align-items: flex-end; }
+        .explain-input {
+            flex: 1;
+            font-family: var(--font-body);
+            font-size: var(--text-base);
+            padding: var(--space-sm);
+            border: 1px solid var(--aged-soft);
+            background: var(--ground);
+            color: var(--ink);
+            resize: vertical;
+            min-height: 3em;
+            line-height: 1.5;
+            border-radius: 0;
+        }
+        .explain-input:focus-visible {
+            outline: 2px solid var(--marginalia);
+            outline-offset: 1px;
+            border-color: var(--marginalia);
+        }
+        .explain-send { white-space: nowrap; }
     </style>
 </head>
 <body>
@@ -204,6 +272,16 @@
                 <section class="text-column">
 
                     <h1 class="h-1 ink-appear">What is an <button class="term" popovertarget="def-issues-study" aria-describedby="def-issues-study">Issues Study</button>?</h1>
+
+                    <section class="explain-panel ink-appear" aria-label="Ask the task explainer">
+                        <p class="explain-intro">Got questions about the Issues Study? Ask away. Positions, analysis, referencing, A versus C, the 800-word limit, what a philosophical question even is &mdash; it&rsquo;ll break it down for you. The task sheet and two graded examples are below. It explains the task but won&rsquo;t write it for you.</p>
+                        <div class="explain-transcript" id="explainTranscript" aria-live="polite"></div>
+                        <form class="explain-form" id="explainForm">
+                            <label for="explainInput" class="visually-hidden">Ask a question about the task</label>
+                            <textarea id="explainInput" class="explain-input" rows="2" placeholder="Ask about the task — e.g. how many positions do I need?"></textarea>
+                            <button type="submit" class="btn btn--clarity btn--small explain-send" id="explainSend">Ask &rarr;</button>
+                        </form>
+                    </section>
 
                     <article class="principle ink-appear">
                         <span class="step-marker">Principle One</span>
@@ -335,5 +413,49 @@
     <div id="def-metaphysics" popover="auto">The branch of philosophy that asks what is real — minds, time, free will, what makes you the same person tomorrow as today.</div>
     <div id="def-steelman" popover="auto">Build the strongest possible version of a view you disagree with. The opposite of a strawman. You only refute the toughest version, not the weakest.</div>
     <div id="def-multimodal" popover="auto">Combining different formats — for example, a slideshow with voiceover, a video essay, or a written piece with images.</div>
+
+    <script>
+        // Task Explainer chat — talks to /chat in mode:'explain' (anonymous,
+        // grounded in the cached tasksheet_explainer pack; never writes the essay).
+        (() => {
+            const form = document.getElementById('explainForm');
+            const input = document.getElementById('explainInput');
+            const transcript = document.getElementById('explainTranscript');
+            let history = [];
+            let busy = false;
+            const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+            function render() {
+                let html = history.map(t =>
+                    '<div class="ex-turn ex-turn--' + (t.role === 'assistant' ? 'agent' : 'you') + '">' +
+                    '<span class="ex-turn__who">' + (t.role === 'assistant' ? 'Task explainer' : 'You') + '</span>' +
+                    esc(t.content) + '</div>'
+                ).join('');
+                if (busy) html += '<div class="ex-turn ex-turn--agent"><span class="ex-turn__who">Task explainer</span><em>Thinking&hellip;</em></div>';
+                transcript.innerHTML = html;
+                transcript.scrollTop = transcript.scrollHeight;
+            }
+            async function ask(text) {
+                if (!text.trim() || busy) return;
+                history.push({ role: 'user', content: text });
+                busy = true; render();
+                try {
+                    const r = await fetch('/.netlify/functions/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ mode: 'explain', message: text, history: history.slice(0, -1).slice(-8) })
+                    });
+                    const data = await r.json();
+                    if (!r.ok) throw new Error(data.error || ('HTTP ' + r.status));
+                    history.push({ role: 'assistant', content: data.reply || '(no reply)' });
+                } catch (e) {
+                    history.push({ role: 'assistant', content: 'I could not reach the explainer just now. Try again in a moment, or ask your teacher. (' + e.message + ')' });
+                } finally {
+                    busy = false; render();
+                }
+            }
+            form.addEventListener('submit', e => { e.preventDefault(); const t = input.value; input.value = ''; ask(t); });
+            input.addEventListener('keydown', e => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); form.requestSubmit(); } });
+        })();
+    </script>
 </body>
 </html>

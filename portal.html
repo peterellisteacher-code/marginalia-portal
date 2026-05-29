@@ -76,6 +76,22 @@
             outline-offset: 2px;
         }
 
+        /* The "Explain the task" call-to-action — a button-styled nav link.
+           Higher specificity than .portal-header__nav a so the colours win. */
+        .portal-header__nav a.nav-cta {
+            background: var(--clarity);
+            color: var(--ground);
+            padding: var(--space-xs) var(--space-md);
+        }
+
+        .portal-header__nav a.nav-cta:hover,
+        .portal-header__nav a.nav-cta:focus-visible {
+            background: var(--marginalia);
+            color: var(--ground);
+            outline: 2px solid var(--marginalia);
+            outline-offset: 2px;
+        }
+
         /* ---- Main grid: chat left, sidebar right ---- */
         .portal-body {
             display: grid;
@@ -506,7 +522,7 @@
                 <a href="bank.html">Question bank</a>
                 <a href="resources.html">Readings</a>
                 <a href="drafting.html">Drafting</a>
-                <a href="explainer.html">The task</a>
+                <a href="explainer.html" class="nav-cta">Explain the task</a>
                 <button type="button" id="logoutBtn" class="btn btn--ghost btn--small">Log out</button>
             </nav>
         </header>

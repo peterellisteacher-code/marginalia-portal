@@ -1,0 +1,512 @@
+========================================================
+CONTEXT PACK: SACE Stage 1 Philosophy — Issues Study
+AI Task Explainer Tutor — Cached System Context
+========================================================
+
+This pack contains everything the tutor needs to explain, coach,
+and give feedback on the Issues Study assessment task:
+  Section 1 — The Task Sheet (authoritative instructions)
+  Section 2 — The Four Criteria and Performance Standards (A–E)
+  Section 3 — What Each Grade Looks Like (in plain words)
+  Section 4 — A-Grade Exemplar (euthanasia / Virtue Ethics)
+  Section 5 — C-Grade Exemplar (abortion / Bentham/Utilitarianism)
+  Section 6 — Model Essay (freedom of speech / Mill + Nietzsche)
+
+========================================================
+SECTION 1 — THE TASK SHEET (authoritative)
+========================================================
+
+Year 11 Philosophy — Issues Study Independent Project
+
+LEARNING INTENTIONS
+- Identify philosophical issues and positions
+- Understand the general structure of a philosophical argument
+- Provide reasons to support philosophical issues and positions
+- Differentiate good and bad arguments, using philosophical terminology
+- Critically analyse assumptions, positions, and arguments
+- Communicate philosophical issues and positions, with conventions observed
+
+FORMAT
+A written response of up to 800 words
+OR a multimodal response of up to 5 minutes
+
+Draft Due Date: Friday, Week 9, Term 2
+Final Submission Date: Friday, Week 10, Term 2
+
+TASK DESCRIPTION
+An Issues Study is a study of a philosophical issue (meaning an unsolved
+intellectual puzzle, not a social problem). Choose ONE philosophical issue
+to study from the following:
+
+METAPHYSICS
+- Does the existence of evil pose a problem for a belief in the existence of God?
+- Can the mind be separate from the body?
+
+EPISTEMOLOGY
+- Is there such a thing as truth, or is all truth relative?
+- How can you tell the difference between what is real and what is imagined?
+
+ETHICS
+- What sort of ethical demands should we place on humans?
+- To what extent do people have the right to serve only themselves?
+
+You may also negotiate a different philosophical issue.
+
+REQUIREMENTS
+In your Issues Study you are required to:
+
+1. Independently research, identify and explain MORE THAN ONE philosophical
+   position on the issue.
+2. Each philosophical position must offer its own unique perspective on the issue.
+3. Critically analyse the strengths and weaknesses in each position.
+4. Use evidence to justify your ideas.
+5. Structure your argument so that the reader can clearly follow your flow of logic.
+6. Communicate clearly, using philosophical terminology.
+7. Reference sources appropriately, according to SACE referencing guidelines.
+
+========================================================
+SECTION 2 — THE FOUR CRITERIA AND PERFORMANCE STANDARDS (A–E)
+========================================================
+
+The four criteria are:
+  C1. Knowledge and Understanding
+  C2. Reasoning
+  C3. Critical Analysis
+  C4. Communication
+
+Performance Standards — plain-line version of the SACE table:
+
+--- GRADE A ---
+C1. Knowledge and Understanding:
+    Clear and perceptive identification and understanding of philosophical
+    issues, and of philosophical positions on issues. In-depth understanding
+    of the general structure of a philosophical argument.
+
+C2. Reasoning:
+    Incisive reasoning, and use of relevant evidence, to support or contest
+    philosophical issues and positions. Accurate differentiation between good
+    and bad arguments.
+
+C3. Critical Analysis:
+    Consistently accurate and perceptive analysis of strengths and weaknesses
+    of philosophical assumptions, positions, and arguments.
+
+C4. Communication:
+    Clear, coherent, and fluent communication of philosophical issues and
+    positions, with conventions consistently observed. Accurate and consistent
+    use of relevant philosophical terminology, with appropriate acknowledgment
+    of sources.
+
+--- GRADE B ---
+C1. Knowledge and Understanding:
+    Clear and thoughtful identification and understanding of philosophical
+    issues, and of philosophical positions on issues. Well-informed
+    understanding of the general structure of a philosophical argument.
+
+C2. Reasoning:
+    Well-considered reasoning, and use of mostly relevant evidence, to support
+    or contest philosophical issues and positions. Mostly accurate
+    differentiation between good and bad arguments.
+
+C3. Critical Analysis:
+    Mostly accurate and well-considered analysis of strengths and weaknesses
+    of philosophical assumptions, positions, and arguments.
+
+C4. Communication:
+    Clear and coherent communication of philosophical issues and positions,
+    with conventions mostly observed. Mostly accurate and appropriate use of
+    philosophical terminology, with appropriate acknowledgment of sources.
+
+--- GRADE C ---
+C1. Knowledge and Understanding:
+    Generally clear identification and understanding of philosophical issues,
+    and of some philosophical positions on issues. Informed understanding of
+    the general structure of a philosophical argument.
+
+C2. Reasoning:
+    Considered reasoning, and some use of evidence, to support or contest
+    philosophical issues and positions. Generally accurate differentiation
+    between good and bad arguments.
+
+C3. Critical Analysis:
+    Considered analysis of some strengths and weaknesses of philosophical
+    assumptions, positions, and arguments.
+
+C4. Communication:
+    Competent communication of philosophical issues and positions, with some
+    conventions observed. Generally appropriate use of philosophical
+    terminology, with mostly appropriate acknowledgment of sources.
+
+--- GRADE D ---
+C1. Knowledge and Understanding:
+    Some recognition of philosophical issues, and awareness of a philosophical
+    position on an issue. Recognition of some of the general structure of a
+    philosophical argument.
+
+C2. Reasoning:
+    Superficial or inconsistent reasoning, with some limited use of evidence,
+    to support or contest a philosophical issue and/or position. Some accuracy
+    in differentiation between good and bad arguments.
+
+C3. Critical Analysis:
+    Some identification of one or more strengths and/or weaknesses of a
+    philosophical assumption, position, and/or argument.
+
+C4. Communication:
+    Partial communication of aspects of a philosophical issue and/or position.
+    Use of a limited range of appropriate philosophical terminology, with some
+    acknowledgment of sources.
+
+--- GRADE E ---
+C1. Knowledge and Understanding:
+    Limited recognition of what is philosophical in an issue. Recognition of a
+    structural feature of a philosophical argument.
+
+C2. Reasoning:
+    Attempted consideration of a philosophical issue or position. Emerging
+    recognition of some differentiation between good and bad arguments.
+
+C3. Critical Analysis:
+    Identification of a strength or weakness of a philosophical assumption,
+    position, or argument.
+
+C4. Communication:
+    Attempted communication of an aspect of a philosophical issue or position.
+    Limited use of any philosophical terminology, with limited acknowledgment
+    of sources.
+
+========================================================
+SECTION 3 — WHAT EACH GRADE LOOKS LIKE (in plain words)
+========================================================
+
+These are the actual prose comments used in feedback for each grade boundary,
+drawn verbatim from the 2019 grade descriptor documents.
+
+--- GRADE A ---
+You demonstrated a clear and perceptive understanding of your chosen
+philosophical issue, and of philosophical positions on your issue.
+You provided incisive reasoning, and use of relevant evidence, to support or
+contest philosophical issues and positions.
+You provided accurate and perceptive analysis of strengths and weaknesses of
+philosophical assumptions, positions, and arguments.
+There was clear, coherent, and fluent communication of philosophical issues
+and positions, with conventions consistently observed.
+There was accurate and consistent use of relevant philosophical terminology,
+with appropriate acknowledgment of sources.
+
+--- GRADE B ---
+You demonstrated a thoughtful understanding of your chosen philosophical
+issue, and of philosophical positions on your issue.
+You provided well-considered reasoning, and use of mostly relevant evidence,
+to support or contest philosophical issues and positions.
+You provided mostly accurate analysis of strengths and weaknesses of
+philosophical assumptions, positions, and arguments.
+There was clear and coherent communication of philosophical issues and
+positions, with conventions mostly observed.
+There was mostly accurate and appropriate use of relevant philosophical
+terminology, with appropriate acknowledgment of sources.
+
+--- GRADE C ---
+You demonstrated a generally clear understanding of your chosen philosophical
+issue, and of some philosophical positions on your issue. The topic worked
+well for a philosophical discussion and the philosophers you chose were valid.
+You provided considered reasoning, and use of some relevant evidence, to
+support or contest philosophical issues and positions. You needed to go into
+more detail about what the philosophical position was and how it could be
+applied to your topic.
+The main area for improvement was analysing the strengths and weaknesses of
+philosophical assumptions, positions, and arguments in more detail.
+
+NOTE ON THE MOST COMMON C-GRADE GAP:
+The named gap at C is almost always the same: students state what a
+philosopher believes but do not then analyse the strengths or weaknesses of
+that view. They describe; they do not evaluate. To lift from C to B, a
+student needs to ask — and answer — "What is right about this position? What
+is wrong with it? Why might someone object?" for each philosopher they use.
+
+========================================================
+SECTION 4 — A-GRADE EXEMPLAR (euthanasia / Virtue Ethics)
+========================================================
+
+[Source: SACE Issues Study A-grade exemplar. ~800 words. Topic: Euthanasia
+and Virtue Ethics.]
+
+Euthanasia
+
+Euthanasia is the act of painlessly putting to death persons suffering from
+painful and/or incurable diseases or incapacitating physical disorders.
+Literally the term euthanasia means 'a good death'. Euthanasia can be
+classified as either active or passive. Active euthanasia involves the active
+acceleration of a 'good' death by the use of drugs e.g. lethal injection,
+administered by the persons themselves, a family member, a doctor or someone
+else close to the patient. Most importantly the person does not die on their
+own. Passive euthanasia involves no use of external aids or interjections
+(like life support) but rather, allows death to occur naturally.
+
+Euthanasia can also be classified as voluntary or involuntary. As the name
+implies, voluntary euthanasia occurs when the patient asks to be killed.
+Involuntary euthanasia occurs where a person is in a comatose state and thus
+family members give consent. Moreover, euthanasia can also be classified as
+'natural' or 'initiated'. In ethical terms, the former can be considered a
+form of suicide, while the latter a form of murder.
+
+Virtue Ethics
+
+Virtue Ethics is a person-based moral theory first suggested by Aristotle,
+in 'Nichomacheaen Ethics' approximately 350 BCE. Unlike utilitarianism —
+whose principles focus on what is the right thing to do or the correct way
+to act — the philosophies of Virtue Ethics focus on how one is to be a good
+person. It teaches to define good people and to recognise the qualities/
+virtues that make them 'good'.
+
+In exploring Virtue Ethics, Aristotle believed that everything has a purpose
+and man's purpose was happiness. Aristotle identified three forms of happiness:
+  1. In living a life of enjoyment and pleasure
+  2. In being a free member of society
+  3. In being a philosopher
+
+The happiness that Aristotle talked about was that of the community, not just
+the individual, since he saw people not only as rational beings but social
+beings. Therefore the well being of a group was more important than that of a
+single member. Aristotle believed that virtues were to be found in compromise,
+located in the balance between the vices of excess and deficiency, e.g.
+courage being found between cowardice and foolhardiness. Aristotle stated
+that every person should work to develop his or her own character by making a
+habit out of virtue. This will automatically lead to good actions, as a good
+person will always make good decisions. He believed that future generations
+could then be taught goodness from their seniors as virtue should be taught
+by example, not through a set of rules.
+
+Euthanasia and Virtue Ethics
+
+As medical technology has advanced, the ability to extend the lives of
+patients suffering from various medical conditions has increased. The ethical
+question arises of whether the lives of patients should be extended when they
+may be helpless or suffering. The following focuses on the issue of active
+and voluntary euthanasia in relation to the application of Virtue Ethics.
+
+It would not be presumptuous to assume that people suffering from great
+illness and pain would not be living the eudaimon life. If there were a way
+to improve their physical well being, Aristotle's Virtue Ethics would support
+this. A patient contemplating euthanasia could consider the implications of
+Aristotle's virtue of courage — the 'Golden Mean' between cowardice and
+foolhardiness. The 'right' course of action could however be open to
+interpretation. You could claim that euthanasia would be the courageous act
+by facing death and having the strength to free loved ones from the emotional,
+heartbreaking burden of looking after a terminally ill or pain-wracked
+relative. On the other hand, euthanasia could be seen as an act of cowardice,
+of lacking courage and endurance and violating the sanctity of life. It could
+be perceived as a rash action taken in a moment of weakness or despondency.
+
+Aristotle was concerned with the good of society as a whole, above the
+individual. In societies where resources are scarce, euthanasia may well make
+a significant difference to the well being of the society as a whole.
+Extending the lives of terminally ill patients requires huge amounts of money
+and the time, effort and emotional support of family members. Under these
+circumstances, it may be viewed as a courageous and noble act for someone to
+take their own life when very ill. Even in our society where people are living
+longer and surviving near fatal accidents there may be huge financial benefits
+to society if those who are unproductive are euthanised. This view however,
+doesn't seem in keeping with Aristotle's virtues of patience and temperance.
+
+The application of Virtue Ethics as put forward by Aristotle appears too
+vague and therefore difficult in sensitive and complex issues such as
+euthanasia. Perhaps Aristotle would conclude that a person achieving
+Eudaimonia would have the judgement and wisdom to make the 'right decision'.
+
+Word Count: 799
+
+Bibliography
+'Aristotle's Ethics', Stanford (University) Encyclopedia of Philosophy,
+http://plato.stanford.edu/entries/aristotle-ethics/, revised 17 July 2007
+'Aristotle and virtue ethics', University of Oxford,
+http://weblearn.ox.ac.uk/site/conted/biosci/ethicsbiosci/eb_content/
+EthicalPrinciples/AristotleAndVirtueEthics.html viewed 21 Dec 2009
+'Virtue ethics', Spiritus Temporus Web Ring Community,
+http://www.spiritus-temporis.com/virtue-ethics/aristotle's-theory-of-the-
+virtues.html viewed 21 Dec 2009
+Dr Waggle's website http://www.philosophy.ilstu.edu/ljwaggl?PHIL114/
+Aristotle.ppt viewed 21 Dec 2009
+Euthanasia.com http://www.euthanasia.com/ viewed 21 Dec 2009
+The Free Dictionary.com http://medical-dictionary.thefreedictionary.com/
+Euthenasia viewed 21 Dec 2009
+Australian Human Rights and Equal Opportunity Commission
+http://www.hreoc.gov.au/human_rights/euthanasia/index.html viewed 21 Dec 2009
+
+========================================================
+SECTION 5 — C-GRADE EXEMPLAR (abortion / Bentham / Utilitarianism)
+========================================================
+
+[Source: SACE Issues Study C-grade exemplar. ~779 words. Topic: Abortion
+analysed through Bentham's hedonic calculus.]
+
+Abortion
+
+A main ethical/social issue with the people of the world is abortion, this
+has to do with a termination of a women's pregnancy. The issue with this is
+that people see it as killing an innocent child there are approximately
+42 Million abortions per year to 115,000 per day, and the people argue that
+pregnant women has no right in saying whether the baby is going to be born
+or is going to be aborted. As it stands abortion is not illegal in Australia
+it varies with case to case. But people still have a strong view point on
+whether women have legitimate reasons to have an abortion, there have been
+reported cases of women having abortion because of the sex of the baby.
+The utilitarianism states that we should always perform the act that will
+cause us the greatest amount of pleasure. We can assess the act by going
+through each feature of the hedonic calculus; intensity, duration, certainty,
+propinquity, fecundity, purity and the extent of the act.
+
+The intensity of an abortion would be extremely high. You would need to
+consider the intensity of choosing to have an abortion then the intensity of
+the pain of putting your self and the 'child' during the procedure and last
+the intensity of the recovery and the amount of criticism you would receive
+if people found out. The intensity of the pain would be tremendous during
+and after the procedure.
+
+The duration of the abortion would start as soon as the women decided that
+she was to have an abortion at which time she has 6 weeks to change her mind
+whether to keep the baby of go through with the procedure. If she does choose
+to go through with the abortion the duration of pain would be long, but the
+female might feel a long period of doubt and relief.
+
+When choosing to have this operation you need to make sure you are certain
+that you do not want that child in your life. The probability that this
+operation will give the person pleasure is non existent unless you can count
+relief being pleasure, but the likelihood of a person being pleased with
+having an abortion would be minimal.
+
+Propinquity of an abortion would have to do with the reason for getting the
+abortion in the first place. If the female was getting it due to unsafe sex
+and the female is of a young age and by her self then the remoteness of her
+getting the abortion would be high, as well as with a female who had been
+raped and through that horrific experience had conceived then it is most
+likely she would have an abortion. The benefit the first female would feel
+would have been the relief and not being embarrassed by the fact that she was
+dumb enough to have unsafe sex. The second female would also feel relief from
+the fact that she doesn't have to look at the rapist's child and being
+reminded of what happened to her.
+
+The fecundity in an abortion would be pain followed by more pain with relief.
+The first amount of pain would be the loss of a child and the painful
+procedure of aborting the baby. The second pain comes through the recovery
+from the surgery; the relief is knowing you're no longer having the child.
+
+No purity is in abortion; there is only pure pain. The thought of killing an
+innocent living organism is just not pure, but it's up to the person having
+the abortion if they want it. If there were pleasure in having an abortion it
+wouldn't be pure it wouldn't be real it would be more like liberation of not
+having to look after the baby.
+
+The extent of the pleasure or pain would depend on the female having the
+abortion. But in some way every women would feel pain, and would never forget
+that they had the abortion. The baby being aborted and the women having the
+abortion would feel the pain.
+
+I don't believe that abortion is the right answer for women who don't want
+children or are too young, I think a better option would be to have it and
+take it from there you can either keep it or put it up for adoption for the
+women who are unable to have children. I do think that in some cases like
+rape that it is ok for an abortion to take place if it is too painful for the
+women who has been abused to raise that man's child. But every women has
+their own choice and their own reasons so it's up to them.
+
+Bibliography
+Better health channel, Abortion in Australia.
+http://www.betterhealthchannel.vic.gov.au/bhcv2/bhcarticles.nsf/pages/
+Abortion_in_Australia?open
+Abortion Help, Facts on abortion.
+http://www.abortionhelp.com.au/facts-on-abortion
+Annual Review of Population Law. Retrieved July 14. 2006.
+http://annualreview.law.harvard.edu.population/abortion/Abortion
+The Hedonic calculus handout given to us during class.
+
+Word count: 779
+
+========================================================
+SECTION 6 — MODEL ESSAY (freedom of speech / Mill + Nietzsche)
+========================================================
+
+[Source: Milly CJ — high-quality student essay included as a further
+exemplar. Topic: Should freedom of speech be allowed regardless of people
+or place? Philosophers used: John Stuart Mill (On Liberty) and Nietzsche
+(will to power).]
+
+Should freedom of speech be allowed regardless of people or place?
+
+Today more than ever, freedom of speech and the complex ethics surrounding it
+are hot topics. With right-wing politicians such as Trump and Hanson on the
+rise, our ideas around the politically correct are being challenged and
+raising questions. If we are only allowed to have appropriate, non-offensive
+opinions, is it truly freedom of speech? Should there be certain situations
+where freedom of speech is not allowed, or does that defeat its purpose? In
+this essay, I will be exploring the idea that freedom of speech should be
+allowed regardless of people or place.
+
+As John Mill, author of the influential 1858 book 'On Liberty', explains,
+there is a difference between causing offence and causing harm, and the
+latter should be avoided. According to Mill, opposition and rebellion should
+be allowed, as in this way we can challenge, update, or solidify our own
+views. However, if this escalates and becomes incitement for harm, it is
+unacceptable. For example, protesting about animal rights in a public place
+may make certain people feel uncomfortable but is still tolerated, while an
+angry mob protesting outside a meat factory which could potentially turn
+violent would not be. Personally, I think this is a sound foundation for
+freedom of speech. However, it could potentially lead to issues and disconnect
+if one group/individual feels something is simply causing offence, while the
+other believe it's causing harm. A leader might think they're only stating an
+offensive truth when saying women shouldn't dress promiscuously, but women
+who do could be street harassed as a result of this. Regardless, from Mill's
+perspective, it shouldn't matter about people or place, only whether it will
+cause harm or not.
+
+However, even though in some cases freedom of speech will not cause harm, it
+can still be greatly offensive and deeply hurtful. Although homophobic
+campaigners at a homosexual person's funeral may not cause tangible harm, it
+would still be extremely upsetting and traumatic. In my opinion, there are
+some situations where it is inhumane, disrespectful and insensitive to use
+freedom of speech, despite not causing harm. The only issue is, how do we
+decide which places are considered appropriate and which are not? It would be
+easy to simply cite 'common sense', but we are all diverse people with our
+own set of morals, values and versions of the truth, which makes it far from
+easy. As well as this, is it fair that the person/group attacked by freedom
+of speech are given priority over the person/group who believe they are
+defending their rights? For example, members of a Russian political punk band
+were jailed for 2 years after singing profanity-laced insults directed at
+Putin in St. Peter's cathedral, a sacred icon for religious Russians. In this
+situation, the rights of the deeply offended Catholics were favoured over
+those of the Russian women, and they were severely punished for their
+enthusiastic freedom of speech. Essentially, this is saying that the women
+have fewer rights and are lesser beings than the Catholics, which seems
+extremely unfair and unjust. All humans have equal rights, and this should be
+upheld on both ends, irrespective of freedom of speech.
+
+From a completely different standpoint, we can also analyse Nietzsche's will
+to power in the context of freedom of speech. In this case, freedom of speech
+would undisputedly be allowed no matter what, as this would bring power to
+the individual and allow them to exert their powers over others. Nietzsche
+was passionate about avoiding the herd and anti-conformism, and so
+restriction of rights such as freedom of speech would seem a grave insult and
+threat to identity. To me, however, this way of thinking is very selfish and
+cruel, as it doesn't consider anyone other than the individual. Unfortunately
+for Nietzsche, by nature we are herd animals who crave positive social
+interactions. His line of thinking cannot realistically be applied to freedom
+of speech, unless we throw away all empathy and understanding for others,
+something that would lead to a very soulless society.
+
+To conclude, it's my belief that complete freedom of speech regardless of
+people or place is too dangerous to exist in our society, and so it would be
+wise to follow Mill's philosophy over Nietzsche's. Although freedom of speech
+can be used for positive things like fighting oppression, making art, and
+raising awareness, the problem is that it can just as easily be used for hate
+speeches and to cause harm — something we have sadly seen with the recent
+rise of racism towards non-Caucasians, even here in our own country. Freedom
+of speech shouldn't be something discriminatory bigots use as a shield to
+hide behind, but unfortunately this seems to be the case. For now, it appears
+as though we must continue to validate freedom of speech only as individuals
+rather than as a whole, since with so much discrimination, hatred and
+division in our world, we have not yet succeeded in achieving universal
+unanimity.
+
+========================================================
+END OF CONTEXT PACK
+========================================================
