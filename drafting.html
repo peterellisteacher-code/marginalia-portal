@@ -143,6 +143,20 @@
         .print-word-total {
             display: none;
         }
+
+        /* print-only resource shelf (populated from portal-state when signed in) */
+        .print-shelf { display: none; }
+        @media print {
+            .print-shelf { display: block; margin-top: 18pt; }
+            .print-shelf h2 {
+                font-family: Georgia, 'Times New Roman', serif;
+                font-size: 13pt; font-weight: bold; color: #111;
+                border-top: 1pt solid #ccc; padding-top: 6pt; margin-bottom: 6pt;
+            }
+            .print-shelf__item { margin-bottom: 8pt; font-size: 10pt; color: #111; line-height: 1.4; page-break-inside: avoid; }
+            .print-shelf__title { font-weight: bold; }
+            .print-shelf__url { color: #555; word-break: break-all; }
+        }
     </style>
 
     <style>
@@ -314,7 +328,7 @@
             </a>
             <nav class="site-nav" aria-label="Primary">
                 <a href="index.html">welcome</a>
-                <a href="explainer.html">the task</a>
+                <a href="explainer.html">explain the task</a>
                 <a href="bank.html">questions</a>
                 <a href="chamber.html">chamber</a>
                 <a href="resources.html">readings</a>
@@ -401,6 +415,9 @@
 
                     <!-- print-only total word count, updated by JS -->
                     <p class="print-word-total" id="printWordTotal"></p>
+
+                    <!-- print-only resource shelf, fetched from portal-state when signed in -->
+                    <section class="print-shelf" id="printShelf" aria-hidden="true"></section>
 
                 </section>
 
@@ -568,8 +585,43 @@
             // window.print() triggers @media print which hides chrome and
             // shows .print-mirror content.
             // -----------------------------------------------------------------
-            document.getElementById('exportPdf').onclick = () => {
-                updateMirrors(); // ensure mirrors are current before print dialog
+            // FEATURE 1b: pull the student's resource shelf (portal-state) into a
+            // print-only block when they are signed in, so the PDF captures the
+            // full workspace. Degrades silently if not logged in or offline.
+            async function loadShelfForPrint() {
+                const shelf = document.getElementById('printShelf');
+                if (!shelf) return;
+                let session = null;
+                try { session = JSON.parse(sessionStorage.getItem('marginalia.session')); } catch (e) { /* ignore */ }
+                if (!session || !session.token) { shelf.innerHTML = ''; return; }
+                try {
+                    const r = await fetch('/.netlify/functions/portal-state', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'load', token: session.token })
+                    });
+                    if (!r.ok) { shelf.innerHTML = ''; return; }
+                    const data = await r.json();
+                    const res = Array.isArray(data.resources) ? data.resources : [];
+                    if (!res.length) { shelf.innerHTML = ''; return; }
+                    const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({
+                        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+                    }[c]));
+                    shelf.innerHTML = '<h2>Your resource shelf</h2>' + res.map(x =>
+                        '<div class="print-shelf__item">' +
+                        '<span class="print-shelf__title">' + esc(x.title) + '</span>' +
+                        (x.url ? '<br><span class="print-shelf__url">' + esc(x.url) + '</span>' : '') +
+                        (x.description ? '<br>' + esc(x.description) : '') +
+                        '</div>'
+                    ).join('');
+                } catch (e) {
+                    shelf.innerHTML = '';
+                }
+            }
+
+            document.getElementById('exportPdf').onclick = async () => {
+                updateMirrors();           // mirror textarea content for print
+                await loadShelfForPrint(); // fetch + render the shelf (if signed in)
                 window.print();
             };
 
