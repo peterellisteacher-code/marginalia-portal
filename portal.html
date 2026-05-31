@@ -241,7 +241,11 @@
         /* ---- Sidebar ---- */
         .sidebar {
             overflow-y: auto;
-            padding: var(--space-lg);
+            /* No top padding: a padding-top on a scroll container leaves a gap
+               above a `position:sticky; top:0` child, and scrolling content
+               shows through it (the reported "Working Question box" bug). The
+               sticky section below supplies its own top padding instead. */
+            padding: 0 var(--space-lg) var(--space-lg);
             background: var(--ground);
             display: flex;
             flex-direction: column;
@@ -250,14 +254,18 @@
 
         /* Working question stays pinned at the top of the sidebar scroll
            container so a long resource shelf does not push the student's
-           current assessment anchor out of view. */
+           current assessment anchor out of view. It bleeds to the full sidebar
+           width (negative side margins cancel the sidebar's side padding) so
+           scrolling content passes fully behind it, and meets the header ribbon
+           flush with its own top padding. */
         .sidebar__section--sticky {
             position: sticky;
             top: 0;
+            margin: 0 calc(-1 * var(--space-lg));
+            padding: var(--space-lg) var(--space-lg) var(--space-sm);
             background: var(--ground);
-            padding-bottom: var(--space-sm);
             border-bottom: 1px solid var(--aged-soft);
-            z-index: 1;
+            z-index: 2;
         }
 
         @media (max-width: 900px) {
@@ -520,6 +528,7 @@
             </div>
             <nav class="portal-header__nav" aria-label="Primary">
                 <a href="bank.html">Question bank</a>
+                <a href="lab.html">Experiments</a>
                 <a href="resources.html">Readings</a>
                 <a href="drafting.html">Drafting</a>
                 <a href="explainer.html" class="nav-cta">Explain the task</a>
@@ -532,9 +541,9 @@
 
             <section class="chat-pane" aria-label="Chat with the agent">
                 <p class="chat-stream__intro">
-                    Start by saying what you are thinking about &mdash; even one sentence.
-                    The agent will press from there. The agent asks questions and will not
-                    write your essay for you.
+                    Start by telling the agent what you&rsquo;re thinking about &mdash; even one
+                    sentence is enough. It will ask follow-up questions and help you develop your
+                    ideas. It will not write the essay for you.
                 </p>
                 <div class="chat-stream" id="chatStream" aria-live="polite" aria-atomic="false"></div>
                 <div class="chat-input-bar">
@@ -572,7 +581,7 @@
                 <section class="sidebar__section" aria-labelledby="packHeading">
                     <h2 class="sidebar__heading" id="packHeading">Reading focus</h2>
                     <p class="sidebar__hint">
-                        Click a topic to give the agent the matching readings to quote from. Click the same one again to unfocus.
+                        Click a topic to load the matching readings, so the agent can quote them. Click it again to switch them off.
                     </p>
                     <div class="pack-chips" id="packChips" role="group" aria-labelledby="packHeading">
                         <button class="pack-chip" type="button" data-pack="stage1_existentialism" aria-pressed="false">Existentialism</button>

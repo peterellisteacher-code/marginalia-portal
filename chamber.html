@@ -283,6 +283,7 @@
                 <a href="index.html">welcome</a>
                 <a href="explainer.html">explain the task</a>
                 <a href="bank.html">questions</a>
+                <a href="lab.html">experiments</a>
                 <a href="chamber.html" class="active">chamber</a>
                 <a href="resources.html">readings</a>
                 <a href="drafting.html">drafting</a>
@@ -304,19 +305,19 @@
                         data-empty="true"
                     ></div>
 
-                    <div class="topic-selector">
+                    <div class="topic-selector" role="group" aria-label="Topic context for the agent">
                         <span class="topic-selector__label">Topic context for the agent:</span>
-                        <button class="chip chip--active" data-pack="auto">auto-detect</button>
-                        <button class="chip" data-pack="stage1_existentialism">existentialism</button>
-                        <button class="chip" data-pack="stage1_virtue_compassion">virtue / compassion</button>
-                        <button class="chip" data-pack="stage1_religion_ethics">religion</button>
-                        <button class="chip" data-pack="stage1_aesthetics">aesthetics</button>
-                        <button class="chip" data-pack="stage1_mind_simulation">mind / simulation</button>
-                        <button class="chip" data-pack="lab_applied_normative_ethics">applied ethics</button>
+                        <button type="button" class="chip chip--active" data-pack="auto" aria-pressed="true">auto-detect</button>
+                        <button type="button" class="chip" data-pack="stage1_existentialism" aria-pressed="false">existentialism</button>
+                        <button type="button" class="chip" data-pack="stage1_virtue_compassion" aria-pressed="false">virtue / compassion</button>
+                        <button type="button" class="chip" data-pack="stage1_religion_ethics" aria-pressed="false">religion</button>
+                        <button type="button" class="chip" data-pack="stage1_aesthetics" aria-pressed="false">aesthetics</button>
+                        <button type="button" class="chip" data-pack="stage1_mind_simulation" aria-pressed="false">mind / simulation</button>
+                        <button type="button" class="chip" data-pack="lab_applied_normative_ethics" aria-pressed="false">applied ethics</button>
                     </div>
 
                     <p class="working-panel__instructions">
-                        Refine the question above as the conversation unfolds. The agent in the rail to the right will press you toward sharper formulations, name the philosophical moves you're making, and surface positions you haven't considered. It will <em>not</em> write your essay.
+                        Sharpen the question above as you talk. The agent on the right will push you toward a tighter question, name the kind of argument you're making, and point out positions you haven't thought of. It will <em>not</em> write your essay.
                     </p>
 
                     <section class="pinned-section">
@@ -339,7 +340,7 @@
 
                     <div class="chat-transcript" id="transcript" aria-live="polite" tabindex="0">
                         <p class="empty-chat">
-                            <strong>Begin when ready.</strong> A good first prompt: tell the agent your topic, and ask what philosophical questions it suggests within that topic. The agent will not give you a question — but it will help you find one.
+                            <strong>Start when you&rsquo;re ready.</strong> A good first message: tell the agent the topic you&rsquo;re drawn to, and why it pulls at you. It won&rsquo;t hand you a question — but it will help you turn that pull into one of your own.
                         </p>
                     </div>
 
@@ -374,6 +375,7 @@
     <div id="def-socratic" popover="auto">Asking short, focused questions to make you sharpen what you already half-think. Named after Socrates, the philosopher who never gave answers — only asked better questions.</div>
     <div id="def-interlocutor" popover="auto">Someone you have a conversation with. The AI here is your interlocutor — a sparring partner for your ideas.</div>
 
+    <script src="shared/glossary.js"></script>
     <script src="shared/pins.js"></script>
     <script>
         (() => {
@@ -453,12 +455,14 @@
 
             // --- Pack selector ---
             function selectPack(packId) {
-                packChips.forEach(c => c.classList.remove('chip--active'));
                 const target = Array.from(packChips).find(c => c.dataset.pack === packId);
-                if (target) {
-                    target.classList.add('chip--active');
-                    activePack = packId;
-                }
+                if (!target) return;
+                packChips.forEach(c => {
+                    const on = c.dataset.pack === packId;
+                    c.classList.toggle('chip--active', on);
+                    c.setAttribute('aria-pressed', String(on));
+                });
+                activePack = packId;
             }
 
             packChips.forEach(chip => {
@@ -468,7 +472,7 @@
             // --- Chat ---
             function renderTranscript() {
                 if (conversation.length === 0 && !isThinking) {
-                    transcript.innerHTML = '<p class="empty-chat"><strong>Begin when ready.</strong> A good first prompt: tell the agent your topic, and ask what philosophical questions it suggests within that topic. The agent will not give you a question — but it will help you find one.</p>';
+                    transcript.innerHTML = '<p class="empty-chat"><strong>Start when you’re ready.</strong> A good first message: tell the agent the topic you’re drawn to, and why it pulls at you. It won’t hand you a question — but it will help you turn that pull into one of your own.</p>';
                     return;
                 }
                 const turns = conversation.map(t => {
@@ -502,15 +506,14 @@
                         })
                     });
                     if (!r.ok) {
-                        const errText = await r.text();
-                        throw new Error(`HTTP ${r.status}: ${errText.slice(0, 200)}`);
+                        throw new Error('HTTP ' + r.status);
                     }
                     const data = await r.json();
                     conversation.push({ role: 'model', text: data.reply || '(empty response)' });
                 } catch (err) {
                     conversation.push({
                         role: 'model',
-                        text: `[The agent isn't reachable right now. ${err.message}]\n\nThis usually means the Netlify function isn't deployed yet, or the Vertex AI environment variables aren't set. See the README for setup instructions.`
+                        text: `I can't reach the agent right now. Give it a moment and send your message again. If it keeps happening, let Mr Ellis know — your work in the question box above is safe.`
                     });
                 } finally {
                     isThinking = false;
@@ -532,6 +535,13 @@
                     form.requestSubmit();
                 }
             });
+
+            // Honour ?pack=… from the readings page ("Discuss in chamber →"),
+            // so the matching readings are pre-focused for the agent.
+            const initialPack = params.get('pack');
+            if (initialPack && Array.from(packChips).some(c => c.dataset.pack === initialPack)) {
+                selectPack(initialPack);
+            }
 
             loadInitialQuestion();
             renderPins();

@@ -39,6 +39,10 @@ html, body {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    /* Wrap rather than collide if a projector is zoomed past 100% (the nav now
+       has 7 items). */
+    flex-wrap: wrap;
+    gap: var(--space-xs) var(--space-md);
     padding: var(--space-sm) var(--space-lg);
     border-bottom: 1px solid var(--aged-soft);
 }
@@ -65,7 +69,8 @@ html, body {
 
 .site-nav {
     display: flex;
-    gap: var(--space-md);
+    flex-wrap: wrap;
+    gap: var(--space-xs) var(--space-md);
 }
 
 .site-nav a {
@@ -524,16 +529,112 @@ html, body {
 }
 
 [popover="auto"] {
-    max-width: 32ch;
+    max-width: 34ch;
     padding: var(--space-sm) var(--space-md);
     border: 1px solid var(--ink-soft);
+    border-left: 3px solid var(--marginalia);   /* a note in the margin */
     background: var(--paper);
     font-family: var(--font-body);
     font-size: var(--text-sm);
     color: var(--ink);
     line-height: 1.45;
-    box-shadow: 2px 2px 0 rgba(26, 22, 18, 0.08);
+    box-shadow: 3px 3px 0 rgba(26, 22, 18, 0.10);
+    /* margin:0 removes the UA `margin:auto` centring; glossary.js then sets a
+       fixed top/left next to the term that opened it. Without the script the
+       popover still opens (just unpositioned) and aria-describedby keeps the
+       definition available to screen readers. */
     margin: 0;
+    /* Gentle "ink settling" fade — disabled under prefers-reduced-motion by
+       the universal override below. */
+    opacity: 0;
+    transition: opacity var(--motion-fast) var(--motion-ease),
+                overlay var(--motion-fast) var(--motion-ease) allow-discrete,
+                display var(--motion-fast) var(--motion-ease) allow-discrete;
+}
+
+[popover="auto"]:popover-open {
+    opacity: 1;
+}
+
+@starting-style {
+    [popover="auto"]:popover-open {
+        opacity: 0;
+    }
+}
+
+/* ============================================================
+   LAZY YOUTUBE FACADE — click-to-play thumbnail (shared/youtube.js)
+   Nothing loads from YouTube until the student presses play, and
+   playback runs through youtube-nocookie.com.
+   ============================================================ */
+.yt-lite {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    padding: 0;
+    border: 1px solid var(--aged-soft);
+    background-color: var(--ink);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.yt-lite::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(26, 22, 18, 0.14);
+    transition: background var(--motion-fast) var(--motion-ease);
+}
+
+.yt-lite:hover::after,
+.yt-lite:focus-visible::after {
+    background: rgba(26, 22, 18, 0.02);
+}
+
+.yt-lite__play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 68px;
+    height: 48px;
+    z-index: 1;
+    background: var(--marginalia);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 10px rgba(26, 22, 18, 0.35);
+    transition: transform var(--motion-fast) var(--motion-ease),
+                background var(--motion-fast) var(--motion-ease);
+}
+
+.yt-lite__play::before {
+    content: "";
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 9px 0 9px 16px;
+    border-color: transparent transparent transparent var(--ground);
+    margin-left: 3px;
+}
+
+.yt-lite:hover .yt-lite__play,
+.yt-lite:focus-visible .yt-lite__play {
+    transform: translate(-50%, -50%) scale(1.06);
+    background: var(--ink);
+}
+
+.yt-lite__frame {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border: 1px solid var(--aged-soft);
+    background: var(--ink);
 }
 
 /* ============================================================

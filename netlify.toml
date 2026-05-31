@@ -28,6 +28,18 @@
   status = 404
   force = true
 
+# Block public download of the extracted reading text. publish = "." would
+# otherwise serve data/packs/*.txt directly (full Murdoch / Nussbaum / Singer
+# text), bypassing the readings_source + text_packs blocks above. The chat
+# function reads these from the bundled filesystem (included_files), NOT over
+# HTTP, so this 404 does not affect the agent. Scope is /data/packs/* only —
+# data/questions.json must stay public for the question bank.
+[[redirects]]
+  from = "/data/packs/*"
+  to = "/404.html"
+  status = 404
+  force = true
+
 [[headers]]
   for = "/*.html"
   [headers.values]

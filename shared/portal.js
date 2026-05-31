@@ -324,7 +324,7 @@
         if (ytId) {
             const thumb = document.createElement('img');
             thumb.className = 'res-card__thumb';
-            thumb.src = 'https://img.youtube.com/vi/' + ytId + '/hqdefault.jpg';
+            thumb.src = 'https://i.ytimg.com/vi/' + ytId + '/hqdefault.jpg';
             thumb.alt = '';
             thumb.loading = 'lazy';
             article.appendChild(thumb);
@@ -390,7 +390,7 @@
         const cardTitle = titleEl ? titleEl.textContent.trim() : 'YouTube video';
         const iframe = document.createElement('iframe');
         iframe.className = 'yt-embed';
-        iframe.src = 'https://www.youtube.com/embed/' + ytId + '?rel=0';
+        iframe.src = 'https://www.youtube-nocookie.com/embed/' + ytId + '?rel=0&modestbranding=1';
         iframe.title = 'YouTube video: ' + cardTitle;  /* WCAG SC 4.1.2 — name */
         iframe.allowFullscreen = true;
         iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');

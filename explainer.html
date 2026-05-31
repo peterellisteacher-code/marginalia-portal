@@ -247,6 +247,18 @@
             border-color: var(--marginalia);
         }
         .explain-send { white-space: nowrap; }
+
+        /* Featured lesson video */
+        .feature-video { max-width: 560px; margin: var(--space-md) 0 var(--space-2xl); }
+        .feature-video__caption {
+            font-family: var(--font-ui);
+            font-size: var(--text-xs);
+            color: var(--aged-strong);
+            margin-top: var(--space-xs);
+            letter-spacing: 0.03em;
+            line-height: 1.4;
+        }
+        .feature-video__caption strong { color: var(--ink); font-weight: 600; }
     </style>
 </head>
 <body>
@@ -261,6 +273,7 @@
                 <a href="index.html">welcome</a>
                 <a href="explainer.html" class="active">explain the task</a>
                 <a href="bank.html">questions</a>
+                <a href="lab.html">experiments</a>
                 <a href="chamber.html">chamber</a>
                 <a href="resources.html">readings</a>
                 <a href="drafting.html">drafting</a>
@@ -275,7 +288,7 @@
                     <h1 class="h-1 ink-appear">What is an <button class="term" popovertarget="def-issues-study" aria-describedby="def-issues-study">Issues Study</button>?</h1>
 
                     <section class="explain-panel ink-appear" aria-label="Ask the task explainer">
-                        <p class="explain-intro">Got questions about the Issues Study? Ask away. Positions, analysis, referencing, A versus C, the 800-word limit, what a philosophical question even is &mdash; it&rsquo;ll break it down for you. The task sheet and two graded examples are below. It explains the task but won&rsquo;t write it for you.</p>
+                        <p class="explain-intro">Got a question about the Issues Study? Ask away &mdash; positions, analysis, referencing, A versus C, the 800-word limit, what even makes a question philosophical. It&rsquo;ll explain, but it won&rsquo;t write the essay for you. The task sheet and two graded examples are further down this page.</p>
                         <div class="explain-transcript" id="explainTranscript" aria-live="polite"></div>
                         <form class="explain-form" id="explainForm">
                             <label for="explainInput" class="visually-hidden">Ask a question about the task</label>
@@ -302,7 +315,7 @@
                             An A-grade Issues Study identifies <em>multiple</em> philosophical positions on the question and explains <em>why</em> people hold each one — including positions you don't share. A C-grade response usually engages with one perspective and treats it as obvious.
                         </p>
                         <p class="body-text">
-                            The reason is structural. You can't critically evaluate a position you haven't first reconstructed sympathetically. <button class="term" popovertarget="def-steelman" aria-describedby="def-steelman">Steelman</button> every view before you criticise it.
+                            The reason is structural. You can't fairly judge a position you haven't first rebuilt in its strongest form. <button class="term" popovertarget="def-steelman" aria-describedby="def-steelman">Steelman</button> every view before you criticise it.
                         </p>
                     </article>
 
@@ -333,6 +346,15 @@
                         </p>
                     </article>
 
+                    <h2 class="h-2 ink-appear">What a philosophical argument looks like</h2>
+                    <p class="body-text ink-appear">
+                        Before you read the two responses below, here is a short primer on how philosophical reasoning works — premises, conclusions, and why a <em>valid</em> argument is not the same as a <em>true</em> one. This is the Reasoning criterion in action.
+                    </p>
+                    <div class="feature-video ink-appear">
+                        <button class="yt" data-id="NKEhdsnKKHs" data-title="How to Argue – Philosophical Reasoning — Crash Course Philosophy #2"></button>
+                        <p class="feature-video__caption"><strong>Watch ·</strong> How to Argue: Philosophical Reasoning — Crash Course Philosophy #2</p>
+                    </div>
+
                     <h2 class="h-2 ink-appear">A and C, side by side</h2>
                     <p class="body-text ink-appear">
                         Below is an extract from an A-grade and a C-grade exemplar response, both on the same question about personal identity. The marginalia (in red) point to the moves the A response makes that the C response does not.
@@ -354,7 +376,7 @@
                     </div>
 
                     <p class="body-text ink-appear">
-                        Notice the moves: the A response <em>names</em> philosophers, <em>presents an objection</em>, <em>presents a reply</em>, and then <em>takes a position with reasons</em>. The C response describes one view, agrees with it, and stops.
+                        Notice what the A response does: it <em>names</em> philosophers, <em>presents an objection</em>, <em>presents a reply</em>, and then <em>takes a position with reasons</em>. The C response describes one view, agrees with it, and stops.
                     </p>
 
                     <h2 class="h-2 ink-appear">The four design criteria</h2>
@@ -415,6 +437,8 @@
     <div id="def-steelman" popover="auto">Build the strongest possible version of a view you disagree with. The opposite of a strawman. You only refute the toughest version, not the weakest.</div>
     <div id="def-multimodal" popover="auto">Combining different formats — for example, a slideshow with voiceover, a video essay, or a written piece with images.</div>
 
+    <script src="shared/glossary.js"></script>
+    <script src="shared/youtube.js"></script>
     <script>
         // Task Explainer chat — talks to /chat in mode:'explain' (anonymous,
         // grounded in the cached tasksheet_explainer pack; never writes the essay).

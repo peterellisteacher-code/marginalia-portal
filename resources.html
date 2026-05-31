@@ -129,6 +129,41 @@
         .cache-legend strong {
             color: var(--clarity);
         }
+
+        /* Per-topic "watch first" video — a visual anchor at the top of each
+           reading list, capped so it doesn't dominate the text. */
+        .topic-video {
+            max-width: 540px;
+            margin-bottom: var(--space-lg);
+        }
+
+        .topic-video__caption {
+            font-family: var(--font-ui);
+            font-size: var(--text-xs);
+            color: var(--aged-strong);
+            letter-spacing: 0.03em;
+            margin-top: var(--space-xs);
+            line-height: 1.4;
+        }
+
+        .topic-video__caption strong {
+            color: var(--ink);
+            font-weight: 600;
+        }
+
+        .watch-note {
+            font-family: var(--font-body);
+            font-size: var(--text-sm);
+            color: var(--ink-soft);
+            line-height: 1.55;
+            margin-bottom: var(--space-lg);
+        }
+
+        .watch-note a {
+            color: var(--clarity);
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
     </style>
 </head>
 <body>
@@ -143,6 +178,7 @@
                 <a href="index.html">welcome</a>
                 <a href="explainer.html">explain the task</a>
                 <a href="bank.html">questions</a>
+                <a href="lab.html">experiments</a>
                 <a href="chamber.html">chamber</a>
                 <a href="resources.html" class="active">readings</a>
                 <a href="drafting.html">drafting</a>
@@ -163,8 +199,16 @@
                     <strong>✓ <button class="term" popovertarget="def-cached" aria-describedby="def-cached">cached</button></strong> — this reading is loaded into the agent's working memory so it can quote directly from it. Readings without this mark are in your class folder; you can still read them, but the agent knows them less precisely.
                 </p>
 
+                <p class="watch-note">
+                    New to a thinker? Start with a short video — each topic below opens with one. For the whole series, browse the <a href="https://www.youtube.com/playlist?list=PL8dPuuaLjXtNgK6MZucdYldNkMybYIHKR" target="_blank" rel="noopener">Crash Course Philosophy playlist</a> (46 episodes). Videos load only when you press play.
+                </p>
+
                 <section class="topic-section">
                     <h2 class="topic-section__title">Existentialism</h2>
+                    <div class="topic-video">
+                        <button class="yt" data-id="YaDvRdLMkHs" data-title="Existentialism — Crash Course Philosophy #16"></button>
+                        <p class="topic-video__caption"><strong>Watch first ·</strong> Existentialism — Crash Course Philosophy #16</p>
+                    </div>
                     <div class="reading-grid">
                         <article class="reading-card">
                             <span class="reading-card__author">Jean-Paul Sartre</span>
@@ -216,6 +260,10 @@
 
                 <section class="topic-section">
                     <h2 class="topic-section__title">Virtue, attention, and compassion</h2>
+                    <div class="topic-video">
+                        <button class="yt" data-id="PrvtOWEXDIQ" data-title="Aristotle & Virtue Theory — Crash Course Philosophy #38"></button>
+                        <p class="topic-video__caption"><strong>Watch first ·</strong> Aristotle &amp; Virtue Theory — Crash Course Philosophy #38</p>
+                    </div>
                     <div class="reading-grid">
                         <article class="reading-card">
                             <span class="reading-card__author">Iris Murdoch</span>
@@ -240,11 +288,15 @@
 
                 <section class="topic-section">
                     <h2 class="topic-section__title">Religion and morality</h2>
+                    <div class="topic-video">
+                        <button class="yt" data-id="wRHBwxC8b8I" data-title="Divine Command Theory — Crash Course Philosophy #33"></button>
+                        <p class="topic-video__caption"><strong>Watch first ·</strong> Divine Command Theory &amp; the Euthyphro problem — Crash Course Philosophy #33</p>
+                    </div>
                     <div class="reading-grid">
                         <article class="reading-card">
                             <span class="reading-card__author">Jonathan Haidt</span>
                             <h3 class="reading-card__title">Haidt on Religion</h3>
-                            <p class="reading-card__orient">Available in three depths (bare minimum, standard, more than minimum). Haidt's argument: religion's primary function is moral binding, not metaphysical claim — and secular morality lacks something the binding does.</p>
+                            <p class="reading-card__orient">Available in three depths (bare minimum, standard, more than minimum). Haidt's argument: religion's primary function is moral binding, not metaphysical claim — and secular societies may have to work harder to reproduce that binding.</p>
                             <div class="reading-card__actions">
                                 <a href="chamber.html?pack=stage1_religion_ethics" class="btn btn--small btn--clarity">Discuss in chamber →</a>
                                 <span class="reading-card__cache-status reading-card__cache-status--cached">✓ cached</span>
@@ -255,6 +307,10 @@
 
                 <section class="topic-section">
                     <h2 class="topic-section__title">Aesthetics — what is art and what does it mean?</h2>
+                    <div class="topic-video">
+                        <button class="yt" data-id="NZ5duzln2wI" data-title="Aesthetic Appreciation — Crash Course Philosophy #30"></button>
+                        <p class="topic-video__caption"><strong>Watch first ·</strong> Aesthetic Appreciation — Crash Course Philosophy #30</p>
+                    </div>
                     <div class="reading-grid">
                         <article class="reading-card">
                             <span class="reading-card__author">Wimsatt &amp; Beardsley</span>
@@ -279,6 +335,10 @@
 
                 <section class="topic-section">
                     <h2 class="topic-section__title">Mind, consciousness, and simulation</h2>
+                    <div class="topic-video">
+                        <button class="yt" data-id="3SJROTXnmus" data-title="Where Does Your Mind Reside? — Crash Course Philosophy #22"></button>
+                        <p class="topic-video__caption"><strong>Watch first ·</strong> Where Does Your Mind Reside? — Crash Course Philosophy #22</p>
+                    </div>
                     <div class="reading-grid">
                         <article class="reading-card">
                             <span class="reading-card__author">overview</span>
@@ -330,6 +390,10 @@
 
                 <section class="topic-section">
                     <h2 class="topic-section__title">Applied ethics — personhood, abortion, animals</h2>
+                    <div class="topic-video">
+                        <button class="yt" data-id="-a739VjqdSI" data-title="Utilitarianism — Crash Course Philosophy #36"></button>
+                        <p class="topic-video__caption"><strong>Watch first ·</strong> Utilitarianism (Singer's framework) — Crash Course Philosophy #36</p>
+                    </div>
                     <div class="reading-grid">
                         <article class="reading-card">
                             <span class="reading-card__author">Peter Singer</span>
@@ -400,5 +464,8 @@
     <!-- Term-definition popovers -->
     <div id="def-intentional-fallacy" popover="auto">The idea that what an artist meant by their work does not decide what the work actually means. Meaning lives in the artwork, not the artist's head.</div>
     <div id="def-cached" popover="auto">Loaded into the agent's working memory so it can quote directly from these readings.</div>
+
+    <script src="shared/glossary.js"></script>
+    <script src="shared/youtube.js"></script>
 </body>
 </html>

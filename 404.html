@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Not in this margin | Marginalia</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Spectral:ital,wght@0,400;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="shared/tokens.css">
+    <link rel="stylesheet" href="shared/marginalia.css">
+
+    <style>
+        .nf {
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: var(--space-2xl) var(--space-lg);
+            gap: var(--space-md);
+        }
+        .nf__code {
+            font-family: var(--font-display);
+            font-style: italic;
+            font-size: var(--text-display);
+            color: var(--marginalia);
+            line-height: 1;
+        }
+        .nf__title {
+            font-family: var(--font-display);
+            font-size: var(--text-2xl);
+            color: var(--ink);
+        }
+        .nf__body {
+            font-family: var(--font-body);
+            font-size: var(--text-base);
+            color: var(--ink-soft);
+            max-width: 48ch;
+            line-height: 1.6;
+        }
+        .nf__links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-sm);
+            justify-content: center;
+            margin-top: var(--space-sm);
+        }
+    </style>
+</head>
+<body>
+    <main class="nf">
+        <p class="nf__code">404</p>
+        <h1 class="nf__title">This page is in another margin.</h1>
+        <p class="nf__body">
+            The page you were after isn't here &mdash; a broken link, a mistyped address, or a
+            reading we keep for class only. No harm done. Head back and pick up where you were.
+        </p>
+        <div class="nf__links">
+            <a href="index.html" class="btn btn--clarity">Back to the welcome page</a>
+            <a href="bank.html" class="btn btn--ghost">The question bank</a>
+            <a href="lab.html" class="btn btn--ghost">The lab</a>
+        </div>
+    </main>
+</body>
+</html>

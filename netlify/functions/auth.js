@@ -17,9 +17,14 @@ const { listStudents, getStudent, verifyPassword } = require('./_lib/registry');
 const { issueToken, verifyToken } = require('./_lib/session');
 const { corsHeaders } = require('./_lib/cors');
 
-// Per-IP rate limit on login attempts. 9 students with low-entropy
-// surnames as passwords means brute-force is otherwise trivial.
-const LOGIN_LIMIT_MAX = 8;
+// Per-IP rate limit on login attempts. NOTE: the whole class sits behind one
+// school NAT, so this bucket is shared by all ~9 students. Set high enough that
+// a class logging in at once (with surname typos, and re-logins after a network
+// blip) can't lock itself out — the worst possible moment is the first 10
+// minutes of the lesson. Brute-force resistance here is weak anyway because the
+// passwords are surnames; the real hardening (random passcodes / hashed
+// surnames) is tracked separately.
+const LOGIN_LIMIT_MAX = 50;
 const LOGIN_LIMIT_WINDOW_MS = 5 * 60_000;
 const loginBuckets = new Map();
 

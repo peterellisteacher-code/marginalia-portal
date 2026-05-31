@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Thought-Experiment Lab | Marginalia</title>
+    <meta name="description" content="Step into the great philosophical thought experiments — the trolley problem, the experience machine, Mary's room — make a choice, and see what your instincts reveal.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Caveat:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="shared/tokens.css">
+    <link rel="stylesheet" href="shared/marginalia.css">
+
+    <style>
+        .lab-main { overflow-y: auto; padding: var(--space-lg) var(--space-lg) var(--space-2xl); }
+
+        .lab-header { max-width: 70ch; margin-bottom: var(--space-lg); }
+
+        .lab-header__title {
+            font-family: var(--font-display);
+            font-size: var(--text-2xl);
+            font-weight: 500;
+            color: var(--ink);
+            margin-bottom: var(--space-sm);
+        }
+
+        .lab-header__lead {
+            font-family: var(--font-body);
+            font-size: var(--text-base);
+            color: var(--ink-soft);
+            line-height: 1.6;
+            margin-bottom: var(--space-sm);
+        }
+
+        .lab-progress {
+            font-family: var(--font-ui);
+            font-size: var(--text-sm);
+            color: var(--aged-strong);
+            letter-spacing: 0.03em;
+            border-top: 1px solid var(--aged-soft);
+            padding-top: var(--space-sm);
+            margin-top: var(--space-sm);
+        }
+        .lab-progress strong { color: var(--marginalia); }
+
+        /* The bench — cards lay out across the full width, each growing
+           independently when a student commits to an answer. */
+        .bench {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(440px, 1fr));
+            gap: var(--space-lg);
+            align-items: start;
+        }
+
+        .specimen {
+            background: var(--paper-dark);
+            border: 1px solid var(--aged-soft);
+            border-top: 3px solid var(--aged);
+            padding: var(--space-lg);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+        }
+        .specimen[data-area="ethics"]       { border-top-color: var(--marginalia); }
+        .specimen[data-area="epistemology"] { border-top-color: var(--clarity); }
+        .specimen[data-area="metaphysics"]  { border-top-color: var(--aged); }
+
+        .specimen__tag {
+            font-family: var(--font-ui);
+            font-size: var(--text-xs);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--aged-strong);
+            font-weight: 600;
+        }
+        .specimen__done {
+            color: var(--marginalia);
+            margin-left: var(--space-xs);
+        }
+
+        .specimen__title {
+            font-family: var(--font-display);
+            font-size: var(--text-xl);
+            font-weight: 500;
+            color: var(--ink);
+            line-height: 1.2;
+        }
+
+        .specimen__scene {
+            font-family: var(--font-body);
+            font-size: var(--text-base);
+            color: var(--ink);
+            line-height: 1.6;
+        }
+
+        .specimen__prompt {
+            font-family: var(--font-display);
+            font-style: italic;
+            font-size: var(--text-lg);
+            color: var(--marginalia);
+            line-height: 1.3;
+            margin-top: var(--space-xs);
+        }
+
+        .specimen__choices {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+            margin-top: var(--space-xs);
+        }
+
+        .specimen__choice {
+            font-family: var(--font-body);
+            font-size: var(--text-base);
+            text-align: left;
+            color: var(--ink);
+            background: var(--ground);
+            border: 1px solid var(--aged-soft);
+            padding: var(--space-sm) var(--space-md);
+            cursor: pointer;
+            line-height: 1.4;
+            min-height: 44px;
+            transition: border-color var(--motion-fast) var(--motion-ease),
+                        background var(--motion-fast) var(--motion-ease);
+        }
+        .specimen__choice:hover,
+        .specimen__choice:focus-visible {
+            border-color: var(--marginalia);
+            background: var(--paper-warm);
+        }
+        .specimen__choice[aria-pressed="true"] {
+            border-color: var(--marginalia);
+            border-left-width: 3px;
+            background: var(--paper-warm);
+            font-weight: 500;
+        }
+
+        /* Revealed after a choice */
+        .specimen__result {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+            border-top: 1px dashed var(--aged-soft);
+            margin-top: var(--space-sm);
+            padding-top: var(--space-md);
+            animation: ink-appear var(--motion-slow) var(--motion-ease);
+        }
+
+        .specimen__lean {
+            font-family: var(--font-body);
+            font-size: var(--text-base);
+            color: var(--ink);
+            line-height: 1.5;
+        }
+        .specimen__lean strong { color: var(--marginalia); }
+
+        .specimen__blurb {
+            font-family: var(--font-body);
+            font-size: var(--text-base);
+            color: var(--ink);
+            line-height: 1.6;
+        }
+
+        .specimen__twist {
+            background: var(--ground);
+            border-left: 3px solid var(--clarity);
+            padding: var(--space-sm) var(--space-md);
+        }
+        .specimen__twist-label {
+            display: block;
+            font-family: var(--font-ui);
+            font-size: var(--text-xs);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--clarity);
+            font-weight: 600;
+            margin-bottom: var(--space-xs);
+        }
+        .specimen__twist p {
+            font-family: var(--font-body);
+            font-size: var(--text-base);
+            color: var(--ink);
+            line-height: 1.6;
+        }
+        .specimen__twistnote {
+            color: var(--ink-soft);
+            font-style: italic;
+            margin-top: var(--space-xs);
+        }
+
+        .specimen__tension {
+            font-family: var(--font-body);
+            font-size: var(--text-base);
+            color: var(--ink);
+            line-height: 1.6;
+        }
+
+        .specimen__thinkers {
+            font-family: var(--font-body);
+            font-size: var(--text-sm);
+            color: var(--ink-soft);
+            line-height: 1.5;
+        }
+        .specimen__thinkers span {
+            font-family: var(--font-ui);
+            font-size: var(--text-xs);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--aged-strong);
+            margin-right: var(--space-xs);
+        }
+
+        .specimen__video { margin-top: var(--space-xs); }
+        .specimen__video-cap {
+            font-family: var(--font-ui);
+            font-size: var(--text-xs);
+            color: var(--aged-strong);
+            margin-top: var(--space-xs);
+        }
+
+        .specimen__actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-sm);
+            margin-top: var(--space-xs);
+        }
+
+        .specimen__rechoose {
+            align-self: flex-start;
+            font-family: var(--font-ui);
+            font-size: var(--text-xs);
+            color: var(--aged-strong);
+            background: transparent;
+            border: none;
+            border-bottom: 1px dotted var(--aged-strong);
+            cursor: pointer;
+            padding: 2px 0;
+        }
+        .specimen__rechoose:hover,
+        .specimen__rechoose:focus-visible { color: var(--marginalia); border-bottom-color: var(--marginalia); }
+
+        @media (max-width: 700px) {
+            .bench { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <a href="#main" class="skip-link">Skip to main content</a>
+    <div class="page-shell">
+
+        <header class="site-header">
+            <a href="index.html" class="site-header__brand">
+                Marginalia <small>Stage 1 Issues Study</small>
+            </a>
+            <nav class="site-nav" aria-label="Primary">
+                <a href="index.html">welcome</a>
+                <a href="explainer.html">explain the task</a>
+                <a href="bank.html">questions</a>
+                <a href="lab.html" class="active">experiments</a>
+                <a href="chamber.html">chamber</a>
+                <a href="resources.html">readings</a>
+                <a href="drafting.html">drafting</a>
+            </nav>
+        </header>
+
+        <main class="page-main lab-main" id="main">
+            <header class="lab-header">
+                <h1 class="lab-header__title">The Thought-Experiment Lab</h1>
+                <p class="lab-header__lead">
+                    A <button class="term" aria-describedby="def-thought-experiment">thought experiment</button> is a story you imagine to test whether an idea holds up. Each one below puts you on the spot. Read the scene, write down your gut answer, then the experiment pushes back with a harder version — and you&rsquo;ll see if your first answer still holds.
+                </p>
+                <p class="lab-header__lead">
+                    There are no wrong answers here. The point is to notice <em>what you already think</em>, and why. When one grips you, take its question to the chamber and turn it into your Issues Study.
+                </p>
+                <p class="lab-progress" id="labProgress">You've explored <strong id="labCount">0</strong> of 6.</p>
+            </header>
+
+            <div class="bench" id="bench"></div>
+        </main>
+
+        <footer class="site-footer">
+            <span>SACE Stage 1 Philosophy &middot; Issues Study workspace</span>
+            <span><a href="chamber.html" class="footer-link">Next: take a question to the chamber &rarr;</a></span>
+        </footer>
+
+    </div>
+
+    <div id="def-thought-experiment" popover="auto">An imagined scenario designed to test a philosophical idea by appealing to your intuitions — like a controlled experiment, but run in the mind rather than a lab.</div>
+
+    <script src="shared/pins.js"></script>
+    <script src="shared/glossary.js"></script>
+    <script src="shared/youtube.js"></script>
+    <script>
+        (() => {
+            'use strict';
+
+            // Escape plain-text values (the video captions) before they go into an
+            // attribute or text node via innerHTML. The authored scene/blurb/twist/
+            // tension strings are intentional HTML (<em>…</em>) and are NOT escaped.
+            const esc = (s) => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+            const EXPERIMENTS = [
+                {
+                    id: 'trolley', area: 'ethics', title: 'The Trolley Problem',
+                    scene: 'A runaway trolley is hurtling toward five people tied to the track. You are standing beside a lever. Pull it, and the trolley switches to a side track — where it will kill one person instead. Your hand is on the lever, and you have seconds.',
+                    prompt: 'Do you pull the lever?',
+                    choices: [
+                        { label: 'Pull it — five lives beat one', lean: "You're thinking like a consequentialist.", blurb: 'You judged the act purely by its outcome: five saved is better than one lost. That is the logic of <em>utilitarianism</em> — the right action is the one that produces the most good. Mill would nod.' },
+                        { label: "Leave it — I won't choose who dies", lean: "You're reasoning like a deontologist — some lines shouldn't be crossed.", blurb: 'You refused to make yourself the author of a death. Here is the twist most people miss: many deontologists think pulling <em>is</em> allowed in this version, because the one dies as a side-effect, not as your tool. So hold on to that discomfort — it bites much harder in the footbridge case below.' }
+                    ],
+                    twist: "Now the hard version. There is no lever — you are on a footbridge above the track, beside a large stranger. The only way to stop the trolley is to push them onto it. Same maths: one dies, five live. Would you push them?",
+                    twistNote: "Most people who pull the lever refuse to push. If the numbers are identical, why does pushing feel like murder and pulling feel like rescue?",
+                    tension: "Here is the gap: in <em>both</em> cases you act, so it can't be about ‘doing versus allowing’. It is about whether the person's death is your <em>means</em> — you use the man on the bridge to stop the trolley — or just a <em>side-effect</em>, as with the one on the side track. That is the heart of the <em>doctrine of double effect</em>, and naming it is half the philosophy.",
+                    thinkers: "Philippa Foot devised it (1967); Judith Jarvis Thomson sharpened it. It is the standard arena for consequentialism vs deontology.",
+                    video: { id: 'yg16u_bzjPE', cap: 'Would you sacrifice one person to save five? — TED-Ed' },
+                    pin: { id: 'lab-trolley', text: 'When is it wrong to do harm for the sake of a greater good — and why does pushing someone feel different from pulling a lever?' },
+                    pack: 'lab_applied_normative_ethics'
+                },
+                {
+                    id: 'experience-machine', area: 'ethics', title: 'The Experience Machine',
+                    scene: "Neuroscientists offer you a machine. Float in a tank and it will feed your brain a lifetime of perfect experiences — every ambition achieved, every love returned. You will believe all of it is real. Once you plug in you never come out and never know. The catch: none of it actually happens.",
+                    prompt: 'Do you plug in?',
+                    choices: [
+                        { label: 'Plug in — a happy life is a happy life', lean: "You're a hedonist about value.", blurb: 'If pleasant experience is what ultimately matters, the machine delivers the maximum of it. On that view, where the feelings come from should not matter at all.' },
+                        { label: 'Stay out — I want it to be real', lean: 'You think more than pleasure matters.', blurb: 'You just judged that <em>actually</em> doing things, and staying in contact with reality, matter beyond how they feel. That is a vote against pure <em>hedonism</em>.' }
+                    ],
+                    twist: "Push on your own answer. If you would stay out — what exactly is lost, given that you would feel no regret inside the tank? And if you would plug in — would you plug your little brother in without telling him?",
+                    twistNote: "Nozick bet that almost nobody will plug in — and that this reveals we value things beyond our own pleasant experiences.",
+                    tension: "This is a direct test of <em>hedonism</em>: the claim that wellbeing is just pleasant experience. Your gut answer is evidence about what you really think a good life is.",
+                    thinkers: "Robert Nozick, <em>Anarchy, State, and Utopia</em> (1974). It aims straight at the foundations of utilitarianism.",
+                    video: { id: 'Ra1Dmz-5HjU', cap: 'What Is a Good Life? — Crash Course Philosophy #46' },
+                    pin: { id: 'lab-experience-machine', text: 'Is a good life simply a life that feels good from the inside, or does it require contact with reality?' },
+                    pack: 'lab_applied_normative_ethics'
+                },
+                {
+                    id: 'ship', area: 'metaphysics', title: 'The Ship of Theseus',
+                    scene: "A wooden ship is preserved for centuries. As each plank rots it is replaced with an identical new one, until not a single original plank remains. Meanwhile a collector has been gathering every discarded original plank, and reassembles them into a ship.",
+                    prompt: 'Which one is the original ship?',
+                    choices: [
+                        { label: 'The repaired one — continuity is what counts', lean: 'You hold that identity is continuity.', blurb: 'You said being the same thing is about an unbroken history, not the same matter. Apply that to yourself: you have replaced most of your cells since you were five.' },
+                        { label: 'The reassembled one — same parts, same ship', lean: 'You hold that identity is composition.', blurb: 'You said a thing is its original parts. But then are you not the same person you were as a baby, since almost none of that original matter remains?' },
+                        { label: 'Neither, or both — the question is broken', lean: 'You suspect identity is a convention.', blurb: '"Same ship" may not be a deep fact but a decision about how we use words. This is <em>conventionalism</em> — and Parfit went one step further: perhaps identity is not even what matters, only the continuity itself.' }
+                    ],
+                    twist: "Now make it personal. Over a lifetime your body's matter is almost entirely replaced, and your memories, beliefs and personality shift too. In what sense are <em>you</em> the same person who started reading this sentence?",
+                    twistNote: "Locke moved the puzzle from ships to persons, and pinned identity on memory rather than matter.",
+                    tension: "You are choosing a criterion of <em>identity over time</em>: bodily continuity, psychological continuity, or sameness of parts. Each gives a different verdict about persons, not just ships.",
+                    thinkers: "Plutarch posed the ship; Hobbes added the reassembly twist; Locke moved it to persons; Parfit asked whether identity even matters.",
+                    video: { id: 'trqDnLNRuSc', cap: 'Personal Identity — Crash Course Philosophy #19' },
+                    pin: { id: 'lab-ship', text: 'What makes you the same person over time — your body, your memories, or something else?' },
+                    pack: 'stage1_mind_simulation'
+                },
+                {
+                    id: 'violinist', area: 'ethics', title: "Thomson's Violinist",
+                    scene: "You wake in hospital, surgically connected to a famous violinist. He has a fatal kidney ailment, and you alone have the matching blood type, so the Society of Music Lovers plugged his circulation into yours while you slept. Unplug now and he dies. Stay connected for nine months and he lives.",
+                    prompt: 'Are you obligated to stay plugged in?',
+                    choices: [
+                        { label: "No — he can't use my body without consent", lean: 'You let bodily autonomy outweigh a right to life.', blurb: "You judged that even a person's right to life does not entitle them to use your body. Thomson built this to argue abortion can be permissible <em>even if</em> the foetus is a person." },
+                        { label: 'Yes — a life is at stake and I can save it', lean: 'You think the duty to save can bind you.', blurb: 'You held that the stakes create a real obligation. Critics of Thomson press exactly here: when, if ever, does another\'s need create a duty to give up your body?' }
+                    ],
+                    twist: "Thomson grants, for the sake of argument, that the violinist is a full person with a right to life — and still says you may unplug. Does that change your answer? And does it matter whether you <em>volunteered</em> to be connected?",
+                    twistNote: "Her move is to separate two questions we usually run together.",
+                    tension: "The case prises apart <em>is it a person?</em> from <em>may it use your body?</em> Thomson's claim is that the second can be 'no' even when the first is 'yes'.",
+                    thinkers: "Judith Jarvis Thomson, 'A Defense of Abortion' (1971). Compare Marquis, who argues that losing a 'future like ours' is what makes killing wrong.",
+                    video: null,
+                    pin: { id: 'lab-violinist', text: 'Even if a foetus is a person, does it have the right to use another person’s body to stay alive?' },
+                    pack: 'lab_applied_normative_ethics'
+                },
+                {
+                    id: 'marys-room', area: 'epistemology', title: "Mary's Room",
+                    scene: "Mary is the world's greatest scientist of colour vision — but she has lived her whole life in a black-and-white room, learning through a black-and-white screen. She knows every physical fact about seeing red: the wavelengths, the neurons, all of it. One day she walks outside and sees a red rose for the first time.",
+                    prompt: 'Does Mary learn something new when she sees red?',
+                    choices: [
+                        { label: 'Yes — she learns what red looks like', lean: 'You doubt physicalism.', blurb: "If Mary knew every physical fact and still learns something, then some facts — what experience is <em>like</em> — are not physical facts. That is the wedge dualists drive in." },
+                        { label: 'No — she already knew it all', lean: "You're a physicalist.", blurb: '"Knowing what it is like" is just knowing physical facts in a new way — a new <em>mode of access</em>, not a new fact. That is the standard physicalist reply.' }
+                    ],
+                    twist: "Sharpen it. Suppose that, still in the room, Mary could perfectly predict which neurons would fire. When she finally sees red and says ‘so <em>that’s</em> what it is like’ — is she learning a new fact, or just having an experience she had already fully described?",
+                    twistNote: "Frank Jackson designed Mary to show that physicalism leaves something out — though years later he changed his mind.",
+                    tension: "At stake is whether <em>consciousness</em> — the felt quality of experience, its 'qualia' — can be fully captured in physical terms. Your answer is a stance on the mind–body problem.",
+                    thinkers: "Frank Jackson, 'Epiphenomenal Qualia' (1982). It is the sharpest modern challenge to a purely physical account of the mind.",
+                    video: { id: '3SJROTXnmus', cap: 'Where Does Your Mind Reside? — Crash Course Philosophy #22' },
+                    pin: { id: 'lab-marys-room', text: 'Can everything about conscious experience be captured in physical facts, or is something always left out?' },
+                    pack: 'stage1_mind_simulation'
+                },
+                {
+                    id: 'veil', area: 'ethics', title: 'The Veil of Ignorance',
+                    scene: "You must design the rules for a society — its laws, its share-out of wealth, its rights. But you choose from behind a 'veil of ignorance': you do not know who you will be in it. Rich or poor, healthy or sick, majority or minority, gifted or not — your own place stays hidden until the rules are locked in.",
+                    prompt: 'From behind the veil, what do you secure first?',
+                    choices: [
+                        { label: 'Protect the worst-off — I might be them', lean: 'You reason like Rawls.', blurb: 'Not knowing your place, you guard against the worst outcome — you could turn out to be the least advantaged. So Rawls argued. (In his full theory, equal basic liberties come first of all; protecting the worst-off then governs every inequality after that.)' },
+                        { label: 'Maximise total prosperity — best average odds', lean: 'You reason like a utilitarian.', blurb: 'You played the averages, betting on the highest expected outcome. Rawls’s whole argument is that behind the veil this is too reckless a gamble with your one life.' }
+                    ],
+                    twist: "Now drop the veil — you are back to being exactly who you are, with your real advantages and disadvantages. Do the rules you just chose still look fair? If your answer changes, which version of you was reasoning more honestly?",
+                    twistNote: "The veil is a machine for removing self-interest so that fairness can show itself.",
+                    tension: "It converts 'what is good for me?' into 'what could I accept if I did not know who I am?' That shift is the heart of Rawls's theory of <em>justice as fairness</em>.",
+                    thinkers: "John Rawls, <em>A Theory of Justice</em> (1971). The utilitarian reply runs through Mill and Singer.",
+                    video: null,
+                    pin: { id: 'lab-veil', text: 'What would a fair society look like if you had to choose its rules without knowing your own place in it?' },
+                    pack: 'lab_applied_normative_ethics'
+                }
+            ];
+
+            const STORE_KEY = 'marginalia.lab';
+            const bench = document.getElementById('bench');
+            const labCount = document.getElementById('labCount');
+
+            function loadChoices() {
+                try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; }
+                catch (e) { return {}; }
+            }
+            function saveChoice(id, idx) {
+                const all = loadChoices();
+                all[id] = idx;
+                try { localStorage.setItem(STORE_KEY, JSON.stringify(all)); } catch (e) { /* private mode */ }
+            }
+            function clearChoice(id) {
+                const all = loadChoices();
+                delete all[id];
+                try { localStorage.setItem(STORE_KEY, JSON.stringify(all)); } catch (e) {}
+            }
+
+            function updateCount() {
+                const n = Object.keys(loadChoices()).length;
+                labCount.textContent = n;
+            }
+
+            function buildCard(exp) {
+                const card = document.createElement('article');
+                card.className = 'specimen';
+                card.dataset.area = exp.area;
+                card.dataset.id = exp.id;
+
+                const areaLabel = exp.area.charAt(0).toUpperCase() + exp.area.slice(1);
+
+                const choicesHtml = exp.choices.map((c, i) =>
+                    '<button type="button" class="specimen__choice" data-idx="' + i + '" aria-pressed="false">' + c.label + '</button>'
+                ).join('');
+
+                card.innerHTML =
+                    '<div class="specimen__tag">' + areaLabel + ' · thought experiment<span class="specimen__done" hidden> ✓ explored</span></div>' +
+                    '<h2 class="specimen__title">' + exp.title + '</h2>' +
+                    '<p class="specimen__scene">' + exp.scene + '</p>' +
+                    '<p class="specimen__prompt">' + exp.prompt + '</p>' +
+                    '<div class="specimen__choices" role="group" aria-label="' + exp.title + ' — your answer">' + choicesHtml + '</div>' +
+                    '<div class="specimen__result" hidden></div>';
+
+                const result = card.querySelector('.specimen__result');
+                const doneBadge = card.querySelector('.specimen__done');
+                const choiceBtns = Array.from(card.querySelectorAll('.specimen__choice'));
+
+                function reveal(idx, focusResult) {
+                    const c = exp.choices[idx];
+                    choiceBtns.forEach((b, i) => b.setAttribute('aria-pressed', i === idx ? 'true' : 'false'));
+                    doneBadge.hidden = false;
+
+                    const videoHtml = exp.video
+                        ? '<div class="specimen__video"><button class="yt" data-id="' + esc(exp.video.id) + '" data-title="' + esc(exp.video.cap) + '"></button><p class="specimen__video-cap">Watch · ' + esc(exp.video.cap) + '</p></div>'
+                        : '';
+
+                    result.innerHTML =
+                        '<p class="specimen__lean"><strong>' + c.lean + '</strong></p>' +
+                        '<p class="specimen__blurb">' + c.blurb + '</p>' +
+                        '<div class="specimen__twist"><span class="specimen__twist-label">Now make it harder</span>' +
+                            '<p>' + exp.twist + '</p>' +
+                            '<p class="specimen__twistnote">' + exp.twistNote + '</p></div>' +
+                        '<p class="specimen__tension">' + exp.tension + '</p>' +
+                        '<p class="specimen__thinkers"><span>Where it comes from</span>' + exp.thinkers + '</p>' +
+                        videoHtml +
+                        '<div class="specimen__actions">' +
+                            '<button type="button" class="btn btn--small specimen__pin">Pin this question</button>' +
+                            '<a class="btn btn--clarity btn--small" href="chamber.html?pack=' + exp.pack + '">Take it to the chamber &rarr;</a>' +
+                        '</div>' +
+                        '<button type="button" class="specimen__rechoose">change my answer</button>';
+
+                    result.hidden = false;
+
+                    // Wire the freshly-injected video facade, pin and rechoose.
+                    if (exp.video && window.marginaliaYouTube) window.marginaliaYouTube.init();
+
+                    const pinBtn = result.querySelector('.specimen__pin');
+                    function syncPin() {
+                        if (window.pins && window.pins.has(exp.pin.id)) {
+                            pinBtn.textContent = '✓ Pinned — find it in the chamber';
+                            pinBtn.classList.add('btn--ghost');
+                        } else {
+                            pinBtn.textContent = 'Pin this question';
+                            pinBtn.classList.remove('btn--ghost');
+                        }
+                    }
+                    pinBtn.addEventListener('click', () => {
+                        if (!window.pins) return;
+                        if (window.pins.has(exp.pin.id)) window.pins.remove(exp.pin.id);
+                        else window.pins.add(exp.pin.id, exp.pin.text);
+                        syncPin();
+                    });
+                    syncPin();
+
+                    result.querySelector('.specimen__rechoose').addEventListener('click', () => {
+                        result.hidden = true;
+                        result.innerHTML = '';
+                        doneBadge.hidden = true;
+                        choiceBtns.forEach(b => b.setAttribute('aria-pressed', 'false'));
+                        clearChoice(exp.id);
+                        updateCount();
+                        choiceBtns[0].focus();
+                    });
+
+                    if (focusResult) {
+                        result.setAttribute('tabindex', '-1');
+                        result.focus({ preventScroll: false });
+                    }
+                }
+
+                choiceBtns.forEach((btn, idx) => {
+                    btn.addEventListener('click', () => {
+                        saveChoice(exp.id, idx);
+                        updateCount();
+                        reveal(idx, true);
+                    });
+                });
+
+                // Restore a previous answer (without stealing focus on load).
+                const saved = loadChoices()[exp.id];
+                if (typeof saved === 'number' && exp.choices[saved]) reveal(saved, false);
+
+                return card;
+            }
+
+            EXPERIMENTS.forEach(exp => bench.appendChild(buildCard(exp)));
+            updateCount();
+        })();
+    </script>
+</body>
+</html>

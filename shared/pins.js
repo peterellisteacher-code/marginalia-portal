@@ -1,8 +1,9 @@
 /* ============================================================
    pins.js — Shared pinned-question state across pages
-   Uses sessionStorage so pins persist within a browser session
-   but don't survive a closed tab (Issues Study work is single-session).
-   Switch to localStorage to persist across sessions.
+   Uses localStorage so pins persist across sessions: the Issues Study runs
+   over several days, so a student's pinned questions should still be there
+   when they come back tomorrow. (Signed-in portal state also persists
+   server-side; this covers the anonymous bank / lab / chamber path.)
    ============================================================ */
 
 (function (window) {
@@ -12,14 +13,18 @@
 
     function read() {
         try {
-            return JSON.parse(sessionStorage.getItem(KEY)) || [];
+            return JSON.parse(localStorage.getItem(KEY)) || [];
         } catch (e) {
             return [];
         }
     }
 
     function write(arr) {
-        sessionStorage.setItem(KEY, JSON.stringify(arr));
+        try {
+            localStorage.setItem(KEY, JSON.stringify(arr));
+        } catch (e) {
+            /* private mode / quota — pins just won't persist this session */
+        }
     }
 
     const pins = {

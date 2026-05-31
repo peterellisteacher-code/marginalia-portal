@@ -271,6 +271,7 @@
                 <a href="index.html">welcome</a>
                 <a href="explainer.html">explain the task</a>
                 <a href="bank.html" class="active">questions</a>
+                <a href="lab.html">experiments</a>
                 <a href="chamber.html">chamber</a>
                 <a href="resources.html">readings</a>
                 <a href="drafting.html">drafting</a>
@@ -285,7 +286,7 @@
                     <header class="bank-header">
                         <h1 class="bank-header__title">The question bank</h1>
                         <p class="bank-header__lead">
-                            117 philosophical questions across ethics, epistemology, and metaphysics — every one phrased so that taking a position is unavoidable. Browse, filter, and pin the ones that catch your attention. Pinned questions follow you into the Socratic chamber.
+                            119 philosophical questions across ethics, epistemology, and metaphysics — every one phrased so that you have to pick a side, not sit on the fence. Browse them, filter by topic, and pin the ones that catch your eye. Pinned questions follow you into the Socratic chamber.
                         </p>
                     </header>
 
@@ -315,7 +316,7 @@
 
                     <div id="pinContainer">
                         <p class="empty-rail">
-                            Click any question to expand it. Click <em>Pin</em> to add it here. Pinned questions move with you into the Socratic chamber and the drafting scaffold.
+                            Click any question to expand it. Click <em>Pin</em> to add it here. Pinned questions travel with you into the Socratic chamber.
                         </p>
                     </div>
 
@@ -341,6 +342,7 @@
     <div id="def-epistemology" popover="auto">The branch of philosophy that asks how we know things — what counts as knowledge, when belief becomes truth, and when to trust your senses.</div>
     <div id="def-metaphysics" popover="auto">The branch of philosophy that asks what is real — minds, time, free will, what makes you the same person tomorrow as today.</div>
 
+    <script src="shared/glossary.js"></script>
     <script src="shared/pins.js"></script>
     <script>
         (() => {
@@ -462,7 +464,7 @@
                 const list = window.pins.list();
                 pinCount.textContent = `${list.length} pinned`;
                 if (list.length === 0) {
-                    pinContainer.innerHTML = '<p class="empty-rail">Click any question to expand it. Click <em>Pin</em> to add it here. Pinned questions move with you into the Socratic chamber and the drafting scaffold.</p>';
+                    pinContainer.innerHTML = '<p class="empty-rail">Click any question to expand it. Click <em>Pin</em> to add it here. Pinned questions travel with you into the Socratic chamber.</p>';
                     return;
                 }
                 pinContainer.innerHTML = list.map(p => `<div class="pin">
@@ -509,10 +511,17 @@
 
             // --- Filter chips: one helper, used for both groups ---
             function bindChipGroup(chips, onSelect) {
+                const sync = (active) => chips.forEach(c => {
+                    const on = c === active;
+                    c.classList.toggle('chip--active', on);
+                    c.setAttribute('aria-pressed', String(on));
+                });
                 chips.forEach(chip => {
+                    // Seed aria-pressed from the initial active class so assistive
+                    // tech announces which filter is on.
+                    chip.setAttribute('aria-pressed', String(chip.classList.contains('chip--active')));
                     chip.onclick = () => {
-                        chips.forEach(c => c.classList.remove('chip--active'));
-                        chip.classList.add('chip--active');
+                        sync(chip);
                         onSelect(chip);
                         render();
                     };

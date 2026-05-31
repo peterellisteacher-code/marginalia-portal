@@ -39,7 +39,7 @@ const { YoutubeTranscript } = require('youtube-transcript');
 
 const { authenticate } = require('./_lib/session');
 const { getStudent } = require('./_lib/registry');
-const { corsHeaders } = require('./_lib/cors');
+const { corsHeaders, ALLOWED_ORIGINS } = require('./_lib/cors');
 
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 const MODEL = 'anthropic/claude-haiku-4.5';
@@ -47,7 +47,11 @@ const MAX_OUTPUT_TOKENS = 800;
 const HISTORY_TURN_LIMIT = 6;
 const MAX_TOOL_LOOPS = 6;
 const HAIKU_CACHE_MIN_TOKENS = 4096;
-const RATE_LIMIT_MAX = 40;
+// Keyed per student when signed in, else per IP. Set generously: anonymous use
+// (chamber + task explainer) shares one bucket across the whole class behind the
+// school NAT, so a low cap would throttle the lesson. The OpenRouter spend cap is
+// the real backstop against runaway cost.
+const RATE_LIMIT_MAX = 120;
 const RATE_LIMIT_WINDOW_MS = 5 * 60_000;
 const SHELF_CAP = 30;
 
@@ -76,6 +80,9 @@ The four marking criteria are Knowledge & Understanding, Reasoning, Critical Ana
 
 YOUR JOB
 Help the student sharpen what they already half-think. You ask one short question at a time. You do not write any part of the essay. You do not tell the student what to think.
+
+YOUR VOICE
+You are warm, curious, and genuinely interested — a thinking partner who finds these questions exciting, not a marker ticking boxes. Talk like a sharp, friendly tutor, not a textbook. A little wit is welcome; pomposity is not. When a student is stuck or anxious, be encouraging about their THINKING, never about mere effort ("that distinction is doing real work" — not "great job!"). Reward curiosity: if a student chases an interesting tangent or asks a bold question, follow them into it for a beat before steering back. A vivid example or a quick thought experiment is often worth more than an explanation — reach for one when an idea won't land. You can point them to the Thought-Experiment Lab on this site (the trolley problem, the experience machine, Mary's room) when a classic puzzle would sharpen their question.
 
 WHEN TO USE YOUR TOOLS
 You have five tools. Use them sparingly and only when they help.
@@ -126,6 +133,8 @@ The student's identity, working question, progress notes, and current resource s
 // ----------------------------------------------------------------------
 
 const EXPLAINER_SYSTEM_PROMPT = `You are the Task Explainer for the SACE Stage 1 Philosophy "Issues Study" (Assessment Type 3). A Year 11 student has clicked "Explain the task". Your one job is to make every element of the task sheet clear.
+
+Be warm and plain-spoken. This task makes students nervous because it is open-ended, so your tone should make it feel doable, even inviting — encouraging without being gushing. You are the friendly teacher who demystifies the rubric, not the rubric itself.
 
 WHAT YOU DO
 - Explain any part of the task sheet: choosing a philosophical question, the "more than one position" requirement, critical analysis, justifying with evidence, referencing, the word count and due dates, the format options, and the four criteria (Knowledge & Understanding, Reasoning, Critical Analysis, Communication).
@@ -727,13 +736,24 @@ exports.handler = async (event, _ctx) => {
     if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: CORS };
     if (event.httpMethod !== 'POST') return respond(405, { error: 'POST only' });
 
-    const ip = getClientIp(event);
-    const lim = checkRateLimit(ip);
-    if (!lim.ok) return respond(429, { error: `Slow down — try again in ${lim.retryAfter}s.` });
+    // Reject cross-site callers. CORS only chooses which Origin is reflected to a
+    // browser; this is a real server-side gate so the AI endpoint can't be driven
+    // from another page. A browser always sends Origin on these POSTs; a missing
+    // Origin (same-origin / server-to-server) is allowed through.
+    const reqOrigin = event.headers?.origin || event.headers?.Origin || '';
+    if (reqOrigin && !ALLOWED_ORIGINS.includes(reqOrigin)) {
+        return respond(403, { error: 'Forbidden origin.' });
+    }
 
+    const ip = getClientIp(event);
     const studentId = authenticate(event);
     const student = studentId ? getStudent(studentId) : null;
     if (studentId && !student) return respond(401, { error: 'Student not found.' });
+
+    // Rate-limit per student when signed in, so a shared school NAT does not make
+    // the whole class share one bucket; fall back to IP for anonymous use.
+    const lim = checkRateLimit(studentId || ip);
+    if (!lim.ok) return respond(429, { error: `Slow down — try again in ${lim.retryAfter}s.` });
 
     let payload;
     try { payload = JSON.parse(event.body || '{}'); } catch (e) {
