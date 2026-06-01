@@ -17,7 +17,7 @@
 'use strict';
 
 const crypto = require('crypto');
-const { getStore, connectLambda } = require('@netlify/blobs');
+const { getStore } = require('@netlify/blobs');
 const { authenticate } = require('./_lib/session');
 const { corsHeaders } = require('./_lib/cors');
 
@@ -35,15 +35,17 @@ const VALID_ADDED_BY = new Set(['agent', 'student']);
 
 // ── Blob helpers ─────────────────────────────────────────────────────────────
 
+// Legacy V1 Netlify Functions no longer receive an injected `event.blobs`
+// payload, so connectLambda() can't wire Blobs credentials and getStore()
+// throws "environment has not been configured". Per Netlify's guidance, V1
+// functions must configure the store manually with siteID + token. Supplying
+// both also routes via the Netlify API (read-after-write consistent), which
+// is what the portal's load-after-save needs anyway.
+const BLOBS_SITE_ID = process.env.BLOBS_SITE_ID || 'ce8fd3dc-cfdf-4859-80dc-7f0803591109';
+const BLOBS_TOKEN   = process.env.NETLIFY_BLOBS_TOKEN || '';
+
 function store(_context) {
-    // @netlify/blobs v8 auto-resolves credentials from the function env in
-    // production. The explicit-context branch was for v1/v2; on v8 it is
-    // ignored and confuses local dev. Use the minimal form everywhere.
-    // Edge access (eventual consistency, ~60s drift) is the only mode Lambda-
-    // compat connectLambda wires up. Strong consistency needs API-access setup
-    // with a Netlify personal access token, which we don't have here. For
-    // per-student state in a 9-student classroom, edge eventual is fine.
-    return getStore({ name: STORE_NAME });
+    return getStore({ name: STORE_NAME, siteID: BLOBS_SITE_ID, token: BLOBS_TOKEN });
 }
 
 function stateKey(studentId) {
@@ -244,13 +246,6 @@ exports.handler = async (event, _netlifyContext) => {
         body: JSON.stringify(body),
     });
 
-    // Lambda-compat mode bridge for @netlify/blobs. Per the SDK README,
-    // connectLambda needs the Lambda EVENT (not the context) -- it reads
-    // event.blobs as a base64-encoded {url, token, siteID} payload.
-    try { connectLambda(event); } catch (e) {
-        console.warn('connectLambda(event) skipped:', e.message);
-    }
-
     if (event.httpMethod === 'OPTIONS') {
         return { statusCode: 204, headers: CORS };
     }
@@ -272,8 +267,8 @@ exports.handler = async (event, _netlifyContext) => {
 
     const { action } = payload;
 
-    // The store() helper now reads its config from the @netlify/blobs runtime
-    // wired up via connectLambda(event) above. No context threading needed.
+    // The store() helper is configured with explicit siteID + token (see top
+    // of file) -- legacy V1 functions don't get Blobs creds auto-injected.
     try {
         switch (action) {
             case 'load':

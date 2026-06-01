@@ -18,8 +18,9 @@
  * add_resource, set_working_question, update_progress_notes. Tool-use loop
  * runs up to MAX_TOOL_LOOPS iterations per chat turn.
  *
- * Per-student state: Netlify Blobs via connectLambda(event) (Lambda-compat
- * bridge per @netlify/blobs v8 README). State key students/<id>/state.json
+ * Per-student state: Netlify Blobs, store "marginalia-students" configured
+ * with explicit siteID + token (NETLIFY_BLOBS_TOKEN) -- legacy V1 functions
+ * must set these manually. State key students/<id>/state.json
  * holds workingQuestion, resources, chatHistory (last 40), progressNotes.
  *
  * Cached readings: all 6 Stage 1 packs concatenated, attached to the system
@@ -34,7 +35,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const { getStore, connectLambda } = require('@netlify/blobs');
+const { getStore } = require('@netlify/blobs');
 const { YoutubeTranscript } = require('youtube-transcript');
 
 const { authenticate } = require('./_lib/session');
@@ -327,9 +328,15 @@ function checkRateLimit(ip) {
 // Per-student state (Netlify Blobs, edge access)
 // ----------------------------------------------------------------------
 
+// Legacy V1 Netlify Functions no longer receive an injected `event.blobs`
+// payload, so connectLambda() can't wire Blobs credentials and getStore()
+// throws "environment has not been configured". Per Netlify's guidance, V1
+// functions must configure the store manually with siteID + token.
+const BLOBS_SITE_ID = process.env.BLOBS_SITE_ID || 'ce8fd3dc-cfdf-4859-80dc-7f0803591109';
+const BLOBS_TOKEN = process.env.NETLIFY_BLOBS_TOKEN || '';
+
 function studentStore() {
-    // connectLambda(event) must have been called before this fires.
-    return getStore({ name: 'marginalia-students' });
+    return getStore({ name: 'marginalia-students', siteID: BLOBS_SITE_ID, token: BLOBS_TOKEN });
 }
 
 async function loadStudentState(store, studentId) {
@@ -726,12 +733,6 @@ async function runAgent({ systemMessage, conversation, ctx, ip }) {
 exports.handler = async (event, _ctx) => {
     const CORS = corsHeaders(event);
     const respond = (statusCode, body) => ({ statusCode, headers: CORS, body: JSON.stringify(body) });
-
-    // Lambda-compat bridge so getStore('name') auto-resolves credentials.
-    // Per @netlify/blobs v8 README, this takes the Lambda EVENT.
-    try { connectLambda(event); } catch (e) {
-        console.warn('connectLambda(event) skipped:', e.message);
-    }
 
     if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: CORS };
     if (event.httpMethod !== 'POST') return respond(405, { error: 'POST only' });
