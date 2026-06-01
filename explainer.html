@@ -13,54 +13,165 @@
     <link rel="stylesheet" href="shared/marginalia.css">
 
     <style>
-        .page-grid--explainer {
-            grid-template-columns: 1fr 320px;
-            gap: var(--space-xl);
-            max-width: none;
-        }
-
-        .text-column {
+        /* This page scrolls inside the main region (header/footer stay put),
+           so the sticky table-of-contents can track the reader. */
+        .page-main--explainer {
             overflow-y: auto;
-            padding-right: var(--space-md);
+            overflow-x: hidden;
         }
 
-        .text-column .body-text {
-            max-width: 65ch;
+        .page-grid--explainer {
+            grid-template-columns: minmax(0, 1fr) 250px;
+            gap: var(--space-2xl);
+            max-width: 1500px;
+            height: auto;
+            align-items: start;
         }
 
-        .text-column h2 + .body-text,
-        .text-column h3 + .body-text {
-            margin-top: var(--space-sm);
+        .ex-main { min-width: 0; }
+
+        .ex-lede {
+            font-family: var(--font-body);
+            font-size: var(--text-lg);
+            line-height: 1.55;
+            color: var(--ink);
+            max-width: 60ch;
+            margin: var(--space-sm) 0 var(--space-xl);
+        }
+        .ex-lede em { font-style: italic; color: var(--marginalia); }
+
+        .ex-section { margin-bottom: var(--space-2xl); scroll-margin-top: var(--space-md); }
+
+        .ex-section__intro {
+            font-family: var(--font-body);
+            font-size: var(--text-base);
+            color: var(--ink-soft);
+            line-height: 1.55;
+            max-width: 62ch;
+            margin-bottom: var(--space-md);
         }
 
-        .step-marker {
-            font-family: var(--font-ui);
-            font-size: var(--text-xs);
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            color: var(--aged);
-            margin-bottom: var(--space-xs);
-            display: block;
+        .text-column .body-text { max-width: 62ch; }
+
+        /* ---- Principles as a card grid (fills the column width) ---- */
+        .principles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--space-lg);
         }
 
-        .principle {
-            margin-bottom: var(--space-2xl);
-            padding-bottom: var(--space-xl);
-            border-bottom: 1px solid var(--aged-soft);
+        .principle-card {
+            background: var(--paper-dark);
+            border: 1px solid var(--aged-soft);
+            border-top: 3px solid var(--marginalia);
+            padding: var(--space-lg);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xs);
         }
-
-        .principle:last-child {
-            border-bottom: none;
+        .principle-card__num {
+            font-family: var(--font-display);
+            font-size: var(--text-2xl);
+            font-weight: 500;
+            color: var(--marginalia);
+            line-height: 1;
         }
-
-        .principle__lead {
+        .principle-card__lead {
             font-family: var(--font-display);
             font-style: italic;
-            font-size: var(--text-xl);
-            line-height: 1.3;
+            font-size: var(--text-lg);
+            line-height: 1.25;
             color: var(--ink);
-            margin-bottom: var(--space-md);
-            max-width: 50ch;
+            margin: var(--space-xs) 0 var(--space-sm);
+        }
+        .principle-card__body {
+            font-family: var(--font-body);
+            font-size: var(--text-base);
+            line-height: 1.55;
+            color: var(--ink);
+        }
+        .principle-card__body em { font-style: italic; color: var(--marginalia); }
+
+        /* ---- Criteria as a 2x2 card grid ---- */
+        .criteria-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--space-md);
+        }
+        .criteria-card {
+            background: var(--paper-dark);
+            border: 1px solid var(--aged-soft);
+            border-left: 3px solid var(--clarity);
+            padding: var(--space-md) var(--space-lg);
+        }
+        .criteria-card__code {
+            font-family: var(--font-ui);
+            font-size: var(--text-sm);
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--clarity);
+            display: block;
+            margin-bottom: var(--space-xs);
+        }
+        .criteria-card__text {
+            font-family: var(--font-body);
+            font-size: var(--text-base);
+            line-height: 1.5;
+            color: var(--ink);
+        }
+
+        /* ---- Sticky table of contents (replaces the decorative rail) ---- */
+        .toc {
+            position: sticky;
+            top: 0;
+            align-self: start;
+            padding-top: var(--space-xs);
+        }
+        .toc__title {
+            font-family: var(--font-ui);
+            font-size: var(--text-xs);
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--aged-strong);
+            margin-bottom: var(--space-sm);
+        }
+        .toc__list {
+            list-style: none;
+            margin: 0 0 var(--space-md);
+            padding: 0;
+            border-left: 1px solid var(--aged-soft);
+        }
+        .toc__list li { margin: 0; }
+        .toc__list a {
+            display: block;
+            font-family: var(--font-ui);
+            font-size: var(--text-sm);
+            color: var(--ink-soft);
+            text-decoration: none;
+            padding: var(--space-xs) 0 var(--space-xs) var(--space-md);
+            margin-left: -1px;
+            border-left: 2px solid transparent;
+            line-height: 1.35;
+            transition: color var(--motion-fast) var(--motion-ease),
+                        border-color var(--motion-fast) var(--motion-ease);
+        }
+        .toc__list a:hover,
+        .toc__list a:focus-visible {
+            color: var(--ink);
+            border-left-color: var(--marginalia-soft);
+        }
+        .toc__list a[aria-current="true"] {
+            color: var(--marginalia);
+            border-left-color: var(--marginalia);
+            font-weight: 600;
+        }
+        .toc__cta { width: 100%; }
+
+        @media (max-width: 900px) {
+            .page-grid--explainer { grid-template-columns: 1fr; }
+            .toc { position: static; order: -1; margin-bottom: var(--space-lg); }
         }
 
         .exemplar-grid {
@@ -108,42 +219,8 @@
             border-bottom: 2px solid var(--marginalia);
         }
 
-        .criterion-list {
-            list-style: none;
-            padding: 0;
-            margin: var(--space-md) 0;
-        }
-
-        .criterion-list li {
-            font-family: var(--font-body);
-            font-size: var(--text-base);
-            color: var(--ink);
-            padding: var(--space-xs) 0;
-            padding-left: var(--space-lg);
-            position: relative;
-            line-height: 1.55;
-        }
-
-        .criterion-list li::before {
-            content: "—";
-            position: absolute;
-            left: 0;
-            color: var(--marginalia);
-            font-weight: 600;
-        }
-
-        .criterion-list li strong {
-            font-family: var(--font-ui);
-            font-size: var(--text-sm);
-            color: var(--clarity);
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-            margin-right: var(--space-sm);
-        }
-
-        /* Page-specific spacing helpers (moved out of inline styles) */
-        .text-column .h-1 { margin-bottom: var(--space-lg); }
-        .text-column .h-2 { margin-top: var(--space-2xl); }
+        /* Page-specific spacing helpers */
+        .text-column .h-1 { margin-bottom: var(--space-sm); }
 
         .next-action {
             margin-top: var(--space-2xl);
@@ -281,146 +358,153 @@
             </nav>
         </header>
 
-        <main class="page-main" id="main">
+        <main class="page-main page-main--explainer" id="main">
             <div class="page-grid page-grid--explainer">
 
-                <section class="text-column">
+                <section class="ex-main text-column">
 
                     <h1 class="h-1 ink-appear">What is an <button class="term" popovertarget="def-issues-study" aria-describedby="def-issues-study">Issues Study</button>?</h1>
+                    <p class="ex-lede ink-appear">
+                        It's the one assessment where <em>you</em> choose the question. This page walks you through it:
+                        the <strong>five things it asks of you</strong>, a <strong>2-minute video</strong> on how arguments work,
+                        an <strong>A and a C side by side</strong>, and the <strong>four marking criteria</strong>.
+                        Use the list on the right to jump around — or just ask the helper below.
+                    </p>
 
-                    <section class="explain-panel ink-appear" aria-label="Ask the task explainer">
-                        <p class="explain-intro">Got a question about the Issues Study? Ask away &mdash; positions, analysis, referencing, A versus C, the 800-word limit, what even makes a question philosophical. It&rsquo;ll explain, but it won&rsquo;t write the essay for you. The task sheet and two graded examples are further down this page.</p>
-                        <div class="explain-transcript" id="explainTranscript" aria-live="polite"></div>
-                        <form class="explain-form" id="explainForm">
-                            <label for="explainInput" class="visually-hidden">Ask a question about the task</label>
-                            <textarea id="explainInput" class="explain-input" rows="2" placeholder="Ask about the task — e.g. how many positions do I need?"></textarea>
-                            <button type="submit" class="btn btn--clarity btn--small explain-send" id="explainSend">Ask &rarr;</button>
-                        </form>
+                    <!-- ASK THE HELPER -->
+                    <section class="ex-section" id="sec-ask" aria-labelledby="askHeading">
+                        <h2 class="h-2 ink-appear" id="askHeading" style="margin-top:0;">Ask the helper anything</h2>
+                        <section class="explain-panel ink-appear" aria-label="Ask the task explainer">
+                            <p class="explain-intro">Stuck on something? Ask away &mdash; positions, critical analysis, referencing, A versus C, the 800-word limit, or what even makes a question philosophical. It explains; it won&rsquo;t write the essay for you.</p>
+                            <div class="explain-transcript" id="explainTranscript" aria-live="polite"></div>
+                            <form class="explain-form" id="explainForm">
+                                <label for="explainInput" class="visually-hidden">Ask a question about the task</label>
+                                <textarea id="explainInput" class="explain-input" rows="2" placeholder="e.g. How many positions do I need?"></textarea>
+                                <button type="submit" class="btn btn--clarity btn--small explain-send" id="explainSend">Ask &rarr;</button>
+                            </form>
+                        </section>
                     </section>
 
-                    <article class="principle ink-appear">
-                        <span class="step-marker">Principle One</span>
-                        <p class="principle__lead">You choose the question.</p>
-                        <p class="body-text">
-                            Every other piece of assessment in this course gives you the question. The Issues Study does not. Your first task is to <em>negotiate</em> a question with your teacher — a real philosophical question that you genuinely want to think about, drawn from ethics, <button class="term" popovertarget="def-epistemology" aria-describedby="def-epistemology">epistemology</button>, or <button class="term" popovertarget="def-metaphysics" aria-describedby="def-metaphysics">metaphysics</button>.
-                        </p>
-                        <p class="body-text">
-                            This is harder than it sounds. A topic ("free will") is not a question. <em>"Are we genuinely free, or is every choice the product of prior causes?"</em> is a question. The difference matters: a topic invites you to summarise what others have said. A question forces you to take a position.
-                        </p>
-                    </article>
+                    <!-- FIVE PRINCIPLES -->
+                    <section class="ex-section" id="sec-principles" aria-labelledby="principlesHeading">
+                        <h2 class="h-2 ink-appear" id="principlesHeading" style="margin-top:0;">What the task asks of you</h2>
+                        <p class="ex-section__intro ink-appear">Five things separate a strong Issues Study from a weak one. Here they are, in order.</p>
 
-                    <article class="principle ink-appear">
-                        <span class="step-marker">Principle Two</span>
-                        <p class="principle__lead">You take more than one position seriously.</p>
-                        <p class="body-text">
-                            An A-grade Issues Study identifies <em>multiple</em> philosophical positions on the question and explains <em>why</em> people hold each one — including positions you don't share. A C-grade response usually engages with one perspective and treats it as obvious.
-                        </p>
-                        <p class="body-text">
-                            The reason is structural. You can't fairly judge a position you haven't first rebuilt in its strongest form. <button class="term" popovertarget="def-steelman" aria-describedby="def-steelman">Steelman</button> every view before you criticise it.
-                        </p>
-                    </article>
+                        <div class="principles-grid ink-appear">
+                            <article class="principle-card">
+                                <span class="principle-card__num">1</span>
+                                <p class="principle-card__lead">You choose the question.</p>
+                                <p class="principle-card__body">Every other task hands you the question. This one doesn't — you <em>negotiate</em> a real philosophical question with your teacher, from ethics, <button class="term" popovertarget="def-epistemology" aria-describedby="def-epistemology">epistemology</button>, or <button class="term" popovertarget="def-metaphysics" aria-describedby="def-metaphysics">metaphysics</button>. A topic ("free will") isn't a question; <em>"Are we genuinely free?"</em> is.</p>
+                            </article>
 
-                    <article class="principle ink-appear">
-                        <span class="step-marker">Principle Three</span>
-                        <p class="principle__lead">You evaluate before you defend.</p>
-                        <p class="body-text">
-                            Critical Analysis (CA1) means analysing the strengths and weaknesses of the positions and arguments you've described. This is the section students most often skip. It is the section that most directly distinguishes A from C.
-                        </p>
-                        <p class="body-text">
-                            Ask of every position: <em>What is its strongest point? What is its most damaging weakness? What objection has it not yet answered?</em>
-                        </p>
-                    </article>
+                            <article class="principle-card">
+                                <span class="principle-card__num">2</span>
+                                <p class="principle-card__lead">You take more than one side seriously.</p>
+                                <p class="principle-card__body">An A-grade study explains <em>several</em> positions and why people hold each — even ones you reject. <button class="term" popovertarget="def-steelman" aria-describedby="def-steelman">Steelman</button> every view before you criticise it. A C-grade study sticks to one and treats it as obvious.</p>
+                            </article>
 
-                    <article class="principle ink-appear">
-                        <span class="step-marker">Principle Four</span>
-                        <p class="principle__lead">You defend your own position with reasoning, not opinion.</p>
-                        <p class="body-text">
-                            "I personally feel" is not an argument. The final move in the Issues Study is to take a position of your own — and to defend it with logical reasoning anchored to the readings you've engaged with. Your view should follow from your analysis, not stand apart from it.
-                        </p>
-                    </article>
+                            <article class="principle-card">
+                                <span class="principle-card__num">3</span>
+                                <p class="principle-card__lead">You evaluate before you defend.</p>
+                                <p class="principle-card__body">Critical Analysis means weighing each position's strengths and weaknesses — not just describing it. This is the step most students skip, and the one that most separates A from C. Ask: <em>what's its strongest point? Its worst weakness?</em></p>
+                            </article>
 
-                    <article class="principle ink-appear">
-                        <span class="step-marker">Principle Five</span>
-                        <p class="principle__lead">800 words. Or 5 minutes. Or <button class="term" popovertarget="def-multimodal" aria-describedby="def-multimodal">multimodal</button>.</p>
-                        <p class="body-text">
-                            You can submit this as a written essay (max 800 words), a spoken oral (max 5 minutes), or an equivalent multimodal piece (video, podcast, illustrated essay). All four design criteria — Knowledge & Understanding, Reasoning, Critical Analysis, Communication — must be addressed regardless of mode.
-                        </p>
-                    </article>
+                            <article class="principle-card">
+                                <span class="principle-card__num">4</span>
+                                <p class="principle-card__lead">You defend your view with reasoning.</p>
+                                <p class="principle-card__body">"I personally feel" isn't an argument. Take your own position — and defend it with logic anchored to the readings. Your view should <em>follow from</em> your analysis, not sit apart from it.</p>
+                            </article>
 
-                    <h2 class="h-2 ink-appear">What a philosophical argument looks like</h2>
-                    <p class="body-text ink-appear">
-                        Before you read the two responses below, here is a short primer on how philosophical reasoning works — premises, conclusions, and why a <em>valid</em> argument is not the same as a <em>true</em> one. This is the Reasoning criterion in action.
-                    </p>
-                    <div class="feature-video ink-appear">
-                        <button class="yt" data-id="NKEhdsnKKHs" data-title="How to Argue – Philosophical Reasoning — Crash Course Philosophy #2"></button>
-                        <p class="feature-video__caption"><strong>Watch ·</strong> How to Argue: Philosophical Reasoning — Crash Course Philosophy #2</p>
-                    </div>
-
-                    <h2 class="h-2 ink-appear">A and C, side by side</h2>
-                    <p class="body-text ink-appear">
-                        Below is an extract from an A-grade and a C-grade exemplar response, both on the same question about personal identity. The marginalia (in red) point to the moves the A response makes that the C response does not.
-                    </p>
-
-                    <div class="exemplar-grid ink-appear">
-                        <div class="exemplar exemplar--a">
-                            <p class="exemplar__grade">A response</p>
-                            <p class="exemplar__text">
-                                <mark>Locke argues</mark> that personal identity over time is constituted by psychological continuity — particularly the continuity of memory. <mark>However, this faces a serious objection from Reid:</mark> if I cannot remember what I did at age four, am I no longer the same person who did it? <mark>One reply, due to Parfit, is</mark> that what matters is overlapping chains of memory, not direct recall. <mark>I find Parfit's reply more defensible</mark> because it accommodates ordinary cases of forgetting without abandoning the psychological criterion entirely.
-                            </p>
+                            <article class="principle-card">
+                                <span class="principle-card__num">5</span>
+                                <p class="principle-card__lead">800 words, 5 minutes, or <button class="term" popovertarget="def-multimodal" aria-describedby="def-multimodal">multimodal</button>.</p>
+                                <p class="principle-card__body">Write it (max 800 words), speak it (max 5 minutes), or make it multimodal (video, podcast, illustrated essay). The four criteria apply whatever form you pick &mdash; see the <a href="exemplars.html" class="inline-link">Showroom</a> for the range.</p>
+                            </article>
                         </div>
-                        <div class="exemplar">
-                            <p class="exemplar__grade">C response</p>
-                            <p class="exemplar__text">
-                                Locke says that personal identity is about memory. If you can remember being someone, you are that person. This is interesting because it suggests that someone with amnesia might not be the same person they were before. I think Locke makes a good point because memory is important to who we are.
-                            </p>
+                    </section>
+
+                    <!-- VIDEO -->
+                    <section class="ex-section" id="sec-video" aria-labelledby="videoHeading">
+                        <h2 class="h-2 ink-appear" id="videoHeading" style="margin-top:0;">How an argument works (2 min)</h2>
+                        <p class="ex-section__intro ink-appear">
+                            A quick primer on premises, conclusions, and why a <em>valid</em> argument isn't the same as a <em>true</em> one. This is the Reasoning criterion in action.
+                        </p>
+                        <div class="feature-video ink-appear">
+                            <button class="yt" data-id="NKEhdsnKKHs" data-title="How to Argue – Philosophical Reasoning — Crash Course Philosophy #2"></button>
+                            <p class="feature-video__caption"><strong>Watch ·</strong> How to Argue: Philosophical Reasoning — Crash Course Philosophy #2</p>
                         </div>
-                    </div>
+                    </section>
 
-                    <p class="body-text ink-appear">
-                        Notice what the A response does: it <em>names</em> philosophers, <em>presents an objection</em>, <em>presents a reply</em>, and then <em>takes a position with reasons</em>. The C response describes one view, agrees with it, and stops.
-                    </p>
+                    <!-- A vs C -->
+                    <section class="ex-section" id="sec-avc" aria-labelledby="avcHeading">
+                        <h2 class="h-2 ink-appear" id="avcHeading" style="margin-top:0;">An A and a C, side by side</h2>
+                        <p class="ex-section__intro ink-appear">
+                            Same question (personal identity), two grades. The red notes point to the moves the A response makes that the C response doesn't.
+                        </p>
+                        <div class="exemplar-grid ink-appear">
+                            <div class="exemplar exemplar--a">
+                                <p class="exemplar__grade">A response</p>
+                                <p class="exemplar__text">
+                                    <mark>Locke argues</mark> that personal identity over time is constituted by psychological continuity — particularly the continuity of memory. <mark>However, this faces a serious objection from Reid:</mark> if I cannot remember what I did at age four, am I no longer the same person who did it? <mark>One reply, due to Parfit, is</mark> that what matters is overlapping chains of memory, not direct recall. <mark>I find Parfit's reply more defensible</mark> because it accommodates ordinary cases of forgetting without abandoning the psychological criterion entirely.
+                                </p>
+                            </div>
+                            <div class="exemplar">
+                                <p class="exemplar__grade">C response</p>
+                                <p class="exemplar__text">
+                                    Locke says that personal identity is about memory. If you can remember being someone, you are that person. This is interesting because it suggests that someone with amnesia might not be the same person they were before. I think Locke makes a good point because memory is important to who we are.
+                                </p>
+                            </div>
+                        </div>
+                        <p class="body-text ink-appear">
+                            Notice what the A response does: it <em>names</em> philosophers, <em>raises an objection</em>, <em>gives a reply</em>, then <em>takes a position with reasons</em>. The C response describes one view, agrees with it, and stops.
+                        </p>
+                    </section>
 
-                    <h2 class="h-2 ink-appear">The four design criteria</h2>
-                    <p class="body-text ink-appear">
-                        Every Issues Study is graded against these four criteria. The site marks which sections build evidence for which criteria; you'll see the codes (KU / R / CA / C) appear throughout.
-                    </p>
-                    <ul class="criterion-list ink-appear">
-                        <li><strong>KU</strong> Knowledge and Understanding — that you have identified the philosophical issue and the positions on it.</li>
-                        <li><strong>R</strong> Reasoning — that your arguments are logical, well-supported by evidence, and that you can distinguish good arguments from bad.</li>
-                        <li><strong>CA</strong> Critical Analysis — that you have examined the strengths and weaknesses of the positions, not just described them.</li>
-                        <li><strong>C</strong> Communication — that you have expressed yourself clearly, used philosophical terminology accurately, and acknowledged your sources.</li>
-                    </ul>
+                    <!-- CRITERIA -->
+                    <section class="ex-section" id="sec-criteria" aria-labelledby="criteriaHeading">
+                        <h2 class="h-2 ink-appear" id="criteriaHeading" style="margin-top:0;">The four marking criteria</h2>
+                        <p class="ex-section__intro ink-appear">
+                            Every Issues Study is graded on these four. You'll see the codes (KU / R / CA / C) appear across the site.
+                        </p>
+                        <div class="criteria-grid ink-appear">
+                            <div class="criteria-card">
+                                <span class="criteria-card__code">KU · Knowledge &amp; Understanding</span>
+                                <p class="criteria-card__text">You've identified the philosophical issue and the positions on it.</p>
+                            </div>
+                            <div class="criteria-card">
+                                <span class="criteria-card__code">R · Reasoning</span>
+                                <p class="criteria-card__text">Your arguments are logical and backed by evidence — and you can tell a good argument from a bad one.</p>
+                            </div>
+                            <div class="criteria-card">
+                                <span class="criteria-card__code">CA · Critical Analysis</span>
+                                <p class="criteria-card__text">You've weighed each position's strengths and weaknesses, not just described them.</p>
+                            </div>
+                            <div class="criteria-card">
+                                <span class="criteria-card__code">C · Communication</span>
+                                <p class="criteria-card__text">You've written clearly, used philosophical terms accurately, and acknowledged your sources.</p>
+                            </div>
+                        </div>
 
-                    <div class="ink-appear next-action">
-                        <a href="bank.html" class="btn btn--clarity">Browse the question bank &rarr;</a>
-                        <span class="next-action__detail">or jump straight to the <a href="chamber.html" class="inline-link">Socratic chamber</a> if you already have an idea.</span>
-                    </div>
+                        <div class="ink-appear next-action">
+                            <a href="bank.html" class="btn btn--clarity">Browse the question bank &rarr;</a>
+                            <span class="next-action__detail">or jump to the <a href="chamber.html" class="inline-link">Socratic chamber</a> if you already have an idea.</span>
+                        </div>
+                    </section>
 
                 </section>
 
-                <aside class="marginalia-rail" tabindex="0" aria-label="Notes in the margin">
-                    <h2 class="marginalia-rail__heading">Notes in the margin</h2>
-
-                    <div class="marg-note">
-                        <span class="marg-note__author">A note from the editor</span>
-                        Don't try to write the essay before you've found the question. The negotiation step is the assessment, not a preliminary to it.
-                    </div>
-
-                    <div class="marg-note">
-                        <span class="marg-note__author">Common pitfall</span>
-                        Choosing a topic that's been "settled" — abortion, free will, simulation — doesn't mean the question is settled. Choose your question carefully <em>within</em> the topic.
-                    </div>
-
-                    <div class="marg-note">
-                        <span class="marg-note__author">From SACE moderators</span>
-                        The single most impactful thing you can do is phrase your topic as a <em>question</em>. Not "Free will" — but "If neuroscience can predict our choices before we make them, do we still have free will?"
-                    </div>
-
-                    <div class="marg-note">
-                        <span class="marg-note__author">A note about the AI</span>
-                        The Socratic chamber will <em>never</em> write for you. It will ask you questions designed to sharpen yours. That's the point.
-                    </div>
-                </aside>
+                <!-- STICKY TABLE OF CONTENTS (replaces the decorative notes rail) -->
+                <nav class="toc" id="toc" aria-label="On this page">
+                    <p class="toc__title">On this page</p>
+                    <ul class="toc__list">
+                        <li><a href="#sec-ask">Ask the helper</a></li>
+                        <li><a href="#sec-principles">What it asks of you</a></li>
+                        <li><a href="#sec-video">How an argument works</a></li>
+                        <li><a href="#sec-avc">An A and a C</a></li>
+                        <li><a href="#sec-criteria">The four criteria</a></li>
+                    </ul>
+                    <a href="bank.html" class="btn btn--clarity btn--small toc__cta">Start: the question bank &rarr;</a>
+                </nav>
 
             </div>
         </main>
@@ -481,6 +565,72 @@
             }
             form.addEventListener('submit', e => { e.preventDefault(); const t = input.value; input.value = ''; ask(t); });
             input.addEventListener('keydown', e => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); form.requestSubmit(); } });
+        })();
+    </script>
+    <script>
+        // Table-of-contents: smooth scroll within #main + scroll-spy "you are here".
+        // Kept in its own script block so it is fully independent of the chat code.
+        (function () {
+            var main = document.getElementById('main');
+            var links = Array.prototype.slice.call(document.querySelectorAll('.toc__list a'));
+            if (!main || !links.length) return;
+
+            var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            links.forEach(function (a) {
+                a.addEventListener('click', function (e) {
+                    var id = a.getAttribute('href').slice(1);
+                    var target = document.getElementById(id);
+                    if (!target) return;
+                    e.preventDefault();
+                    var top = main.scrollTop
+                        + target.getBoundingClientRect().top
+                        - main.getBoundingClientRect().top
+                        - 12;
+                    main.scrollTo({ top: top, behavior: reduce ? 'auto' : 'smooth' });
+                    // Belt-and-braces: guarantee the final position even if the
+                    // smooth animation is interrupted/cancelled by the UA.
+                    setTimeout(function () {
+                        if (Math.abs(main.scrollTop - top) > 4) main.scrollTop = top;
+                    }, 500);
+                    target.setAttribute('tabindex', '-1');
+                    target.focus({ preventScroll: true });
+                });
+            });
+
+            // Scroll-spy: mark the section nearest the top of the viewport.
+            // A scroll listener is used (not IntersectionObserver) because the
+            // scroll happens inside #main, and a plain rect check is the most
+            // reliable way to find the active section in a nested scroller.
+            var byId = {};
+            var sections = [];
+            links.forEach(function (a) {
+                var id = a.getAttribute('href').slice(1);
+                var s = document.getElementById(id);
+                if (s) { byId[id] = a; sections.push(s); }
+            });
+
+            function syncSpy() {
+                var anchorY = main.getBoundingClientRect().top + 80; // a bit below the top
+                var activeId = null;
+                for (var i = 0; i < sections.length; i++) {
+                    if (sections[i].getBoundingClientRect().top <= anchorY) activeId = sections[i].id;
+                }
+                // default to the first section when scrolled above them all
+                if (!activeId && sections.length) activeId = sections[0].id;
+                links.forEach(function (a) {
+                    if (a.getAttribute('href').slice(1) === activeId) a.setAttribute('aria-current', 'true');
+                    else a.removeAttribute('aria-current');
+                });
+            }
+
+            var ticking = false;
+            main.addEventListener('scroll', function () {
+                if (ticking) return;
+                ticking = true;
+                requestAnimationFrame(function () { ticking = false; syncSpy(); });
+            });
+            syncSpy();
         })();
     </script>
 </body>
