@@ -1,9 +1,9 @@
 {
   "$schema_note": "Stage 1 Issues Study question bank. Each question is a complete philosophical question (NOT a topic). Used by the static site question-bank UI.",
   "key_areas": [
-    {"id": "ethics", "label": "Ethics", "tagline": "Questions about how we should live, what we owe each other, and what makes an action right."},
-    {"id": "epistemology", "label": "Epistemology", "tagline": "Questions about knowledge — what it is, how we get it, when we can trust it."},
-    {"id": "metaphysics", "label": "Metaphysics", "tagline": "Questions about what is real — minds, time, freedom, identity, the structure of the world."}
+    {"id": "ethics", "label": "Ethics — how we should live", "tagline": "Questions about how we should live, what we owe each other, and what makes an action right."},
+    {"id": "epistemology", "label": "Knowledge (epistemology)", "tagline": "Questions about knowledge — what it is, how we get it, when we can trust it."},
+    {"id": "metaphysics", "label": "Reality (metaphysics)", "tagline": "Questions about what is real — minds, time, freedom, identity, the structure of the world."}
   ],
   "clusters": {
     "personhood": {"key_area": "ethics", "label": "Personhood and moral status"},
