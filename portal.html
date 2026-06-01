@@ -513,6 +513,59 @@
             background: black;
         }
 
+        /* ---- Save note (under the working question) ---- */
+        .wq-savenote {
+            font-family: var(--font-ui);
+            font-size: var(--text-xs);
+            color: var(--aged-strong);
+            line-height: 1.4;
+            margin: 0;
+        }
+
+        /* ============================================================
+           PRINT — "Save as PDF". The live portal (chat + sidebar) uses
+           fixed-height scroll panes that print badly, so printing renders a
+           dedicated, populated #portalPrint document instead and hides the
+           live shell entirely. Built on demand in portal.js before print().
+           ============================================================ */
+        .portal-print { display: none; }
+
+        @media print {
+            @page { margin: 1.6cm 2cm; }
+            body { background: #fff !important; }
+            .portal-shell, .skip-link { display: none !important; }
+            .portal-print { display: block !important; }
+
+            .portal-print, .portal-print * {
+                color: #111 !important;
+                font-family: Georgia, 'Times New Roman', serif;
+            }
+            .pp-title {
+                font-size: 18pt; font-weight: bold; margin-bottom: 2pt;
+            }
+            .pp-meta {
+                font-size: 10pt; color: #555 !important; margin-bottom: 14pt;
+                border-bottom: 1pt solid #ccc; padding-bottom: 8pt;
+            }
+            .pp-h2 {
+                font-size: 13pt; font-weight: bold; margin: 16pt 0 4pt;
+                border-bottom: 1pt solid #ccc; padding-bottom: 3pt;
+                page-break-after: avoid;
+            }
+            .pp-question {
+                font-size: 12pt; font-style: italic; line-height: 1.5;
+            }
+            .pp-empty { font-size: 11pt; color: #777 !important; font-style: italic; }
+            .pp-turn { margin-bottom: 10pt; page-break-inside: avoid; line-height: 1.5; font-size: 11pt; }
+            .pp-who {
+                font-weight: bold; font-variant: small-caps; font-size: 9.5pt;
+                letter-spacing: 0.04em; display: block; margin-bottom: 1pt; color: #444 !important;
+            }
+            .pp-res { margin-bottom: 8pt; font-size: 10.5pt; page-break-inside: avoid; }
+            .pp-res-title { font-weight: bold; }
+            .pp-res-url { font-size: 9pt; color: #555 !important; word-break: break-all; }
+        }
+
         /* .term and [popover="auto"] rules live in shared/marginalia.css */
     </style>
 </head>
@@ -532,6 +585,7 @@
                 <a href="resources.html">Readings</a>
                 <a href="drafting.html">Drafting</a>
                 <a href="explainer.html" class="nav-cta">Explain the task</a>
+                <button type="button" id="savePdfBtn" class="btn btn--ghost btn--small">Save as PDF</button>
                 <button type="button" id="logoutBtn" class="btn btn--ghost btn--small">Log out</button>
             </nav>
         </header>
@@ -576,6 +630,7 @@
                         placeholder="What question keeps you up at night?"
                     ></textarea>
                     <p class="working-status" id="workingQStatus" aria-live="polite"></p>
+                    <p class="wq-savenote">Your work saves automatically on this device. Use <strong>Save as PDF</strong> (top right) to keep a copy.</p>
                 </section>
 
                 <section class="sidebar__section" aria-labelledby="packHeading">
@@ -620,6 +675,9 @@
         </main>
 
     </div>
+
+    <!-- Print-only document, populated by portal.js before window.print() -->
+    <section class="portal-print" id="portalPrint" aria-hidden="true"></section>
 
     <script src="shared/pins.js"></script>
     <script src="shared/portal.js"></script>

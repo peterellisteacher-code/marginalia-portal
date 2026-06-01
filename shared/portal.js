@@ -28,6 +28,7 @@
     const chatInput      = document.getElementById('chatInput');
     const chatSendBtn    = document.getElementById('chatSendBtn');
     const logoutBtn      = document.getElementById('logoutBtn');
+    const savePdfBtn     = document.getElementById('savePdfBtn');
 
     /* ================================================================
        UTILITIES
@@ -59,6 +60,73 @@
     function truncate(str, maxLen) {
         if (!str) return '';
         return str.length > maxLen ? str.slice(0, maxLen) + '…' : str;
+    }
+
+    /* ================================================================
+       LOCAL CACHE (localStorage-first persistence)
+       The portal mirrors all per-student state to localStorage, keyed by
+       student id, so work survives between sessions ON THIS DEVICE even if
+       the server (Netlify Blobs) is briefly unavailable. The server stays
+       the cross-device source of truth and is written best-effort; the
+       browser copy is the resilient fallback.
+    ================================================================ */
+
+    const LOCAL_PREFIX = 'marginalia.portal.';
+
+    function localKey() {
+        return LOCAL_PREFIX + (session && session.id ? session.id : 'unknown');
+    }
+
+    function readLocal() {
+        try { return JSON.parse(localStorage.getItem(localKey())) || {}; }
+        catch (e) { return {}; }
+    }
+
+    /** Shallow-merge a patch into the per-student local cache. */
+    function writeLocal(patch) {
+        try {
+            const next = Object.assign({}, readLocal(), patch, { updatedAt: Date.now() });
+            localStorage.setItem(localKey(), JSON.stringify(next));
+            return next;
+        } catch (e) {
+            /* private mode / quota exceeded — server sync still applies */
+            return null;
+        }
+    }
+
+    /* Each student's negotiated starting question, from their submitted
+       proposal. Seeded on first login when neither the server nor this device
+       already holds a question. Students who did not submit a usable proposal
+       are intentionally absent — they keep the placeholder and negotiate one
+       in class / with the agent. */
+    const SEED_QUESTIONS = {
+        james:     'Can we ever be certain of anything, or is all knowledge provisional?',
+        annabel:   'Does brain death mean the person has died, even if the body is alive?',
+        millicent: 'Is only the present real, or do the past and future exist as well?',
+        grace:     'Should we trust our gut feelings about people more than our careful judgments?',
+        abigail:   'Could empirical measurement definitively resolve the debate over whether the soul is a form of energy or a metaphysical entity?',
+        clare:     'If a person’s memories were completely erased but their soul remained unchanged, would they still be the same person, or would they become someone new?',
+    };
+
+    /** Low-level server write for the working question (no change-detection
+        guard — callers decide when to send). Returns true on success. */
+    async function pushWorkingQuestion(value) {
+        if (!value) return false;
+        try {
+            const r = await fetch('/.netlify/functions/portal-state', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'set_working_question',
+                    token: session.token,
+                    workingQuestion: value,
+                }),
+            });
+            const data = await r.json().catch(function () { return {}; });
+            return r.ok && data.ok !== false;
+        } catch (e) {
+            return false;
+        }
     }
 
     /* ================================================================
@@ -94,8 +162,10 @@
             return;
         }
 
-        /* Update firstName from server in case it changed */
+        /* Update firstName/id from server in case they changed. session.id is
+           the cache + seed key, so make sure it is populated. */
         session.firstName = verifyData.firstName || session.firstName;
+        session.id = verifyData.id || session.id;
 
         /* 3. Set welcome label */
         setText(welcomeLabel, 'Welcome, ' + session.firstName);
@@ -141,40 +211,84 @@
     ================================================================ */
 
     async function loadPortalState() {
-        let data;
+        /* localStorage-first: read this device's cache, then try the server.
+           Server wins when it is reachable AND holds content; otherwise the
+           local copy keeps the student working. When neither has a question,
+           seed the student's negotiated proposal (first login only). */
+        const local = readLocal();
+
+        let server = null;
+        let serverOk = false;
         try {
             const r = await fetch('/.netlify/functions/portal-state', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'load', token: session.token }),
             });
-            data = await r.json();
-            if (!r.ok || !data.ok) {
-                /* Non-fatal — portal still usable without persisted state */
-                data = { ok: false, workingQuestion: '', resources: [], chatHistory: [] };
-            }
+            const data = await r.json();
+            if (r.ok && data.ok !== false) { server = data; serverOk = true; }
         } catch (e) {
-            data = { ok: false, workingQuestion: '', resources: [], chatHistory: [] };
+            /* offline / server error — fall back to the local cache below */
         }
 
-        const wq = data.workingQuestion || '';
+        /* ---- Working question: server > local > seed ---- */
+        let wq = '';
+        let fromSeed = false;
+        if (serverOk && server.workingQuestion) {
+            wq = server.workingQuestion;
+        } else if (local.workingQuestion) {
+            wq = local.workingQuestion;
+        } else if (!local.seeded && SEED_QUESTIONS[session.id]) {
+            wq = SEED_QUESTIONS[session.id];
+            fromSeed = true;
+        }
         workingQInput.value = wq;
         workingQLastSaved = wq;
 
-        /* Hydrate active pack chip from server state */
-        if (data.activePack) {
-            renderActivePack(data.activePack);
-        }
+        /* ---- Active pack: server > local ---- */
+        const pack = (serverOk && server.activePack) ? server.activePack
+                   : (local.activePack || null);
+        if (pack) renderActivePack(pack);
 
-        currentResources = Array.isArray(data.resources) ? data.resources : [];
+        /* ---- Resources: server (when reachable) > local ---- */
+        const resources = (serverOk && Array.isArray(server.resources)) ? server.resources
+                        : (Array.isArray(local.resources) ? local.resources : []);
+        currentResources = resources;
         renderShelf(currentResources);
 
-        /* Replay persisted chat history into the stream and the in-memory
-           history array, so a returning student picks up where they left off. */
-        const persistedHistory = Array.isArray(data.chatHistory) ? data.chatHistory : [];
-        if (persistedHistory.length > 0) {
-            chatHistory = persistedHistory.slice();
-            renderPersistedHistory(persistedHistory);
+        /* ---- Chat history: server (when it has any) > local ---- */
+        const serverHistory = (serverOk && Array.isArray(server.chatHistory)) ? server.chatHistory : [];
+        const history = serverHistory.length ? serverHistory
+                      : (Array.isArray(local.chatHistory) ? local.chatHistory : []);
+        if (history.length > 0) {
+            chatHistory = history.slice();
+            renderPersistedHistory(history);
+        }
+
+        /* ---- Mirror the resolved state back to this device ---- */
+        writeLocal({
+            workingQuestion: wq,
+            activePack: pack || null,
+            resources: resources,
+            chatHistory: history,
+            seeded: true,
+        });
+
+        /* ---- Sync up to the server when it is missing the question we resolved
+           (a fresh seed, or a local value the server never received). This is
+           what lets the agent see the student's question and what carries it
+           across devices. Best-effort; the local copy already holds it. ---- */
+        if (wq && (!serverOk || !server.workingQuestion)) {
+            pushWorkingQuestion(wq).then(function (ok) {
+                if (ok && fromSeed) {
+                    setText(workingQStatus, 'Your question is loaded and ready.');
+                    setTimeout(function () {
+                        if (workingQStatus.textContent === 'Your question is loaded and ready.') {
+                            setText(workingQStatus, '');
+                        }
+                    }, 3000);
+                }
+            });
         }
     }
 
@@ -214,35 +328,34 @@
         /* Normalise: compare trimmed against last saved trimmed */
         if (value === workingQLastSaved.trim()) return;
 
-        setText(workingQStatus, 'Saving…');
+        /* Local first — always succeeds, so the student never loses work even
+           if the server is unreachable. */
+        writeLocal({ workingQuestion: value });
+        workingQLastSaved = value;
 
-        try {
-            const r = await fetch('/.netlify/functions/portal-state', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: 'set_working_question',
-                    token: session.token,
-                    workingQuestion: value,
-                }),
-            });
-            const data = await r.json();
-            if (r.ok && data.ok !== false) {
-                workingQLastSaved = value;
-                setText(workingQStatus, 'Saved');
-                setTimeout(function () {
-                    /* Only clear if still showing "Saved" — don't clobber a
-                       concurrent status message */
-                    if (workingQStatus.textContent === 'Saved') {
-                        setText(workingQStatus, '');
-                    }
-                }, 2000);
-            } else {
-                setText(workingQStatus, 'Could not save. Check your internet.');
-            }
-        } catch (e) {
-            setText(workingQStatus, 'Could not save. Check your internet.');
+        /* The server rejects an empty question (and keeps the last non-empty
+           one). Locally we've recorded the clear; don't show an error. */
+        if (!value) {
+            setText(workingQStatus, 'Saved on this device');
+            scheduleStatusClear('Saved on this device');
+            return;
         }
+
+        setText(workingQStatus, 'Saving…');
+        const ok = await pushWorkingQuestion(value);
+        const msg = ok ? 'Saved' : 'Saved on this device';
+        setText(workingQStatus, msg);
+        scheduleStatusClear(msg);
+    }
+
+    /** Clear the working-question status after 2s, but only if it hasn't been
+        replaced by a newer message in the meantime. */
+    function scheduleStatusClear(expected) {
+        setTimeout(function () {
+            if (workingQStatus.textContent === expected) {
+                setText(workingQStatus, '');
+            }
+        }, 2000);
     }
 
     /* ================================================================
@@ -251,6 +364,9 @@
 
     function renderShelf(resources) {
         currentResources = Array.isArray(resources) ? resources : [];
+
+        /* Mirror to this device so the shelf survives an offline reload. */
+        writeLocal({ resources: currentResources });
 
         if (currentResources.length === 0) {
             shelfEmpty.removeAttribute('hidden');
@@ -419,6 +535,7 @@
         currentResources = currentResources.filter(function (r) {
             return String(r.id) !== String(resourceId);
         });
+        writeLocal({ resources: currentResources });
         if (currentResources.length === 0) {
             shelfEmpty.removeAttribute('hidden');
         }
@@ -542,6 +659,10 @@
             chatHistory.push({ role: 'assistant', content: reply });
         }
 
+        /* Mirror the conversation to this device (cap at 40 turns, matching the
+           server) so a returning student keeps their thread even offline. */
+        writeLocal({ chatHistory: chatHistory.slice(-40) });
+
         chatSendBtn.disabled = false;
         chatInput.disabled = false;
         chatInput.focus();
@@ -594,6 +715,114 @@
     }
 
     /* ================================================================
+       SAVE AS PDF
+       Builds a clean, print-only document from the current state (working
+       question + full conversation + resource shelf) and opens the browser
+       print dialog, where "Save as PDF" is the standard destination. The live
+       chat/sidebar use fixed-height scroll panes that print poorly, so we
+       render a dedicated #portalPrint document instead (hidden on screen).
+    ================================================================ */
+
+    function ppHeading(text) {
+        const h = document.createElement('h2');
+        h.className = 'pp-h2';
+        setText(h, text);
+        return h;
+    }
+
+    function ppEmpty(text) {
+        const p = document.createElement('p');
+        p.className = 'pp-empty';
+        setText(p, text);
+        return p;
+    }
+
+    function buildPrintDoc() {
+        const printEl = document.getElementById('portalPrint');
+        if (!printEl) return;
+        printEl.textContent = ''; /* clear any previous build */
+
+        const name = (session && session.firstName) ? session.firstName : 'Student';
+        let dateStr = '';
+        try { dateStr = new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' }); }
+        catch (e) { dateStr = ''; }
+
+        const title = document.createElement('h1');
+        title.className = 'pp-title';
+        setText(title, 'Issues Study — working copy');
+        printEl.appendChild(title);
+
+        const meta = document.createElement('p');
+        meta.className = 'pp-meta';
+        setText(meta, name + (dateStr ? ' · ' + dateStr : ''));
+        printEl.appendChild(meta);
+
+        /* Working question */
+        printEl.appendChild(ppHeading('My working question'));
+        const wq = workingQInput.value.trim();
+        if (wq) {
+            const q = document.createElement('p');
+            q.className = 'pp-question';
+            setText(q, wq);
+            printEl.appendChild(q);
+        } else {
+            printEl.appendChild(ppEmpty('(not chosen yet)'));
+        }
+
+        /* Conversation */
+        printEl.appendChild(ppHeading('My conversation with the agent'));
+        if (chatHistory && chatHistory.length) {
+            chatHistory.forEach(function (turn) {
+                const who = (turn.role === 'assistant' || turn.role === 'model') ? 'Agent' : 'You';
+                const text = String(turn.content || turn.text || '').trim();
+                if (!text) return;
+                const t = document.createElement('div');
+                t.className = 'pp-turn';
+                const w = document.createElement('span');
+                w.className = 'pp-who';
+                setText(w, who);
+                t.appendChild(w);
+                t.appendChild(document.createTextNode(text));
+                printEl.appendChild(t);
+            });
+        } else {
+            printEl.appendChild(ppEmpty('(no conversation yet)'));
+        }
+
+        /* Resource shelf */
+        printEl.appendChild(ppHeading('My resource shelf'));
+        if (currentResources && currentResources.length) {
+            currentResources.forEach(function (res) {
+                const r = document.createElement('div');
+                r.className = 'pp-res';
+                const t = document.createElement('span');
+                t.className = 'pp-res-title';
+                setText(t, res.title || res.url || 'Resource');
+                r.appendChild(t);
+                if (res.url) {
+                    r.appendChild(document.createElement('br'));
+                    const u = document.createElement('span');
+                    u.className = 'pp-res-url';
+                    setText(u, res.url);
+                    r.appendChild(u);
+                }
+                if (res.description) {
+                    r.appendChild(document.createElement('br'));
+                    r.appendChild(document.createTextNode(res.description));
+                }
+                printEl.appendChild(r);
+            });
+        } else {
+            printEl.appendChild(ppEmpty('(nothing saved yet)'));
+        }
+    }
+
+    function savePdf() {
+        buildPrintDoc();
+        window.print();
+    }
+
+    /* ================================================================
        EVENT WIRING
     ================================================================ */
 
@@ -634,6 +863,7 @@
             /* Clicking the active chip again clears the focus */
             const next = (activePack === requested) ? null : requested;
             renderActivePack(next);
+            writeLocal({ activePack: next });
             persistActivePack(next);
         });
     }
@@ -644,6 +874,11 @@
             sessionStorage.removeItem('marginalia.session');
             window.location.href = 'index.html';
         });
+
+        /* Save as PDF */
+        if (savePdfBtn) {
+            savePdfBtn.addEventListener('click', savePdf);
+        }
 
         /* Working question — blur */
         workingQInput.addEventListener('blur', function () {
