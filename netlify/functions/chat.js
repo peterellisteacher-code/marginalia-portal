@@ -902,7 +902,10 @@ exports.handler = async (event, _ctx) => {
             const conversation = buildConversationMessages(cuHistory, cuMessage);
             const messages = [systemMessage, ...conversation];
             const exhibits = [];
+            const exhibitIds = new Set();   // dedup — show each exhibit at most once
             let replyText = '';
+            let lastFinish = null;
+            let invalidStreak = 0;          // consecutive turns with only rejected tool calls
 
             for (let loop = 0; loop < MAX_TOOL_LOOPS; loop++) {
                 const data = await callOpenRouter({
@@ -915,25 +918,40 @@ exports.handler = async (event, _ctx) => {
                 });
                 const choice = data.choices?.[0];
                 if (!choice) break;
+                lastFinish = choice.finish_reason;
                 logUsage(data, ip, 'curator', loop, choice.finish_reason);
 
                 if (choice.finish_reason === 'tool_calls' && Array.isArray(choice.message?.tool_calls)) {
                     messages.push(choice.message);
-                    for (const tc of choice.message.tool_calls) {
+                    let validThisLoop = 0;
+                    // Cap tool calls handled per response so one message can't bloat the convo.
+                    for (const tc of choice.message.tool_calls.slice(0, 4)) {
                         let args = {};
                         try { args = JSON.parse(tc.function?.arguments || '{}'); } catch (e) { /* ignore */ }
                         let result;
                         if (tc.function?.name === 'show_exhibit' && VALID_EXHIBITS.has(args.exhibit_id)) {
-                            const item = { id: args.exhibit_id };
-                            if (typeof args.highlight === 'string' && args.highlight.trim()) {
-                                item.highlight = args.highlight.trim().slice(0, 120);
+                            validThisLoop++;
+                            if (!exhibitIds.has(args.exhibit_id)) {
+                                exhibitIds.add(args.exhibit_id);
+                                const item = { id: args.exhibit_id };
+                                if (typeof args.highlight === 'string' && args.highlight.trim()) {
+                                    item.highlight = args.highlight.trim().slice(0, 120);
+                                }
+                                exhibits.push(item);
                             }
-                            exhibits.push(item);
                             result = { ok: true, shown: args.exhibit_id };
                         } else {
                             result = { error: 'Unknown exhibit id. Use one from the corpus.' };
                         }
-                        messages.push({ role: 'tool', tool_call_id: tc.id, content: JSON.stringify(result) });
+                        if (tc.id) {
+                            messages.push({ role: 'tool', tool_call_id: tc.id, content: JSON.stringify(result) });
+                        }
+                    }
+                    // Break out of repeated all-invalid tool churn (bounds worst-case spend).
+                    invalidStreak = validThisLoop === 0 ? invalidStreak + 1 : 0;
+                    if (invalidStreak >= 2) {
+                        console.warn(JSON.stringify({ event: 'chat.curator_invalid_tool_streak', ip }));
+                        break;
                     }
                     continue;
                 }
@@ -942,6 +960,9 @@ exports.handler = async (event, _ctx) => {
             }
 
             if (!replyText) {
+                if (lastFinish === 'tool_calls') {
+                    console.warn(JSON.stringify({ event: 'chat.curator_max_tool_loops', exhibits: exhibits.length }));
+                }
                 replyText = exhibits.length
                     ? 'Have a look at the exhibit on the right — notice how they got started.'
                     : '(The Curator paused. Try asking about one form — "show me a parable" or "how did someone do free will?")';
@@ -955,7 +976,11 @@ exports.handler = async (event, _ctx) => {
             if (status === 402) {
                 return respond(503, { error: 'The classroom AI is temporarily unavailable. Please tell your teacher.' });
             }
-            return respond(status, { error: err.message || 'Internal error' });
+            if (status === 429) {
+                return respond(429, { error: 'The Curator is briefly busy. Try again in a few seconds.' });
+            }
+            // Don't leak upstream/internal detail to students.
+            return respond(status, { error: 'Something went wrong reaching the Curator. Try again in a moment.' });
         }
     }
 

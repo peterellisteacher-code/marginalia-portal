@@ -37,7 +37,7 @@
             fig.className = 'plate';
             var src = 'assets/exemplars/philosophers/' + p.file + '.png';
             fig.innerHTML =
-                '<img class="plate__img" src="' + src + '" alt="Study poster of ' + esc(p.name) + ': portrait, dates, one big idea, and three plain-language panels explaining their position." data-zoom>' +
+                '<img class="plate__img" src="' + src + '" alt="Study poster of ' + esc(p.name) + ': portrait, dates, one big idea, and three plain-language panels explaining their position." data-zoom tabindex="0" role="button" aria-label="Enlarge the ' + esc(p.name) + ' poster">' +
                 '<figcaption class="plate__caption"><strong>' + esc(p.name) + '</strong>' + esc(p.note) + '</figcaption>';
             rail.appendChild(fig);
         });
@@ -50,7 +50,7 @@
         var lb = document.getElementById('lightbox');
         var lbImg = document.getElementById('lightboxImg');
         var lbClose = document.getElementById('lightboxClose');
-        if (!lb || !lbImg) return;
+        if (!lb || !lbImg || !lbClose) return;
         var lastFocus = null;
 
         function open(src, alt) {
@@ -65,12 +65,19 @@
         }
 
         document.addEventListener('click', function (e) {
-            var img = e.target.closest('[data-zoom]');
-            if (img) { open(img.getAttribute('src'), img.getAttribute('alt')); return; }
+            var trigger = e.target.closest('[data-zoom]');
+            if (trigger) { open(trigger.getAttribute('src'), trigger.getAttribute('alt')); return; }
             if (e.target === lb || e.target === lbClose) close();
         });
+        // Keyboard-activate the zoom triggers (they are role="button" tabindex="0").
         document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape' && !lb.hidden) close();
+            if (e.key === 'Escape' && !lb.hidden) { close(); return; }
+            if ((e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar')) {
+                var trigger = e.target.closest && e.target.closest('[data-zoom]');
+                if (trigger) { e.preventDefault(); open(trigger.getAttribute('src'), trigger.getAttribute('alt')); }
+            }
+            // Trap Tab inside the open lightbox (only the close button is focusable).
+            if (e.key === 'Tab' && !lb.hidden) { e.preventDefault(); lbClose.focus(); }
         });
     }
 
@@ -130,11 +137,16 @@
 
     var exhibitEl = document.getElementById('curatorExhibit');
 
-    /* Render an exemplar into the panel, optionally flashing a highlighted phrase. */
-    function showExhibit(id, highlight) {
+    /* Render an exemplar into the panel, optionally flashing a highlighted phrase.
+       `append` stacks a second card (so the Curator can show two exhibits to
+       compare) instead of replacing the first. */
+    function showExhibit(id, highlight, append) {
         if (!exhibitEl) return false;
+        // `id` is AI/tool output — use a strict own-property check so values like
+        // "__proto__"/"constructor" can't reach a prototype member and throw.
+        if (!Object.prototype.hasOwnProperty.call(EXEMPLARS, id)) return false;
         var ex = EXEMPLARS[id];
-        if (!ex) return false;
+        if (!ex || typeof ex.excerpt !== 'string') return false;
 
         var excerptHtml = esc(ex.excerpt);
         if (highlight) {
@@ -148,15 +160,18 @@
             }
         }
 
-        exhibitEl.innerHTML =
+        var cardHtml =
             '<div class="exhibit-card">' +
             '<p class="exhibit-card__form">' + esc(ex.form) + '</p>' +
             '<p class="exhibit-card__q">' + esc(ex.question) + '</p>' +
             '<div class="exhibit-card__excerpt">' + excerptHtml + '</div>' +
             '<p class="exhibit-card__note">' + esc(ex.note) + '</p>' +
             '</div>';
+        if (append) exhibitEl.insertAdjacentHTML('beforeend', cardHtml);
+        else exhibitEl.innerHTML = cardHtml;
 
-        var mark = exhibitEl.querySelector('mark');
+        var marks = exhibitEl.querySelectorAll('mark');
+        var mark = marks.length ? marks[marks.length - 1] : null;
         if (mark) {
             mark.scrollIntoView({ behavior: 'smooth', block: 'center' });
             // settle the flash to the calmer cobalt highlight after a beat
@@ -233,8 +248,11 @@
                     // The agent drives the panel via show_exhibit tool calls,
                     // returned as data.exhibits = [{id, highlight}, ...].
                     if (Array.isArray(data.exhibits)) {
+                        var shown = 0;
                         data.exhibits.forEach(function (ex) {
-                            if (ex && ex.id) showExhibit(ex.id, ex.highlight);
+                            // First exhibit replaces the panel; any extras stack
+                            // below it so a compare-two-exhibits turn shows both.
+                            if (ex && ex.id && showExhibit(ex.id, ex.highlight, shown > 0)) shown++;
                         });
                     }
                 }

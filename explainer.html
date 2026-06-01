@@ -534,21 +534,38 @@
             const transcript = document.getElementById('explainTranscript');
             let history = [];
             let busy = false;
-            const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-            function render() {
-                let html = history.map(t =>
-                    '<div class="ex-turn ex-turn--' + (t.role === 'assistant' ? 'agent' : 'you') + '">' +
-                    '<span class="ex-turn__who">' + (t.role === 'assistant' ? 'Task explainer' : 'You') + '</span>' +
-                    esc(t.content) + '</div>'
-                ).join('');
-                if (busy) html += '<div class="ex-turn ex-turn--agent"><span class="ex-turn__who">Task explainer</span><em>Thinking&hellip;</em></div>';
-                transcript.innerHTML = html;
+            let typingEl = null;
+            // Append ONE turn as a node (don't rebuild the whole transcript — that
+            // re-announces the entire thread to screen readers each turn, since the
+            // transcript is an aria-live region).
+            function appendTurn(role, content) {
+                const turn = document.createElement('div');
+                turn.className = 'ex-turn ex-turn--' + (role === 'assistant' ? 'agent' : 'you');
+                const who = document.createElement('span');
+                who.className = 'ex-turn__who';
+                who.textContent = role === 'assistant' ? 'Task explainer' : 'You';
+                turn.appendChild(who);
+                turn.appendChild(document.createTextNode(content));   // text node = no XSS
+                transcript.appendChild(turn);
                 transcript.scrollTop = transcript.scrollHeight;
+            }
+            function showTyping(on) {
+                if (on && !typingEl) {
+                    typingEl = document.createElement('div');
+                    typingEl.className = 'ex-turn ex-turn--agent';
+                    typingEl.setAttribute('aria-hidden', 'true');   // don't announce the placeholder
+                    typingEl.innerHTML = '<span class="ex-turn__who">Task explainer</span><em>Thinking&hellip;</em>';
+                    transcript.appendChild(typingEl);
+                    transcript.scrollTop = transcript.scrollHeight;
+                } else if (!on && typingEl) {
+                    typingEl.remove(); typingEl = null;
+                }
             }
             async function ask(text) {
                 if (!text.trim() || busy) return;
                 history.push({ role: 'user', content: text });
-                busy = true; render();
+                appendTurn('user', text);
+                busy = true; showTyping(true);
                 try {
                     const r = await fetch('/.netlify/functions/chat', {
                         method: 'POST',
@@ -557,11 +574,17 @@
                     });
                     const data = await r.json();
                     if (!r.ok) throw new Error(data.error || ('HTTP ' + r.status));
-                    history.push({ role: 'assistant', content: data.reply || '(no reply)' });
+                    const reply = data.reply || '(no reply)';
+                    history.push({ role: 'assistant', content: reply });
+                    showTyping(false);
+                    appendTurn('assistant', reply);
                 } catch (e) {
-                    history.push({ role: 'assistant', content: 'I could not reach the explainer just now. Try again in a moment, or ask your teacher. (' + e.message + ')' });
+                    const msg = 'I could not reach the explainer just now. Try again in a moment, or ask your teacher.';
+                    history.push({ role: 'assistant', content: msg });
+                    showTyping(false);
+                    appendTurn('assistant', msg);
                 } finally {
-                    busy = false; render();
+                    busy = false;
                 }
             }
             form.addEventListener('submit', e => { e.preventDefault(); const t = input.value; input.value = ''; ask(t); });
@@ -580,9 +603,12 @@
 
             links.forEach(function (a) {
                 a.addEventListener('click', function (e) {
-                    var id = a.getAttribute('href').slice(1);
-                    var target = document.getElementById(id);
-                    if (!target) return;
+                    var href = a.getAttribute('href') || '';
+                    if (href.charAt(0) !== '#' || href.length < 2) return;  // ignore non-hash links
+                    var target = document.getElementById(href.slice(1));
+                    // Only act on a target that lives inside the scroll container,
+                    // so a duplicate id elsewhere can't send us to nonsense.
+                    if (!target || !main.contains(target)) return;
                     e.preventDefault();
                     var top = main.scrollTop
                         + target.getBoundingClientRect().top
@@ -594,8 +620,8 @@
                     setTimeout(function () {
                         if (Math.abs(main.scrollTop - top) > 4) main.scrollTop = top;
                     }, 500);
-                    target.setAttribute('tabindex', '-1');
-                    target.focus({ preventScroll: true });
+                    if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+                    try { target.focus({ preventScroll: true }); } catch (err) { target.focus(); }
                 });
             });
 
@@ -626,11 +652,13 @@
             }
 
             var ticking = false;
-            main.addEventListener('scroll', function () {
+            function onScrollOrResize() {
                 if (ticking) return;
                 ticking = true;
                 requestAnimationFrame(function () { ticking = false; syncSpy(); });
-            });
+            }
+            main.addEventListener('scroll', onScrollOrResize);
+            window.addEventListener('resize', onScrollOrResize);  // re-sync if layout shifts
             syncSpy();
         })();
     </script>

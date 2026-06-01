@@ -206,6 +206,26 @@
         return questionsCache.find(function (q) { return q.id === id; }) || null;
     }
 
+    /** Re-fetch just the resource shelf from the server and re-render it.
+        Used after the agent adds a resource — deliberately does NOT touch the
+        working question, chat history, or seeding (that's loadPortalState's job,
+        run once on load). */
+    async function refreshResources() {
+        try {
+            const r = await fetch('/.netlify/functions/portal-state', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'load', token: session.token }),
+            });
+            const data = await r.json();
+            if (r.ok && Array.isArray(data.resources)) {
+                renderShelf(data.resources);   // renderShelf also mirrors to localStorage
+            }
+        } catch (e) {
+            /* non-fatal — the shelf just won't refresh until next load */
+        }
+    }
+
     /* ================================================================
        PORTAL STATE — load
     ================================================================ */
@@ -231,34 +251,39 @@
             /* offline / server error — fall back to the local cache below */
         }
 
-        /* ---- Working question: server > local > seed ---- */
+        /* Presence helper: did the server actually send this field? If so it is
+           authoritative even when empty ("" / null / []), so a deliberate clear
+           on one device is not resurrected from stale local data. We only fall
+           back to local/seed when the server did NOT supply the field. */
+        const has = function (obj, key) { return obj && Object.prototype.hasOwnProperty.call(obj, key); };
+
+        /* ---- Working question: server (if present) > local > seed ---- */
         let wq = '';
         let fromSeed = false;
-        if (serverOk && server.workingQuestion) {
-            wq = server.workingQuestion;
+        if (serverOk && has(server, 'workingQuestion')) {
+            wq = server.workingQuestion || '';
         } else if (local.workingQuestion) {
             wq = local.workingQuestion;
-        } else if (!local.seeded && SEED_QUESTIONS[session.id]) {
+        } else if (!local.seeded && Object.prototype.hasOwnProperty.call(SEED_QUESTIONS, session.id)) {
             wq = SEED_QUESTIONS[session.id];
             fromSeed = true;
         }
         workingQInput.value = wq;
         workingQLastSaved = wq;
 
-        /* ---- Active pack: server > local ---- */
-        const pack = (serverOk && server.activePack) ? server.activePack
+        /* ---- Active pack: server (if present, even null) > local ---- */
+        const pack = (serverOk && has(server, 'activePack')) ? (server.activePack || null)
                    : (local.activePack || null);
         if (pack) renderActivePack(pack);
 
-        /* ---- Resources: server (when reachable) > local ---- */
+        /* ---- Resources: server (if present, even []) > local ---- */
         const resources = (serverOk && Array.isArray(server.resources)) ? server.resources
                         : (Array.isArray(local.resources) ? local.resources : []);
         currentResources = resources;
         renderShelf(currentResources);
 
-        /* ---- Chat history: server (when it has any) > local ---- */
-        const serverHistory = (serverOk && Array.isArray(server.chatHistory)) ? server.chatHistory : [];
-        const history = serverHistory.length ? serverHistory
+        /* ---- Chat history: server (if present, even []) > local ---- */
+        const history = (serverOk && Array.isArray(server.chatHistory)) ? server.chatHistory
                       : (Array.isArray(local.chatHistory) ? local.chatHistory : []);
         if (history.length > 0) {
             chatHistory = history.slice();
@@ -278,7 +303,7 @@
            (a fresh seed, or a local value the server never received). This is
            what lets the agent see the student's question and what carries it
            across devices. Best-effort; the local copy already holds it. ---- */
-        if (wq && (!serverOk || !server.workingQuestion)) {
+        if (wq && (!serverOk || !has(server, 'workingQuestion'))) {
             pushWorkingQuestion(wq).then(function (ok) {
                 if (ok && fromSeed) {
                     setText(workingQStatus, 'Your question is loaded and ready.');
@@ -328,22 +353,27 @@
         /* Normalise: compare trimmed against last saved trimmed */
         if (value === workingQLastSaved.trim()) return;
 
-        /* Local first — always succeeds, so the student never loses work even
-           if the server is unreachable. */
-        writeLocal({ workingQuestion: value });
+        /* Local first. NOTE: localStorage can throw (Safari Private Mode throws
+           on every write; quota can be exceeded), so writeLocal returns null on
+           failure — we must not claim "Saved on this device" when it didn't. */
+        const localOk = writeLocal({ workingQuestion: value }) !== null;
         workingQLastSaved = value;
 
         /* The server rejects an empty question (and keeps the last non-empty
            one). Locally we've recorded the clear; don't show an error. */
         if (!value) {
-            setText(workingQStatus, 'Saved on this device');
-            scheduleStatusClear('Saved on this device');
+            const m = localOk ? 'Saved on this device' : 'Cleared (this device can’t save — keep this tab open)';
+            setText(workingQStatus, m);
+            scheduleStatusClear(m);
             return;
         }
 
         setText(workingQStatus, 'Saving…');
-        const ok = await pushWorkingQuestion(value);
-        const msg = ok ? 'Saved' : 'Saved on this device';
+        const serverOk = await pushWorkingQuestion(value);
+        let msg;
+        if (serverOk) msg = 'Saved';                       // server has it — safe across devices
+        else if (localOk) msg = 'Saved on this device';    // offline but this browser kept it
+        else msg = 'Not saved — keep this tab open and tell your teacher';  // neither worked
         setText(workingQStatus, msg);
         scheduleStatusClear(msg);
     }
@@ -643,9 +673,12 @@
                     }, 2000);
                 }
 
-                /* If new resources were added, refetch state so shelf is accurate */
+                /* If new resources were added, refresh ONLY the shelf. (Calling
+                   the full loadPortalState() here re-ran history rendering and
+                   re-seeding mid-conversation, which duplicated chat bubbles and
+                   re-showed the "picking up where you left off" marker.) */
                 if (data.resources_added && data.resources_added.length > 0) {
-                    await loadPortalState();
+                    await refreshResources();
                 }
             }
         } catch (e) {
@@ -703,8 +736,10 @@
 
             chip.addEventListener('click', function () {
                 workingQInput.value = fullText;
-                /* Trigger autosave by dispatching a blur event */
-                workingQInput.dispatchEvent(new Event('blur'));
+                /* Save directly rather than faking a blur event (the synthetic
+                   blur didn't actually blur, and left the real blur handler to
+                   double-save later). */
+                saveWorkingQuestion();
                 workingQInput.focus();
             });
 
