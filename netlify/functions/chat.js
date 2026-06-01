@@ -153,6 +153,39 @@ WHAT YOU DO NOT DO
 If a student asks "what should I write" or "give me an example for my topic", explain the relevant requirement, then point them to the Socratic chamber (to sharpen their own question) and the drafting scaffold (to structure it). Do not produce essay content yourself.`;
 
 // ----------------------------------------------------------------------
+// Curator system prompt — used by the Showroom "exhibition guide"
+// (mode:'exemplars'). Anonymous; grounded in the cached exemplars_corpus
+// pack. It shows students HOW others did the Issues Study and drives a
+// client-side exhibit panel via the show_exhibit tool. Never writes a study.
+// ----------------------------------------------------------------------
+
+const CURATOR_SYSTEM_PROMPT = `You are the Curator of the Issues Study Showroom — a warm, curious exhibition guide for a Year 11 SACE Stage 1 Philosophy student. The Showroom is a gallery of finished Issues Studies done in many different forms. Your job: show the student HOW others approached the task, so they can find their own way in.
+
+YOUR VOICE
+- Warm, a little witty, genuinely delighted by these examples — a gallery guide who loves the collection, not a marker.
+- Plain Year-11 language. Sentences average about 14 words; never over 25. Define any hard word on first use, in parentheses. Australian spelling.
+- Short turns: 2 to 4 sentences, unless walking through one exemplar step by step.
+
+WHAT YOU DO
+- Answer questions about the exemplars in the cached corpus below: how each one chose its question, researched its philosophers, structured its argument, and which form it used.
+- When an exemplar (or thinker) is relevant, CALL show_exhibit with its exact exhibit id, and a short highlight phrase taken VERBATIM from that exhibit's text, so it appears in the panel beside you with the phrase highlighted. Then say in plain words what to notice about it.
+- Help a student see which FORM might suit them, and which THINKER fits their question.
+- Always ground answers in the corpus. If something is not in it, say so plainly.
+
+WHAT YOU DO NOT DO
+- You do not write, draft, outline, or rephrase any part of the student's own essay, poster, script, or study.
+- You do not choose the student's question or position for them. If asked "what should I do mine on?", turn it back: show how others chose, then ask what pulls at them.
+- You do not invent exemplars, quotes, or facts beyond the corpus.
+
+HOW TO USE show_exhibit
+- Call it whenever you reference a specific exhibit — the student should SEE what you describe.
+- exhibit_id must be one of the ids in the corpus (e.g. parable-freewill, poster-mind, dialogue-knowledge, essay-euthanasia, film-meaning, slides-religion, letter-speech).
+- highlight must be a short phrase copied exactly from that exhibit's text (use the HIGHLIGHTABLE phrases). Keep it under ~8 words so it matches.
+- You may call it more than once if comparing two exhibits.
+
+If a student tries to get you to write their study: "That's the bit the assessment wants from YOU. But let me show you how someone else got started…" then show an exhibit.`;
+
+// ----------------------------------------------------------------------
 // Tool definitions (OpenAI tool-use format — function calling)
 // ----------------------------------------------------------------------
 
@@ -239,6 +272,39 @@ const TOOLS = [
         },
     },
 ];
+
+// Curator's single tool: drive the client-side exhibit panel. It mutates no
+// server state, so it is safe in the anonymous Curator mode.
+const CURATOR_TOOLS = [
+    {
+        type: 'function',
+        function: {
+            name: 'show_exhibit',
+            description:
+                'Bring an exemplar up in the panel beside the student and highlight a phrase in it. Call whenever you reference a specific exhibit so the student SEES it.',
+            parameters: {
+                type: 'object',
+                properties: {
+                    exhibit_id: {
+                        type: 'string',
+                        description: 'Exact exhibit id from the corpus, e.g. parable-freewill, poster-mind, dialogue-knowledge, essay-euthanasia, film-meaning, slides-religion, letter-speech.',
+                    },
+                    highlight: {
+                        type: 'string',
+                        description: 'A short phrase (≤8 words) copied VERBATIM from that exhibit\'s text, to highlight in the panel.',
+                    },
+                },
+                required: ['exhibit_id'],
+            },
+        },
+    },
+];
+
+// Valid exhibit ids — guards the show_exhibit tool against hallucinated ids.
+const VALID_EXHIBITS = new Set([
+    'essay-euthanasia', 'parable-freewill', 'film-meaning', 'poster-mind',
+    'dialogue-knowledge', 'slides-religion', 'letter-speech',
+]);
 
 // ----------------------------------------------------------------------
 // Caches (per Lambda container; soft, fine at class scale)
@@ -584,6 +650,27 @@ function buildExplainerSystemMessage() {
     return { role: 'system', content: blocks };
 }
 
+function buildCuratorSystemMessage() {
+    // Block 1: stable Curator instructions.
+    const blocks = [{ type: 'text', text: CURATOR_SYSTEM_PROMPT }];
+    // Block 2: the cached exemplar corpus (every exhibit + thinker). Cached at
+    // 1h TTL so the whole class shares one warm prefix — the cost defence that
+    // makes this cheap (one write ~$0.04/h; each turn is a cache read).
+    const packText = loadPackText('exemplars_corpus');
+    if (packText && packText.length > 2000) {
+        const text =
+            '\n\n--- THE SHOWROOM EXEMPLAR CORPUS (authoritative) ---\n' +
+            'Ground every answer in this. Use the exact exhibit ids with show_exhibit. Do not invent exemplars.\n' +
+            packText;
+        const block = { type: 'text', text };
+        if (approxTokens(CURATOR_SYSTEM_PROMPT) + approxTokens(text) >= HAIKU_CACHE_MIN_TOKENS) {
+            block.cache_control = { type: 'ephemeral', ttl: '1h' };
+        }
+        blocks.push(block);
+    }
+    return { role: 'system', content: blocks };
+}
+
 function buildConversationMessages(history, currentMessage) {
     const truncated = Array.isArray(history) ? history.slice(-HISTORY_TURN_LIMIT * 2) : [];
     const out = truncated.map(m => ({
@@ -791,6 +878,79 @@ exports.handler = async (event, _ctx) => {
             return respond(200, { reply });
         } catch (err) {
             console.error('explain function error:', err && err.stack || err);
+            const status = (err.status >= 400 && err.status < 600) ? err.status : 500;
+            if (status === 402) {
+                return respond(503, { error: 'The classroom AI is temporarily unavailable. Please tell your teacher.' });
+            }
+            return respond(status, { error: err.message || 'Internal error' });
+        }
+    }
+
+    // Curator mode (the Showroom): shared + anonymous, no per-student state.
+    // Grounded in the cached exemplars_corpus pack. Has ONE tool, show_exhibit,
+    // which drives the client-side exhibit panel — collected and returned as
+    // `exhibits` for the page to render. Triggered by { mode: 'exemplars',
+    // message, history }.
+    if (payload.mode === 'exemplars') {
+        let cuMessage = payload.message;
+        let cuHistory = payload.history;
+        if (typeof cuMessage !== 'string' || !cuMessage.trim()) {
+            return respond(400, { error: 'message required' });
+        }
+        try {
+            const systemMessage = buildCuratorSystemMessage();
+            const conversation = buildConversationMessages(cuHistory, cuMessage);
+            const messages = [systemMessage, ...conversation];
+            const exhibits = [];
+            let replyText = '';
+
+            for (let loop = 0; loop < MAX_TOOL_LOOPS; loop++) {
+                const data = await callOpenRouter({
+                    model: MODEL,
+                    max_tokens: MAX_OUTPUT_TOKENS,
+                    messages,
+                    tools: CURATOR_TOOLS,
+                    tool_choice: 'auto',
+                    provider: PROVIDER_PIN,
+                });
+                const choice = data.choices?.[0];
+                if (!choice) break;
+                logUsage(data, ip, 'curator', loop, choice.finish_reason);
+
+                if (choice.finish_reason === 'tool_calls' && Array.isArray(choice.message?.tool_calls)) {
+                    messages.push(choice.message);
+                    for (const tc of choice.message.tool_calls) {
+                        let args = {};
+                        try { args = JSON.parse(tc.function?.arguments || '{}'); } catch (e) { /* ignore */ }
+                        let result;
+                        if (tc.function?.name === 'show_exhibit' && VALID_EXHIBITS.has(args.exhibit_id)) {
+                            const item = { id: args.exhibit_id };
+                            if (typeof args.highlight === 'string' && args.highlight.trim()) {
+                                item.highlight = args.highlight.trim().slice(0, 120);
+                            }
+                            exhibits.push(item);
+                            result = { ok: true, shown: args.exhibit_id };
+                        } else {
+                            result = { error: 'Unknown exhibit id. Use one from the corpus.' };
+                        }
+                        messages.push({ role: 'tool', tool_call_id: tc.id, content: JSON.stringify(result) });
+                    }
+                    continue;
+                }
+                replyText = choice.message?.content || '';
+                break;
+            }
+
+            if (!replyText) {
+                replyText = exhibits.length
+                    ? 'Have a look at the exhibit on the right — notice how they got started.'
+                    : '(The Curator paused. Try asking about one form — "show me a parable" or "how did someone do free will?")';
+            }
+            const body = { reply: replyText };
+            if (exhibits.length) body.exhibits = exhibits;
+            return respond(200, body);
+        } catch (err) {
+            console.error('curator function error:', err && err.stack || err);
             const status = (err.status >= 400 && err.status < 600) ? err.status : 500;
             if (status === 402) {
                 return respond(503, { error: 'The classroom AI is temporarily unavailable. Please tell your teacher.' });

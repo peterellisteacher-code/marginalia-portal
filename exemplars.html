@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Showroom | Marginalia</title>
+    <meta name="description" content="A gallery of finished Issues Studies — one task, a dozen exciting ways to do it. See how others chose a question, found their philosophers, and made their case.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Caveat:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="shared/tokens.css">
+    <link rel="stylesheet" href="shared/marginalia.css">
+
+    <style>
+        /* ============================================================
+           THE SHOWROOM — a bright exhibition hall.
+           Distinct from the dim scholarly base: lighter walls, more air,
+           framed "exhibits" on plinths. Keeps the Marginalia serif/ink DNA
+           (Fraunces + Spectral, iron ink, scholar's red, cobalt) but inverts
+           the mood from study to gallery.
+           ============================================================ */
+        :root {
+            --wall: #FBF6EA;            /* brighter gallery wall (lighter than --ground) */
+            --wall-2: #FFFDF8;          /* near-white for framed mounts */
+            --frame: #C2B49B;           /* aged-soft frame line */
+            --frame-dark: #6E5A41;      /* deeper frame edge */
+        }
+
+        /* The showroom scrolls (unlike the viewport-locked base pages). */
+        html, body { height: auto; }
+
+        .show-shell {
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--wall);
+            /* subtle gallery-wall texture: faint vertical light + grain */
+            background-image:
+                linear-gradient(180deg, rgba(255,255,255,0.5), rgba(255,255,255,0) 40%),
+                radial-gradient(circle at 50% 0%, rgba(255,255,255,0.6), rgba(255,255,255,0) 60%);
+        }
+
+        .show-main { flex: 1; }
+
+        /* ---- Hero ---- */
+        .show-hero {
+            position: relative;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: var(--space-lg) var(--space-lg) 0;
+        }
+
+        .show-hero__banner {
+            width: 100%;
+            aspect-ratio: 2304 / 896;
+            object-fit: cover;
+            border: 1px solid var(--frame);
+            box-shadow: 0 2px 18px rgba(26, 22, 18, 0.10);
+            display: block;
+        }
+
+        .show-hero__titlewrap {
+            text-align: center;
+            padding: var(--space-xl) var(--space-md) var(--space-lg);
+            max-width: 64ch;
+            margin: 0 auto;
+        }
+
+        .show-hero__eyebrow {
+            font-family: var(--font-ui);
+            font-size: var(--text-sm);
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--marginalia);
+            margin-bottom: var(--space-sm);
+        }
+
+        .show-hero__title {
+            font-family: var(--font-display);
+            font-size: var(--text-display);
+            font-weight: 400;
+            line-height: 1.05;
+            color: var(--ink);
+            letter-spacing: -0.015em;
+            margin-bottom: var(--space-md);
+        }
+        .show-hero__title em { font-style: italic; color: var(--marginalia); }
+
+        .show-hero__lead {
+            font-family: var(--font-body);
+            font-size: var(--text-lg);
+            line-height: 1.6;
+            color: var(--ink);
+        }
+
+        /* ---- Section scaffolding ---- */
+        .show-section {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: var(--space-2xl) var(--space-lg);
+        }
+
+        .show-section__head {
+            max-width: 70ch;
+            margin: 0 auto var(--space-xl);
+            text-align: center;
+        }
+
+        .show-section__kicker {
+            font-family: var(--font-ui);
+            font-size: var(--text-xs);
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--aged-strong);
+            margin-bottom: var(--space-xs);
+        }
+
+        .show-section__title {
+            font-family: var(--font-display);
+            font-size: var(--text-2xl);
+            font-weight: 500;
+            color: var(--ink);
+            margin-bottom: var(--space-sm);
+        }
+
+        .show-section__intro {
+            font-family: var(--font-body);
+            font-size: var(--text-base);
+            color: var(--ink-soft);
+            line-height: 1.6;
+        }
+
+        /* ============================================================
+           GALLERY OF FORMS — the icon grid
+           ============================================================ */
+        .forms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: var(--space-lg);
+        }
+
+        .exhibit {
+            background: var(--wall-2);
+            border: 1px solid var(--frame);
+            box-shadow: 0 1px 8px rgba(26, 22, 18, 0.06);
+            padding: var(--space-lg);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+            transition: transform var(--motion-fast) var(--motion-ease),
+                        box-shadow var(--motion-fast) var(--motion-ease);
+        }
+        .exhibit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(26, 22, 18, 0.12);
+        }
+
+        .exhibit__icon {
+            width: 96px;
+            height: 96px;
+            object-fit: contain;
+            align-self: flex-start;
+            border: 1px solid var(--frame);
+            background: var(--wall);
+            padding: var(--space-xs);
+        }
+
+        .exhibit__placard {
+            font-family: var(--font-ui);
+            font-size: var(--text-xs);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--marginalia);
+        }
+
+        .exhibit__title {
+            font-family: var(--font-display);
+            font-size: var(--text-lg);
+            font-weight: 500;
+            color: var(--ink);
+            line-height: 1.2;
+        }
+
+        .exhibit__desc {
+            font-family: var(--font-body);
+            font-size: var(--text-base);
+            color: var(--ink);
+            line-height: 1.55;
+        }
+
+        .exhibit__moves {
+            font-family: var(--font-ui);
+            font-size: var(--text-xs);
+            color: var(--ink-soft);
+            line-height: 1.5;
+            border-top: 1px dashed var(--frame);
+            padding-top: var(--space-sm);
+            margin-top: auto;
+        }
+        .exhibit__moves strong { color: var(--clarity); font-weight: 600; }
+
+        /* ============================================================
+           POSTER / PHILOSOPHER RAILS — horizontally scrollable galleries
+           ============================================================ */
+        .rail {
+            display: grid;
+            grid-auto-flow: column;
+            grid-auto-columns: minmax(280px, 320px);
+            gap: var(--space-lg);
+            overflow-x: auto;
+            padding: var(--space-sm) var(--space-xs) var(--space-lg);
+            scroll-snap-type: x mandatory;
+        }
+        .rail > * { scroll-snap-align: start; }
+
+        .plate {
+            background: var(--wall-2);
+            border: 1px solid var(--frame);
+            box-shadow: 0 2px 12px rgba(26, 22, 18, 0.10);
+            padding: var(--space-md);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+        }
+
+        .plate__img {
+            width: 100%;
+            border: 1px solid var(--frame);
+            display: block;
+            cursor: zoom-in;
+            background: var(--wall);
+        }
+
+        .plate__caption {
+            font-family: var(--font-ui);
+            font-size: var(--text-xs);
+            color: var(--aged-strong);
+            line-height: 1.4;
+            letter-spacing: 0.02em;
+        }
+        .plate__caption strong {
+            display: block;
+            font-family: var(--font-display);
+            font-size: var(--text-base);
+            color: var(--ink);
+            letter-spacing: 0;
+            margin-bottom: 2px;
+        }
+
+        .rail-hint {
+            font-family: var(--font-ui);
+            font-size: var(--text-xs);
+            color: var(--aged-strong);
+            text-align: center;
+            margin-top: calc(-1 * var(--space-sm));
+        }
+
+        /* ---- Mind poster feature (two-up) ---- */
+        .feature-two {
+            display: grid;
+            grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+            gap: var(--space-xl);
+            align-items: center;
+        }
+        @media (max-width: 900px) { .feature-two { grid-template-columns: 1fr; } }
+
+        .feature-two__img {
+            width: 100%;
+            max-width: 460px;
+            margin: 0 auto;
+            border: 1px solid var(--frame);
+            box-shadow: 0 4px 22px rgba(26, 22, 18, 0.16);
+            display: block;
+            cursor: zoom-in;
+        }
+        .feature-two__body .body-text { max-width: 56ch; }
+
+        /* ============================================================
+           THE EXEMPLAR (official SACE A) — the worked example
+           ============================================================ */
+        .exemplar-doc {
+            max-width: 70ch;
+            margin: 0 auto;
+            background: var(--wall-2);
+            border: 1px solid var(--frame);
+            border-left: 4px solid var(--clarity);
+            padding: var(--space-xl);
+            box-shadow: 0 2px 14px rgba(26, 22, 18, 0.08);
+        }
+        .exemplar-doc__grade {
+            font-family: var(--font-ui);
+            font-size: var(--text-xs);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--clarity);
+            font-weight: 600;
+            margin-bottom: var(--space-xs);
+        }
+        .exemplar-doc h3 {
+            font-family: var(--font-display);
+            font-size: var(--text-xl);
+            color: var(--ink);
+            margin: var(--space-lg) 0 var(--space-xs);
+        }
+        .exemplar-doc h3:first-of-type { margin-top: var(--space-sm); }
+        .exemplar-doc p {
+            font-family: var(--font-body);
+            font-size: var(--text-base);
+            color: var(--ink);
+            line-height: 1.65;
+            margin-bottom: var(--space-sm);
+        }
+        .exemplar-doc .annot {
+            font-family: var(--font-marginalia);
+            font-size: var(--text-lg);
+            color: var(--marginalia);
+            line-height: 1.4;
+            padding: var(--space-xs) var(--space-md);
+            border-left: 2px solid var(--marginalia-soft);
+            background: rgba(165, 58, 42, 0.05);
+            margin: var(--space-xs) 0 var(--space-md);
+        }
+        .exemplar-doc .annot::before { content: "✎  "; }
+
+        /* ============================================================
+           THE CURATOR — AI guide + live exhibit panel
+           ============================================================ */
+        .curator {
+            background: var(--wall-2);
+            border: 1px solid var(--frame);
+            box-shadow: 0 2px 16px rgba(26, 22, 18, 0.10);
+        }
+
+        .curator__grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            min-height: 540px;
+        }
+        @media (max-width: 900px) { .curator__grid { grid-template-columns: 1fr; } }
+
+        /* chat side */
+        .curator__chat {
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--frame);
+            min-height: 0;
+        }
+        @media (max-width: 900px) { .curator__chat { border-right: none; border-bottom: 1px solid var(--frame); } }
+
+        .curator__header {
+            padding: var(--space-md) var(--space-lg);
+            border-bottom: 1px solid var(--frame);
+            background: var(--wall);
+        }
+        .curator__title {
+            font-family: var(--font-display);
+            font-size: var(--text-lg);
+            font-style: italic;
+            color: var(--marginalia);
+            margin: 0;
+        }
+        .curator__sub {
+            font-family: var(--font-ui);
+            font-size: var(--text-xs);
+            color: var(--aged-strong);
+            letter-spacing: 0.03em;
+            margin-top: 2px;
+        }
+
+        .curator__stream {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--space-lg);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+            max-height: 52vh;
+        }
+
+        .cm { display: flex; flex-direction: column; gap: 2px; }
+        .cm__who {
+            font-family: var(--font-ui);
+            font-size: var(--text-xs);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--aged-strong);
+        }
+        .cm__body {
+            font-family: var(--font-ui);
+            font-size: var(--text-base);
+            line-height: 1.6;
+            color: var(--ink);
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            padding: var(--space-sm) var(--space-md);
+            border: 1px solid var(--frame);
+            background: var(--wall);
+        }
+        .cm--agent .cm__body { border-left: 3px solid var(--marginalia); color: var(--marginalia); }
+        .cm--you .cm__body { background: var(--paper-warm); }
+        .cm--system .cm__body {
+            border: none; background: transparent; color: var(--ink-soft);
+            font-style: italic; font-size: var(--text-sm); padding: 0;
+        }
+
+        .curator__inputbar {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: var(--space-sm);
+            padding: var(--space-md) var(--space-lg);
+            border-top: 1px solid var(--frame);
+            background: var(--wall);
+            align-items: end;
+        }
+        .curator__input {
+            font-family: var(--font-body);
+            font-size: var(--text-base);
+            padding: var(--space-sm) var(--space-md);
+            border: 1px solid var(--frame);
+            background: var(--wall-2);
+            color: var(--ink);
+            resize: vertical;
+            min-height: 3em;
+            line-height: 1.5;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .curator__input:focus-visible {
+            outline: 2px solid var(--marginalia);
+            outline-offset: 1px;
+            border-color: var(--marginalia);
+        }
+
+        /* exhibit panel side */
+        .curator__panel {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            background: var(--wall);
+        }
+        .curator__panel-head {
+            padding: var(--space-md) var(--space-lg);
+            border-bottom: 1px solid var(--frame);
+            font-family: var(--font-ui);
+            font-size: var(--text-xs);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--aged-strong);
+        }
+        .curator__exhibit {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--space-lg);
+            max-height: 56vh;
+        }
+        .exhibit-empty {
+            font-family: var(--font-body);
+            font-style: italic;
+            color: var(--ink-soft);
+            font-size: var(--text-base);
+            line-height: 1.6;
+            text-align: center;
+            margin-top: var(--space-xl);
+        }
+        .exhibit-card__form {
+            font-family: var(--font-ui);
+            font-size: var(--text-xs);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--marginalia);
+            margin-bottom: var(--space-xs);
+        }
+        .exhibit-card__q {
+            font-family: var(--font-display);
+            font-size: var(--text-lg);
+            font-style: italic;
+            color: var(--ink);
+            line-height: 1.3;
+            margin-bottom: var(--space-md);
+            padding-bottom: var(--space-sm);
+            border-bottom: 1px solid var(--frame);
+        }
+        .exhibit-card__excerpt {
+            font-family: var(--font-body);
+            font-size: var(--text-base);
+            line-height: 1.7;
+            color: var(--ink);
+        }
+        .exhibit-card__excerpt mark {
+            background: rgba(41, 82, 163, 0.16);
+            color: var(--ink);
+            padding: 1px 3px;
+            border-bottom: 2px solid var(--clarity);
+            transition: background var(--motion-fast) var(--motion-ease);
+        }
+        .exhibit-card__excerpt mark.flash {
+            background: rgba(165, 58, 42, 0.28);
+            border-bottom-color: var(--marginalia);
+        }
+        .exhibit-card__note {
+            font-family: var(--font-ui);
+            font-size: var(--text-sm);
+            color: var(--ink-soft);
+            line-height: 1.5;
+            margin-top: var(--space-md);
+            padding-top: var(--space-sm);
+            border-top: 1px dashed var(--frame);
+        }
+
+        /* ---- Lightbox for zoomable posters ---- */
+        .lightbox[hidden] { display: none; }
+        .lightbox {
+            position: fixed;
+            inset: 0;
+            background: rgba(26, 22, 18, 0.86);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-lg);
+            z-index: 2000;
+        }
+        .lightbox img {
+            max-width: 92vw;
+            max-height: 92vh;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+            border: 1px solid var(--frame-dark);
+        }
+        .lightbox__close {
+            position: absolute;
+            top: var(--space-md);
+            right: var(--space-md);
+            min-width: 44px;
+            min-height: 44px;
+            background: var(--wall-2);
+            border: 1px solid var(--frame-dark);
+            color: var(--ink);
+            font-size: var(--text-lg);
+            cursor: pointer;
+        }
+
+        .next-action {
+            text-align: center;
+            margin-top: var(--space-2xl);
+            padding-top: var(--space-lg);
+            border-top: 1px solid var(--frame);
+        }
+        .next-action .btn { margin: 0 var(--space-xs); }
+    </style>
+</head>
+<body>
+    <a href="#main" class="skip-link">Skip to main content</a>
+    <div class="show-shell">
+
+        <header class="site-header">
+            <a href="index.html" class="site-header__brand">
+                Marginalia <small>Stage 1 Issues Study</small>
+            </a>
+            <nav class="site-nav" aria-label="Primary">
+                <a href="index.html">welcome</a>
+                <a href="explainer.html">explain the task</a>
+                <a href="bank.html">questions</a>
+                <a href="lab.html">experiments</a>
+                <a href="exemplars.html" class="active">showroom</a>
+                <a href="chamber.html">chamber</a>
+                <a href="resources.html">readings</a>
+                <a href="drafting.html">drafting</a>
+            </nav>
+        </header>
+
+        <main class="show-main" id="main">
+
+            <!-- HERO -->
+            <section class="show-hero">
+                <img class="show-hero__banner" src="assets/exemplars/gallery-hero.png"
+                     alt="An illustrated gallery hall where the exhibits on the walls are different forms of work — a handwritten essay, a film reel, a podcast microphone, an open storybook, slide screens and posters — with two visitors walking through.">
+                <div class="show-hero__titlewrap">
+                    <p class="show-hero__eyebrow">The Showroom</p>
+                    <h1 class="show-hero__title">One task. <em>A dozen ways</em> to answer it.</h1>
+                    <p class="show-hero__lead">
+                        The Issues Study asks one thing: choose a philosophical question, take a side,
+                        and defend it. How you present that defence is wide open. Walk the gallery —
+                        every exhibit is the same task, done a completely different way.
+                    </p>
+                </div>
+            </section>
+
+            <!-- GALLERY OF FORMS -->
+            <section class="show-section" aria-labelledby="formsHeading">
+                <div class="show-section__head">
+                    <p class="show-section__kicker">Room One</p>
+                    <h2 class="show-section__title" id="formsHeading">The forms you can choose</h2>
+                    <p class="show-section__intro">
+                        Same 800-word brief (or 5-minute spoken version). Eight different vessels.
+                        Each card shows what the form is good at — and the first move students made to pull it off.
+                    </p>
+                </div>
+
+                <div class="forms-grid">
+                    <article class="exhibit">
+                        <img class="exhibit__icon" src="assets/exemplars/icons/essay.png" alt="">
+                        <p class="exhibit__placard">Form 01</p>
+                        <h3 class="exhibit__title">The essay</h3>
+                        <p class="exhibit__desc">Prose, structured clearly. Define the issue, explain both sides, weigh them, defend your own. This form makes it easiest to show all four criteria at once.</p>
+                        <p class="exhibit__moves"><strong>First move:</strong> write the question as a real question — one where sitting on the fence isn't an option.</p>
+                    </article>
+
+                    <article class="exhibit">
+                        <img class="exhibit__icon" src="assets/exemplars/icons/dialogue.png" alt="">
+                        <p class="exhibit__placard">Form 02</p>
+                        <h3 class="exhibit__title">The dialogue</h3>
+                        <p class="exhibit__desc">Stage a conversation between two thinkers who disagree. You prove you understand both positions by letting them argue it out. Plato wrote almost everything this way.</p>
+                        <p class="exhibit__moves"><strong>First move:</strong> pick two philosophers who'd genuinely clash on your question, not two who agree.</p>
+                    </article>
+
+                    <article class="exhibit">
+                        <img class="exhibit__icon" src="assets/exemplars/icons/podcast.png" alt="">
+                        <p class="exhibit__placard">Form 03</p>
+                        <h3 class="exhibit__title">The podcast</h3>
+                        <p class="exhibit__desc">Up to five minutes of spoken audio. Great if you think better out loud. Script it tightly — five minutes is shorter than it sounds.</p>
+                        <p class="exhibit__moves"><strong>First move:</strong> write a full script, then read it aloud and cut every sentence that doesn't earn its place.</p>
+                    </article>
+
+                    <article class="exhibit">
+                        <img class="exhibit__icon" src="assets/exemplars/icons/film.png" alt="">
+                        <p class="exhibit__placard">Form 04</p>
+                        <h3 class="exhibit__title">The short film</h3>
+                        <p class="exhibit__desc">Make your argument visual. One student used the film <em>Big Fish</em> — its story raised the same question the issue raises — and explained how the plot argued their position.</p>
+                        <p class="exhibit__moves"><strong>First move:</strong> find a film whose story already wrestles with your question.</p>
+                    </article>
+
+                    <article class="exhibit">
+                        <img class="exhibit__icon" src="assets/exemplars/icons/parable.png" alt="">
+                        <p class="exhibit__placard">Form 05</p>
+                        <h3 class="exhibit__title">The parable</h3>
+                        <p class="exhibit__desc">Write a story that embodies the disagreement. One student invented a tale of an alcoholic's two sons to explore free will, fate, and determinism. The narrative <em>is</em> the argument.</p>
+                        <p class="exhibit__moves"><strong>First move:</strong> design a story where each character lives out a different philosophical position.</p>
+                    </article>
+
+                    <article class="exhibit">
+                        <img class="exhibit__icon" src="assets/exemplars/icons/slides.png" alt="">
+                        <p class="exhibit__placard">Form 06</p>
+                        <h3 class="exhibit__title">The slide deck</h3>
+                        <p class="exhibit__desc">Keynote or PowerPoint, built to be presented aloud. Let images carry the argument, not walls of text. Design it — don't just paste your essay onto slides.</p>
+                        <p class="exhibit__moves"><strong>First move:</strong> one idea per slide, one image that makes that idea land.</p>
+                    </article>
+
+                    <article class="exhibit">
+                        <img class="exhibit__icon" src="assets/exemplars/icons/poster.png" alt="">
+                        <p class="exhibit__placard">Form 07</p>
+                        <h3 class="exhibit__title">The illustrated poster</h3>
+                        <p class="exhibit__desc">One striking visual that holds the whole argument. Hard to do well — every word has to earn its place. See the worked example below.</p>
+                        <p class="exhibit__moves"><strong>First move:</strong> boil your position down to one sentence a stranger could grasp in five seconds.</p>
+                    </article>
+
+                    <article class="exhibit">
+                        <img class="exhibit__icon" src="assets/exemplars/icons/letter.png" alt="">
+                        <p class="exhibit__placard">Form 08</p>
+                        <h3 class="exhibit__title">The letter to the editor</h3>
+                        <p class="exhibit__desc">Argue your case to a real audience in a real voice. Persuasive, personal, and pointed — but it still has to weigh the other side fairly.</p>
+                        <p class="exhibit__moves"><strong>First move:</strong> picture the reader who disagrees with you, and write to change their mind.</p>
+                    </article>
+                </div>
+            </section>
+
+            <!-- THE CURATOR (AI) -->
+            <section class="show-section" aria-labelledby="curatorHeading">
+                <div class="show-section__head">
+                    <p class="show-section__kicker">Your guide</p>
+                    <h2 class="show-section__title" id="curatorHeading">Ask the Curator</h2>
+                    <p class="show-section__intro">
+                        The Curator knows every exemplar in this gallery. Ask how someone tackled
+                        free will, or what a good question looks like, and it will pull the example
+                        into the panel and walk you through the choices they made. It shows you
+                        <em>how others did it</em> — it won't do yours for you.
+                    </p>
+                </div>
+
+                <div class="curator">
+                    <div class="curator__grid">
+                        <section class="curator__chat" aria-label="Chat with the Curator">
+                            <div class="curator__header">
+                                <p class="curator__title">The Curator</p>
+                                <p class="curator__sub">Your exhibition guide · shows examples, never writes your study</p>
+                            </div>
+                            <div class="curator__stream" id="curatorStream" aria-live="polite" tabindex="0" role="log" aria-label="Conversation with the Curator"></div>
+                            <div class="curator__inputbar">
+                                <label for="curatorInput" class="visually-hidden">Ask the Curator about the exemplars</label>
+                                <textarea id="curatorInput" class="curator__input" rows="2"
+                                    placeholder="e.g. How did someone do free will? · What makes a good question? · Show me a parable."></textarea>
+                                <button type="button" class="btn btn--clarity" id="curatorSend">Ask</button>
+                            </div>
+                        </section>
+
+                        <section class="curator__panel" aria-label="Exhibit on display">
+                            <p class="curator__panel-head">On display</p>
+                            <div class="curator__exhibit" id="curatorExhibit" tabindex="0">
+                                <p class="exhibit-empty">
+                                    Nothing on display yet. Ask the Curator a question and the
+                                    matching exemplar will appear here, with the key passages highlighted.
+                                </p>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PHILOSOPHER STUDY POSTERS -->
+            <section class="show-section" aria-labelledby="philHeading">
+                <div class="show-section__head">
+                    <p class="show-section__kicker">Room Two</p>
+                    <h2 class="show-section__title" id="philHeading">Meet the thinkers</h2>
+                    <p class="show-section__intro">
+                        Big study-posters for the philosophers you're most likely to use — each one
+                        the thinker's face, their one big idea, and their position in plain language.
+                        Click any poster to see it full size.
+                    </p>
+                </div>
+
+                <div class="rail" id="philRail" tabindex="0" role="group" aria-label="Philosopher study posters — scroll horizontally">
+                    <!-- plates injected by JS so the file stays readable -->
+                </div>
+                <p class="rail-hint">↔ scroll for more · click a poster to enlarge</p>
+            </section>
+
+            <!-- MIND POSTER FEATURE -->
+            <section class="show-section" aria-labelledby="mindHeading">
+                <div class="feature-two">
+                    <img class="feature-two__img" src="assets/exemplars/mind-physical-poster.png"
+                         alt="An illustrated poster answering 'Is the mind completely physical?'. A human head is drawn half as glowing neural circuitry and half as a watercolour cloud of colour, with three labelled sections: the physicalist view, the objection that knowing every brain fact still doesn't tell you what red feels like, and a middle position."
+                         data-zoom>
+                    <div class="feature-two__body">
+                        <p class="show-section__kicker">A worked poster</p>
+                        <h2 class="show-section__title" id="mindHeading">"Is the mind completely physical?"</h2>
+                        <p class="body-text">
+                            Here's the poster form done well. One question. One image that carries the
+                            whole argument — a head that's half circuitry, half feeling. Three short
+                            sections: the position, the objection, and a reasoned answer.
+                        </p>
+                        <p class="body-text">
+                            Notice how little text it uses. A poster can't hide a weak argument behind
+                            word count — so every line has to be the clearest version of itself. That's
+                            the challenge, and the reward.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- OFFICIAL SACE A EXEMPLAR -->
+            <section class="show-section" aria-labelledby="aHeading">
+                <div class="show-section__head">
+                    <p class="show-section__kicker">The gold standard</p>
+                    <h2 class="show-section__title" id="aHeading">An A-grade essay, annotated</h2>
+                    <p class="show-section__intro">
+                        This is an official SACE A-grade exemplar (euthanasia, through Aristotle's
+                        Virtue Ethics). The red notes in the margin point out the moves that earn the
+                        marks. Read it for the <em>shape</em>, not the topic.
+                    </p>
+                </div>
+
+                <div class="exemplar-doc">
+                    <p class="exemplar-doc__grade">A · Ethics · ~800 words</p>
+
+                    <h3>It defines the issue precisely</h3>
+                    <p>"Euthanasia is the act of painlessly putting to death persons suffering from painful or incurable diseases. It can be classified as active or passive, voluntary or involuntary…"</p>
+                    <p class="annot">Before arguing anything, it pins down exactly what's being discussed — and shows the issue has parts. That's KU1.</p>
+
+                    <h3>It explains a position in its own terms</h3>
+                    <p>"In exploring Virtue Ethics, Aristotle believed that everything has a purpose and man's purpose was happiness… virtues are found in the balance between excess and deficiency — courage between cowardice and foolhardiness."</p>
+                    <p class="annot">It explains the philosopher fairly and accurately, before judging — you can't critique what you haven't first understood.</p>
+
+                    <h3>It applies the idea — then turns it both ways</h3>
+                    <p>"You could claim euthanasia is the courageous act… On the other hand, it could be seen as cowardice, lacking endurance and violating the sanctity of life."</p>
+                    <p class="annot">The same principle is argued in <em>both</em> directions. This is the critical-analysis move (CA1) most students skip.</p>
+
+                    <h3>It reaches a careful, reasoned position</h3>
+                    <p>"The application of Virtue Ethics appears too vague for sensitive issues such as euthanasia. Perhaps Aristotle would conclude that a person achieving Eudaimonia would have the wisdom to make the right decision."</p>
+                    <p class="annot">It commits to a view that <em>follows from the analysis</em> — not a personal opinion bolted on at the end. And it acknowledges every source.</p>
+                </div>
+            </section>
+
+            <div class="show-section next-action">
+                <p class="body-text" style="text-align:center; margin: 0 auto var(--space-md); max-width: 56ch;">
+                    Seen one that sparks something? Take your own question to the chamber, or start shaping it in the drafting scaffold.
+                </p>
+                <a href="chamber.html" class="btn btn--clarity">Take a question to the chamber &rarr;</a>
+                <a href="bank.html" class="btn btn--ghost">Browse the question bank</a>
+            </div>
+
+        </main>
+
+        <footer class="site-footer">
+            <span>SACE Stage 1 Philosophy &middot; Issues Study workspace</span>
+            <span>Anonymised approaches + the official SACE A exemplar. Forms, not formulae.</span>
+        </footer>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox" hidden>
+        <button class="lightbox__close" id="lightboxClose" aria-label="Close">&times;</button>
+        <img id="lightboxImg" src="" alt="">
+    </div>
+
+    <script src="shared/glossary.js"></script>
+    <script src="shared/exemplars.js"></script>
+</body>
+</html>

@@ -1,0 +1,257 @@
+================================================================================
+THE SHOWROOM EXEMPLAR CORPUS — for "The Curator" agent
+SACE Stage 1 Philosophy, Issues Study (Assessment Type 3)
+================================================================================
+
+This corpus is the authoritative gallery the Curator draws on. Every example
+below is an ANONYMISED, original illustration of an APPROACH — never a named
+student's verbatim work — except the official SACE A-grade exemplar, which is a
+published SACE teaching artefact. When you point a student at an exemplar, name
+its EXHIBIT ID exactly (e.g. parable-freewill) so the show_exhibit tool can
+bring it up in the panel beside you.
+
+--------------------------------------------------------------------------------
+THE TASK, IN ONE BREATH
+--------------------------------------------------------------------------------
+Choose a philosophical question (ethics, epistemology, or metaphysics). Identify
+more than one position on it. Explain the reasoning behind positions you do not
+hold. Critically analyse their strengths and weaknesses. Defend your own view
+with logic and evidence. Communicate clearly with accurate philosophical terms
+and acknowledged sources. 800 words written, OR 5 minutes spoken, OR equivalent
+multimodal. Four criteria: Knowledge & Understanding (KU), Reasoning (R),
+Critical Analysis (CA), Communication (C).
+
+The form is free. The criteria are fixed. A poster and an essay are marked
+against the SAME four criteria — your grade depends on the philosophy, not the
+vessel you pour it into.
+
+================================================================================
+THE EXHIBITS (the gallery you can bring up in the panel)
+================================================================================
+
+--------------------------------------------------------------------------------
+EXHIBIT ID: essay-euthanasia    FORM: Essay (the official SACE A-grade exemplar)
+QUESTION: Is euthanasia ever the courageous choice, or a failure of endurance?
+--------------------------------------------------------------------------------
+The gold standard, and the clearest map of the four criteria in motion.
+What it does, in order:
+1. DEFINES THE ISSUE PRECISELY before arguing — euthanasia is active or passive,
+   voluntary or involuntary. (KU1: you cannot argue about a blurry target.)
+2. EXPLAINS THE PHILOSOPHER FAIRLY in their own terms — Aristotle: everything
+   has a purpose; ours is happiness (eudaimonia); virtue is the mean between two
+   extremes, courage between cowardice and foolhardiness. (KU1, KU2.)
+3. APPLIES THE PRINCIPLE — THEN TURNS IT BOTH WAYS. Euthanasia could be the
+   courageous act (facing death, freeing loved ones) OR cowardice (lacking
+   endurance, violating the sanctity of life). Arguing the SAME principle in
+   both directions is the critical-analysis move (CA1) most students skip.
+4. REACHES A REASONED POSITION that follows FROM the analysis — Virtue Ethics is
+   too vague to settle so sensitive a case; perhaps only practical wisdom can.
+   Not an opinion bolted on at the end. Sources acknowledged throughout (C2).
+KEY PHRASES you can highlight: "active or passive, voluntary or involuntary";
+"the mean between excess and deficiency"; "On the other hand, it could be seen
+as cowardice"; "appears too vague for sensitive issues".
+TEACHING POINT: read it for the SHAPE, not the topic. The shape transfers to any
+question in any key area.
+
+--------------------------------------------------------------------------------
+EXHIBIT ID: parable-freewill    FORM: Parable / allegory
+QUESTION: Are we free to choose who we become, or determined by our past?
+--------------------------------------------------------------------------------
+An invented story does the arguing. An alcoholic father has two sons; one
+becomes an alcoholic, one never drinks. Each explains himself with the same
+line: "with a father like that, what choice did I have?" The single story holds
+three positions at once — free will (the sons chose), fatalism (their fate was
+sealed), determinism (prior causes fixed each path).
+HOW THEY CHOSE THE QUESTION: started from a vivid everyday puzzle (why do
+siblings turn out so differently?) and pushed it until it became a metaphysical
+question about freedom.
+HOW THEY RESEARCHED: tied each character to a named position — Kant and moral
+responsibility for free will; logical fatalism; hard determinism and the
+nature/nurture evidence.
+THE RISK: a parable can drift into pure fiction. It still must NAME the positions
+and weigh them, or it stops being philosophy.
+HIGHLIGHTABLE: "what choice did I have?"; "the story does the arguing".
+
+--------------------------------------------------------------------------------
+EXHIBIT ID: film-meaning    FORM: Short film (max 5 minutes)
+QUESTION: Does a life need to be true to be meaningful?
+--------------------------------------------------------------------------------
+Built around the film Big Fish, whose hero tells fantastical versions of his own
+life. Scenes are used as EVIDENCE — the film itself keeps asking whether the
+embellished story is "truer" than the dull facts. The student maps this onto the
+philosophical question and defends a position: meaning can survive a loosened
+grip on literal truth.
+HOW THEY CHOSE THE FORM: they already loved a film that wrestled with their
+question — so the film became the worked example.
+THE RISK: becoming a film review. Every scene cited must return to the
+philosophical claim.
+HIGHLIGHTABLE: "treat its scenes as evidence"; "truer than the dull facts".
+
+--------------------------------------------------------------------------------
+EXHIBIT ID: poster-mind    FORM: Illustrated poster
+QUESTION: Is the mind completely physical?
+--------------------------------------------------------------------------------
+One image carries the whole argument: a head drawn half as glowing circuitry,
+half as a watercolour cloud of feeling. Three short labels do the rest.
+THE PHYSICALIST VIEW — the mind is just the brain; thoughts are neurons firing.
+THE OBJECTION — knowing every brain fact still doesn't tell you what red FEELS
+like (the knowledge argument; Nagel's "what is it like to be a bat?").
+A POSITION — the mind may depend on the brain, yet the felt quality of
+experience resists a purely physical account.
+HOW IT WORKS: boil the position to one sentence; let one strong image hold it;
+trust white space. A poster cannot hide a weak argument behind word count.
+HIGHLIGHTABLE: "what red FEELS like"; "resists a purely physical account".
+
+--------------------------------------------------------------------------------
+EXHIBIT ID: dialogue-knowledge    FORM: Dialogue
+QUESTION: Can we ever be certain of anything?
+--------------------------------------------------------------------------------
+Two voices argue across the page. DESCARTES: I can doubt my senses, even the
+world — but doubting proves I think, and so I am; from that one certainty I
+rebuild. HUME: every idea you rebuild came from experience, which gives only
+habit, never certainty; you have never SEEN cause, only one thing following
+another. The reader watches the disagreement sharpen instead of being told a
+conclusion.
+HOW IT WORKS: pick two thinkers who genuinely clash and give each their
+strongest case. You prove you understand both positions by making each
+persuasive — Plato's own method.
+HIGHLIGHTABLE: "doubting proves I think"; "only habit, never certainty".
+
+--------------------------------------------------------------------------------
+EXHIBIT ID: slides-religion    FORM: Slide deck (Keynote / PowerPoint)
+QUESTION: Do we need religion to be moral?
+--------------------------------------------------------------------------------
+Built to be presented aloud — one idea per slide, one image each. The question,
+stark. The Euthyphro problem as a forked road (is it good because God commands
+it, or commanded because it is good?). Mill: morality can rest on consequences,
+no deity required. The reply: shared ritual binds communities in ways reason
+alone may not. Final slide: the position, one line, earned by what came before.
+HOW IT WORKS: design it; don't paste an essay onto slides. The spoken track
+carries the detail; the slides carry the shape.
+HIGHLIGHTABLE: "one idea per slide"; "the Euthyphro problem".
+
+--------------------------------------------------------------------------------
+EXHIBIT ID: letter-speech    FORM: Letter to the editor
+QUESTION: Should free speech be allowed regardless of who is harmed?
+--------------------------------------------------------------------------------
+Addressed to a real reader in a real voice. It grants the other side first —
+free speech is the engine of every reform we cherish — then presses: Mill drew
+the line at harm, not offence. It argues the harm principle, not comfort, is the
+right test, and writes directly to the reader who began by disagreeing.
+HOW IT WORKS: persuasive and personal, but it still weighs the other side
+fairly. Picture the reader who disagrees and try to move them one step.
+HIGHLIGHTABLE: "the line at harm, not offence"; "the harm principle".
+
+================================================================================
+THE THINKERS (study-posters in the gallery's second room)
+================================================================================
+Each has a poster: face, one big idea, three plain-language panels. Use these to
+help a student see WHICH philosopher fits their question.
+
+DESCARTES (1596–1650): "I think, therefore I am." Doubt everything; one thing is
+certain — if I think, I exist; rebuild knowledge from there. Good for: certainty,
+knowledge, mind.
+HUME (1711–1776): "All knowledge begins with experience." We learn by sensing;
+cause is a habit, not something we see; be humble about certainty. Good for:
+knowledge, science, cause.
+PLATO (c.428–348 BCE): "The world we see is only a shadow." The Cave; the Forms
+(perfect ideas beyond the physical); reason climbs from appearance to reality.
+Good for: reality, knowledge, justice.
+ARISTOTLE (384–322 BCE): "We are what we repeatedly do." The Golden Mean; everything
+has a purpose; virtue is a habit. Good for: ethics, the good life, character.
+MILL (1806–1873): "The greatest happiness for the greatest number." Weigh
+outcomes; free speech; the harm principle. Good for: ethics, liberty, justice.
+KANT (1724–1804): "Act only on rules you'd want everyone to follow." The
+categorical imperative; treat people as ends, never merely means; duty over
+outcome. Good for: ethics, duty, rights.
+NIETZSCHE (1844–1900): "Become who you are." The will to power; avoid the herd;
+create your own values. Good for: meaning, morality's origins, authenticity.
+SARTRE (1905–1980): "Existence precedes essence." You make yourself; radical
+freedom; bad faith. Good for: freedom, identity, meaning.
+LOCKE (1632–1704): "The mind is a blank slate." Tabula rasa; you are your
+memories; natural rights. Good for: identity, knowledge, mind.
+NAGEL (b.1937): "What is it like to be a bat?" Consciousness is subjective;
+science misses the felt quality; the view from nowhere. Good for: mind,
+consciousness, the physical question.
+
+================================================================================
+HOW TO TURN A TOPIC INTO A QUESTION (the move students most need)
+================================================================================
+A TOPIC is a noun ("free will", "euthanasia", "AI"). A QUESTION forces a side.
+Test: can a reasonable person answer YES and another answer NO? If yes, it's a
+real philosophical question.
+- Topic "free will" -> "If neuroscience could predict every choice, would we
+  still be free?"
+- Topic "the mind" -> "Is the mind completely physical?"
+- Topic "art" -> "Does what the artist intended decide what the artwork means?"
+Make it a question first; everything else follows.
+
+================================================================================
+DEEPER NOTES — how each exhibit was actually built
+(use these to answer "how did they choose the question / research / structure it?")
+================================================================================
+
+essay-euthanasia — CHOOSING THE QUESTION: the writer started from a topic
+("euthanasia") that felt too big, and narrowed it by asking which VIRTUE was at
+stake — landing on courage. That turned a sprawling debate into a question with
+a hinge: is ending suffering brave, or is enduring it brave? RESEARCH: one
+philosopher, deeply, beats five skimmed. They read Aristotle's account of the
+mean and eudaimonia until they could state it in their own words, then found
+where euthanasia tests it. STRUCTURE: define → explain → apply-both-ways →
+position. WHY IT EARNS THE A: the both-ways paragraph is genuine CA1; the
+conclusion is reasoning (R), not preference; sources are acknowledged (C2).
+COMMON TRAP IT AVOIDS: it does not just describe Virtue Ethics and stop — that
+is the C-grade pattern (description without analysis).
+
+parable-freewill — CHOOSING THE QUESTION: began with a feeling ("why did my two
+cousins turn out so differently?") and pushed the everyday puzzle until it
+became metaphysics. RESEARCH: mapped three named positions onto three readings,
+then checked each character's "voice" expressed its position accurately.
+STRUCTURE: a single story, read three ways, with a short reflective coda naming
+the positions so the marker sees the philosophy, not just the fiction. WHY IT
+WORKS: the reader FEELS the tension between freedom and determinism before any
+claim is stated — memorable, and still rigorous because the positions are named.
+
+film-meaning — CHOOSING THE FORM: the student already loved a film that happened
+to wrestle with their question, so the film became the worked example rather
+than decoration. RESEARCH: re-watched with a notebook, logging scenes as
+evidence for and against the claim. STRUCTURE: claim → scene-as-evidence →
+counter-scene → reasoned position. TRAP AVOIDED: it never becomes a plot recap;
+every scene cited is tied back to the philosophical question.
+
+poster-mind — CHOOSING THE FORM: chosen precisely because the question has a
+clean two-sided shape (physical vs felt) that one image could hold. RESEARCH:
+the knowledge argument (Mary's Room) and Nagel's bat, distilled to one sentence
+each. STRUCTURE: image carries the thesis; three labels carry view, objection,
+position. DISCIPLINE: with almost no words, each word is the clearest version of
+itself — a poster cannot hide a vague argument behind word count.
+
+dialogue-knowledge — CHOOSING THE FORM: the question is a genuine standoff
+between two traditions, so a dialogue lets both win their strongest point.
+RESEARCH: read Descartes' cogito and Hume on causation side by side, looking for
+the exact place they collide. STRUCTURE: alternating voices, each pressing the
+other, with the disagreement sharpening rather than resolving into mush.
+
+slides-religion — CHOOSING THE FORM: built to be spoken, so the argument lives
+in the talk and the slides carry only the shape. RESEARCH: the Euthyphro
+dilemma, Mill on consequences, and the social-binding reply. STRUCTURE: one idea
+per slide, one image each, position last and earned.
+
+letter-speech — CHOOSING THE FORM: a real audience demanded a real voice, which
+forced clarity. RESEARCH: Mill's harm principle and the offence/harm
+distinction. STRUCTURE: concede the other side first, then press the principle,
+then address the disagreeing reader directly.
+
+================================================================================
+WHAT SEPARATES A FROM C (say this when a student asks how to do well)
+================================================================================
+C-grade pattern: treats the topic as a topic; explores one perspective; lots of
+description, little criticality; states a personal opinion but does not defend
+it; inconsistent referencing.
+A-grade pattern: phrases a real question; takes more than one position
+seriously; explains positions it does NOT hold, fairly; analyses strengths AND
+weaknesses (the both-ways move); defends its own view with reasoning anchored to
+evidence; uses philosophical terms accurately and acknowledges every source.
+The single highest-leverage move: phrase your topic as a QUESTION that forces a
+side. Everything else gets easier once the question is sharp.
+================================================================================
