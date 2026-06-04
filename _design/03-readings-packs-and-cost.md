@@ -76,6 +76,6 @@ To audit cost: `netlify functions:log chat | grep chat.usage`.
 ## Operational notes
 
 - **API key rotation:** the key lives in Netlify env vars (`ANTHROPIC_API_KEY`). Rotate by setting a new one in `console.anthropic.com` → API Keys, updating the env var in Netlify, redeploying.
-- **Adding a pack:** drop `data/packs/<pack_id>.txt`, add the topic to `PACK_CONTEXT` in `chat.js`, and add a chip in `chamber.html`. No rebuild step; the Function picks it up on next cold start.
+- **Adding a pack:** drop `data/packs/<pack_id>.txt`, add the id to `VALID_PACKS` in `netlify/functions/portal-state.js`, and add a chip in `chamber.html`/`portal.html`. No code change needed in `chat.js` — it loads packs by filename. No rebuild step; the Function picks it up on next cold start.
 - **Removing a pack:** delete the file. Function falls back to the topic note automatically.
 - **Local dev:** `netlify dev` reads `.env` automatically. The repo's `.gitignore` already excludes `.env`.

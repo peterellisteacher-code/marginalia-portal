@@ -474,6 +474,10 @@
                         if (q) {
                             workingQ.textContent = q.question;
                             workingQ.dataset.empty = 'false';
+                            // A chosen-question deep-link is an explicit fresh start:
+                            // clear any restored transcript so an old, unrelated chat
+                            // is not left on screen under the new working question.
+                            conversation = [];
                             // Auto-pick the matching pack if any
                             const cluster = bank.clusters[q.cluster];
                             const packMap = {
@@ -489,11 +493,12 @@
                                 'personhood': 'lab_applied_normative_ethics',
                                 'animal_ethics': 'lab_applied_normative_ethics',
                                 'emotion_knowledge': 'stage1_reason_passion',
-                                'moral_foundations': 'stage1_reason_passion'
+                                'moral_foundations': 'stage1_religion_ethics'
                             };
                             const matched = packMap[q.cluster];
                             if (matched) selectPack(matched);
                             saveState();
+                            renderTranscript();
                         }
                     });
                 }
@@ -625,9 +630,10 @@
             });
 
             // Restore this device's saved chamber session first, so a student's
-            // chat is still here when they come back. The URL params below
-            // intentionally override it: arriving via a "Discuss in chamber →"
-            // deep-link (?q= / ?pack=) is an explicit new starting point.
+            // chat is still here when they come back. URL params then refine it:
+            // a ?q= question deep-link is an explicit fresh start (loadInitialQuestion
+            // loads the chosen question and clears the old transcript); a ?pack=
+            // topic link only refocuses the readings and keeps the conversation.
             restoreSaved();
 
             // Honour ?pack=… from the readings page ("Discuss in chamber →"),
