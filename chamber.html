@@ -418,15 +418,20 @@
                 '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
             }[c]));
 
-            // --- Persistence (localStorage) ---
-            // The chamber is the anonymous path (no sign-in), so — like pins.js
-            // on this same page — we keep the session on the device with
-            // localStorage. A student's conversation, working question, and pack
-            // are then still here when they come back. (Signed-in students get
-            // cross-device, server-side persistence via the portal.)
+            // --- Persistence (localStorage on this device + Netlify Blobs on the
+            // server). The whole site requires a login now, so every chamber visit
+            // has a student session: we mirror the chat to the student's Blobs store
+            // (a SEPARATE slot from the portal) so it follows them across devices,
+            // and keep localStorage as an instant/offline copy.
             const STORE_KEY = 'marginalia.chamber';
+            const SESSION_KEY = 'marginalia.session';
+            const token = (() => {
+                try { return (JSON.parse(sessionStorage.getItem(SESSION_KEY)) || {}).token || null; }
+                catch (e) { return null; }
+            })();
+            let serverSaveTimer = null;
 
-            function saveState() {
+            function saveLocal() {
                 try {
                     localStorage.setItem(STORE_KEY, JSON.stringify({
                         conversation: conversation.slice(-40),   // cap at 40 turns, matching the portal
@@ -435,8 +440,41 @@
                         updatedAt: Date.now()
                     }));
                 } catch (e) {
-                    /* private mode / quota — the chat just won't persist this session */
+                    /* private mode / quota — the chat just won't persist on this device */
                 }
+            }
+
+            // Debounced, best-effort sync to the student's server-side chamber slot.
+            function saveServer() {
+                if (!token) return;
+                clearTimeout(serverSaveTimer);
+                serverSaveTimer = setTimeout(() => {
+                    fetch('/.netlify/functions/portal-state', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'chamber_save',
+                            token,
+                            conversation: conversation.slice(-40),
+                            workingQuestion: workingQ.textContent,
+                            activePack
+                        })
+                    }).catch(() => { /* offline — localStorage still holds it */ });
+                }, 600);
+            }
+
+            function saveState() {
+                saveLocal();
+                saveServer();
+            }
+
+            function loadServer() {
+                if (!token) return Promise.resolve(null);
+                return fetch('/.netlify/functions/portal-state', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'chamber_load', token })
+                }).then(r => (r.ok ? r.json() : null)).catch(() => null);
             }
 
             function loadSaved() {
@@ -629,23 +667,44 @@
                 input.focus();
             });
 
-            // Restore this device's saved chamber session first, so a student's
-            // chat is still here when they come back. URL params then refine it:
-            // a ?q= question deep-link is an explicit fresh start (loadInitialQuestion
+            // Restore this device's saved chamber session first (instant), then
+            // reconcile with the student's server-side copy (Blobs) so the chat
+            // follows them across devices. URL params then refine it: a ?q=
+            // question deep-link is an explicit fresh start (loadInitialQuestion
             // loads the chosen question and clears the old transcript); a ?pack=
             // topic link only refocuses the readings and keeps the conversation.
             restoreSaved();
-
-            // Honour ?pack=… from the readings page ("Discuss in chamber →"),
-            // so the matching readings are pre-focused for the agent.
-            const initialPack = params.get('pack');
-            if (initialPack && Array.from(packChips).some(c => c.dataset.pack === initialPack)) {
-                selectPack(initialPack);
-            }
-
-            loadInitialQuestion();
             renderPins();
             renderTranscript();
+
+            const localTs = Number(loadSaved().updatedAt) || 0;
+            const initialPack = params.get('pack');
+
+            // Adopt the server copy when it is at least as recent as this device's
+            // (so newer offline edits aren't clobbered), then apply URL deep-links.
+            loadServer().then((srv) => {
+                if (srv && srv.ok && (Number(srv.updatedAt) || 0) >= localTs) {
+                    if (Array.isArray(srv.conversation)) {
+                        conversation = srv.conversation
+                            .filter(t => t && (t.role === 'user' || t.role === 'model') && typeof t.text === 'string')
+                            .map(t => ({ role: t.role, text: t.text }));
+                    }
+                    if (typeof srv.workingQuestion === 'string' && srv.workingQuestion.trim() !== '') {
+                        workingQ.textContent = srv.workingQuestion;
+                        workingQ.dataset.empty = 'false';
+                    }
+                    if (typeof srv.activePack === 'string' && srv.activePack) selectPack(srv.activePack);
+                    saveLocal();   // mirror the server copy onto this device
+                    renderTranscript();
+                }
+            }).finally(() => {
+                // Deep-links win over the restored / server state.
+                if (initialPack && Array.from(packChips).some(c => c.dataset.pack === initialPack)) {
+                    selectPack(initialPack);
+                }
+                loadInitialQuestion();   // ?q= loads the chosen question + clears the transcript
+                renderTranscript();
+            });
         })();
     </script>
 </body>

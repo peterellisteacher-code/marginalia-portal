@@ -52,6 +52,15 @@ function stateKey(studentId) {
     return `students/${studentId}/state.json`;
 }
 
+// The chamber keeps its own conversation in a SEPARATE blob from the portal's
+// state.json, so the two chat surfaces never overwrite each other.
+function chamberKey(studentId) {
+    return `students/${studentId}/chamber.json`;
+}
+
+const MAX_CHAMBER_TURNS = 40;   // keep the last ~20 exchanges
+const MAX_TURN_LEN = 4000;      // cap each stored message
+
 const VALID_PACKS = new Set([
     'stage1_existentialism',
     'stage1_virtue_compassion',
@@ -106,6 +115,20 @@ async function saveState(studentId, state, context) {
 function trimCap(val, maxLen) {
     if (typeof val !== 'string') return '';
     return val.trim().slice(0, maxLen);
+}
+
+// Normalise a chamber transcript coming from the client (or blob) into a safe,
+// capped array of {role:'user'|'model', text:string}.
+function sanitizeConversation(raw) {
+    if (!Array.isArray(raw)) return [];
+    const out = [];
+    for (const t of raw) {
+        if (!t || typeof t !== 'object') continue;
+        const role = t.role === 'model' ? 'model' : (t.role === 'user' ? 'user' : null);
+        if (!role) continue;
+        out.push({ role, text: typeof t.text === 'string' ? t.text.slice(0, MAX_TURN_LEN) : '' });
+    }
+    return out.slice(-MAX_CHAMBER_TURNS);
 }
 
 function isHttpUrl(val) {
@@ -237,6 +260,46 @@ async function actionRemoveResource(studentId, payload, context, json) {
     return json(200, { ok: true });
 }
 
+// ── Chamber slot (separate blob from the portal's state.json) ──────────────────
+
+async function actionChamberLoad(studentId, _payload, context, json) {
+    try {
+        const s = store(context);
+        const data = await s.get(chamberKey(studentId), { type: 'json' });
+        if (!data) {
+            return json(200, { ok: true, conversation: [], workingQuestion: '', activePack: 'auto', updatedAt: 0 });
+        }
+        return json(200, {
+            ok: true,
+            conversation: sanitizeConversation(data.conversation),
+            workingQuestion: typeof data.workingQuestion === 'string' ? data.workingQuestion.slice(0, MAX_Q_LEN) : '',
+            activePack: typeof data.activePack === 'string' ? data.activePack : 'auto',
+            updatedAt: typeof data.updatedAt === 'number' ? data.updatedAt : 0,
+        });
+    } catch (err) {
+        console.error('portal-state: chamber blob read error', err);
+        throw { isBlobError: true };
+    }
+}
+
+async function actionChamberSave(studentId, payload, context, json) {
+    const conversation = sanitizeConversation(payload.conversation);
+    const workingQuestion = trimCap(payload.workingQuestion, MAX_Q_LEN);
+    // activePack may be 'auto' (chamber default) or a known pack id.
+    let activePack = 'auto';
+    if (typeof payload.activePack === 'string' && payload.activePack) {
+        activePack = (payload.activePack === 'auto' || VALID_PACKS.has(payload.activePack)) ? payload.activePack : 'auto';
+    }
+    try {
+        const s = store(context);
+        await s.setJSON(chamberKey(studentId), { conversation, workingQuestion, activePack, updatedAt: Date.now() });
+    } catch (err) {
+        console.error('portal-state: chamber blob write error', err);
+        throw { isBlobError: true };
+    }
+    return json(200, { ok: true });
+}
+
 // ── Handler ───────────────────────────────────────────────────────────────────
 
 exports.handler = async (event, _netlifyContext) => {
@@ -282,8 +345,12 @@ exports.handler = async (event, _netlifyContext) => {
                 return await actionRemoveResource(studentId, payload, undefined, json);
             case 'set_active_pack':
                 return await actionSetActivePack(studentId, payload, undefined, json);
+            case 'chamber_load':
+                return await actionChamberLoad(studentId, payload, undefined, json);
+            case 'chamber_save':
+                return await actionChamberSave(studentId, payload, undefined, json);
             default:
-                return json(400, { error: `Unknown action: "${action}". Valid: load, set_working_question, add_resource, remove_resource, set_active_pack` });
+                return json(400, { error: `Unknown action: "${action}". Valid: load, set_working_question, add_resource, remove_resource, set_active_pack, chamber_load, chamber_save` });
         }
     } catch (err) {
         if (err && err.isBlobError) {

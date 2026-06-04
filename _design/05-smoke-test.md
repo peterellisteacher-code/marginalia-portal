@@ -29,7 +29,8 @@ note says where to look.
 11. [ ] **Virtue pack Aristotle.** Select **virtue / compassion**, ask "What does Aristotle say about friendship?" → agent can reach the "another himself" / "no one would choose to live without friends" material.
 12. [ ] **Video de-emphasis.** Ask a broad question → the agent leans on the readings/chat rather than pushing a YouTube video first.
 13. [ ] **Chat persists across sessions.** Send 2–3 messages, then **refresh** → the conversation is still there. Edit the working question, refresh → it persists too.
-14. [ ] **New chat.** Click **New chat** → transcript clears; working question + pins remain.
+13b. [ ] **Cross-device (server save).** Send a couple of chamber messages, then open the chamber in a different browser / incognito logged in as the **same** student → the conversation loads from the server (Netlify Blobs). Requires the Blobs env vars (see Prerequisites). It is stored in a separate slot from the portal's own chat, so the two don't overwrite each other.
+14. [ ] **New chat.** Click **New chat** → transcript clears; working question + pins remain (and the cleared state syncs to the server).
 15. [ ] **Readings deep-link.** From `resources.html`, click "Discuss in chamber →" on a *Reason & instinct* card → chamber opens with that pack selected.
 
 ## C. Other agents (quick)
