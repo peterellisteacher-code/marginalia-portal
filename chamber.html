@@ -138,7 +138,20 @@
         }
 
         .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: var(--space-md);
             margin-bottom: var(--space-md);
+        }
+
+        .chat-header__text {
+            min-width: 0;
+        }
+
+        .chamber-clear {
+            flex-shrink: 0;
+            white-space: nowrap;
         }
 
         .chat-header__title {
@@ -332,8 +345,11 @@
 
                 <aside class="chat-panel">
                     <header class="chat-header">
-                        <h2 class="chat-header__title">In the margin</h2>
-                        <p class="chat-header__subtitle">A <button class="term" popovertarget="def-socratic" aria-describedby="def-socratic">Socratic</button> <button class="term" popovertarget="def-interlocutor" aria-describedby="def-interlocutor">interlocutor</button>. Sharpens your question; never writes it for you.</p>
+                        <div class="chat-header__text">
+                            <h2 class="chat-header__title">In the margin</h2>
+                            <p class="chat-header__subtitle">A <button class="term" popovertarget="def-socratic" aria-describedby="def-socratic">Socratic</button> <button class="term" popovertarget="def-interlocutor" aria-describedby="def-interlocutor">interlocutor</button>. Sharpens your question; never writes it for you.</p>
+                        </div>
+                        <button type="button" class="btn btn--ghost btn--small chamber-clear" id="clearBtn" hidden>New chat</button>
                     </header>
 
                     <div class="agent-warning">
@@ -387,6 +403,7 @@
             const form = document.getElementById('chatForm');
             const input = document.getElementById('chatInput');
             const sendBtn = document.getElementById('sendBtn');
+            const clearBtn = document.getElementById('clearBtn');
             const packChips = document.querySelectorAll('[data-pack]');
 
             let conversation = [];   // {role: 'user'|'model', text: string}
@@ -396,6 +413,51 @@
             const escape = (s) => String(s).replace(/[&<>"']/g, (c) => ({
                 '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
             }[c]));
+
+            // --- Persistence (localStorage) ---
+            // The chamber is the anonymous path (no sign-in), so — like pins.js
+            // on this same page — we keep the session on the device with
+            // localStorage. A student's conversation, working question, and pack
+            // are then still here when they come back. (Signed-in students get
+            // cross-device, server-side persistence via the portal.)
+            const STORE_KEY = 'marginalia.chamber';
+
+            function saveState() {
+                try {
+                    localStorage.setItem(STORE_KEY, JSON.stringify({
+                        conversation: conversation.slice(-40),   // cap at 40 turns, matching the portal
+                        workingQuestion: workingQ.textContent,
+                        activePack,
+                        updatedAt: Date.now()
+                    }));
+                } catch (e) {
+                    /* private mode / quota — the chat just won't persist this session */
+                }
+            }
+
+            function loadSaved() {
+                try {
+                    return JSON.parse(localStorage.getItem(STORE_KEY)) || {};
+                } catch (e) {
+                    return {};
+                }
+            }
+
+            function restoreSaved() {
+                const saved = loadSaved();
+                if (Array.isArray(saved.conversation)) {
+                    conversation = saved.conversation
+                        .filter(t => t && (t.role === 'user' || t.role === 'model') && typeof t.text === 'string')
+                        .map(t => ({ role: t.role, text: t.text }));
+                }
+                if (typeof saved.workingQuestion === 'string' && saved.workingQuestion.trim() !== '') {
+                    workingQ.textContent = saved.workingQuestion;
+                    workingQ.dataset.empty = 'false';
+                }
+                if (typeof saved.activePack === 'string' && saved.activePack) {
+                    selectPack(saved.activePack);
+                }
+            }
 
             // --- Working question ---
             const params = new URLSearchParams(window.location.search);
@@ -425,6 +487,7 @@
                             };
                             const matched = packMap[q.cluster];
                             if (matched) selectPack(matched);
+                            saveState();
                         }
                     });
                 }
@@ -432,6 +495,7 @@
 
             workingQ.addEventListener('input', () => {
                 workingQ.dataset.empty = workingQ.textContent.trim() === '' ? 'true' : 'false';
+                saveState();
             });
 
             // --- Pins display ---
@@ -453,6 +517,7 @@
                 workingQ.textContent = card.dataset.text;
                 workingQ.dataset.empty = 'false';
                 workingQ.focus();
+                saveState();
             });
 
             // --- Pack selector ---
@@ -465,6 +530,7 @@
                     c.setAttribute('aria-pressed', String(on));
                 });
                 activePack = packId;
+                saveState();
             }
 
             packChips.forEach(chip => {
@@ -473,6 +539,7 @@
 
             // --- Chat ---
             function renderTranscript() {
+                clearBtn.hidden = conversation.length === 0;
                 if (conversation.length === 0 && !isThinking) {
                     transcript.innerHTML = '<p class="empty-chat"><strong>Start when you’re ready.</strong> A good first message: tell the agent the topic you’re drawn to, and why it pulls at you. It won’t hand you a question — but it will help you turn that pull into one of your own.</p>';
                     return;
@@ -495,6 +562,7 @@
                 if (!text.trim() || isThinking) return;
                 conversation.push({ role: 'user', text });
                 isThinking = true;
+                saveState();   // keep the student's message even if they leave mid-reply
                 renderTranscript();
 
                 try {
@@ -519,6 +587,7 @@
                     });
                 } finally {
                     isThinking = false;
+                    saveState();
                     renderTranscript();
                 }
             }
@@ -537,6 +606,23 @@
                     form.requestSubmit();
                 }
             });
+
+            // Start a fresh conversation. Working question and pins are kept —
+            // only the chat transcript is cleared.
+            clearBtn.addEventListener('click', () => {
+                if (conversation.length === 0) return;
+                if (!confirm('Start a new conversation? This clears the chat above. Your working question and pins stay.')) return;
+                conversation = [];
+                saveState();
+                renderTranscript();
+                input.focus();
+            });
+
+            // Restore this device's saved chamber session first, so a student's
+            // chat is still here when they come back. The URL params below
+            // intentionally override it: arriving via a "Discuss in chamber →"
+            // deep-link (?q= / ?pack=) is an explicit new starting point.
+            restoreSaved();
 
             // Honour ?pack=… from the readings page ("Discuss in chamber →"),
             // so the matching readings are pre-focused for the agent.
