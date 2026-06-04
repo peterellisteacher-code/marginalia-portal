@@ -1,8 +1,42 @@
 # Readings pack: stage1_virtue_compassion
+### Virtue, attention, and compassion — Aristotle, Murdoch, Nussbaum
 
-The following passages are the readings the agent should reference. Cite specific lines or paragraphs when pointing the student toward them. Do not summarise unprompted.
+**For the agent:** Verbatim readings for questions about what makes a person good, the place of feeling and attention in ethics, and whether compassion is a reliable moral guide. Quote a specific passage (with its citation) when pointing the student toward an argument; do not summarise unprompted. Sources: **Aristotle — *Nicomachean Ethics***, trans. Terence Irwin (Hackett, 2nd ed. 1999 — the class text), Bekker numbers given; **Iris Murdoch — *The Sovereignty of Good***; **Martha Nussbaum — *Compassion and Reason* / *Perception and Revolution* / *Political Emotions***.
 
-=== Iris Murdoch — The Sovereignty of Good ===
+> **Agent orientation (context, not source text — do not quote this as the authors).** Three overlapping pictures of goodness and the moral emotions. **Aristotle:** goodness is virtue of character — a trained state in which you feel the right thing, in the right way, at the right time — and friendship (other-directed care) is central to a good human life. **Murdoch:** morality is mostly *attention* — the just and loving gaze that sees another person truly, past our self-serving "veil". **Nussbaum:** emotions such as compassion are not blind feelings but *intelligent appraisals* of what matters, so they can be reasons, and can be educated. For "are emotions reliable guides to moral truth?", set Nussbaum (emotion as judgement) and Aristotle (trained feeling) against the worry that feeling distorts judgement — and cross-link the reason-vs-instinct pack (Plato & Aristotle) and Haidt in the religion pack.
+
+## Aristotle — *Nicomachean Ethics*: virtue of character, the mean, and friendship
+*Trans. Terence Irwin (Hackett, 2nd ed. 1999). Bekker references per book / chapter.*
+
+**Virtue is a settled state of character (II.5–6, 1106a–1107a).** Not a passing feeling, and not a bare capacity, but a stable condition that shows in how you choose and feel:
+
+> If, then, the virtues are neither feelings nor capacities, the remaining possibility is that they are states. And so we have said what the genus of virtue is.
+
+> Virtue, then, is a state that decides, consisting in a mean, the mean relative to us, which is defined by reference to reason, that is to say, to the reason by reference to which the prudent person would define it.
+
+**Each virtue is a mean in a particular feeling — e.g. courage (II.7, 1107a):**
+
+> First, then, in feelings of fear and confidence the mean is bravery. The excessively fearless person is nameless… and the one who is excessively confident is rash. The one who is excessive in fear and deficient in confidence is cowardly.
+
+**Even anger has a right amount — "mildness" (IV.5, 1125b–1126a).** The good-tempered person is not the one who never feels anger, but the one who feels it rightly:
+
+> Mildness is the mean concerned with anger… The intermediate state is praiseworthy… and in accord with it we are angry toward the right people, about the right things, in the right way…
+
+**Friendship is necessary to a good life, and natural between humans (VIII.1, 1155a):**
+
+> After that, the next topic is friendship; for it is a virtue, or involves virtue. Further, it is most necessary for our life. For no one would choose to live without friends even if he had all the other goods… every human being is akin and beloved to a human being.
+
+**The fullest friendship is caring for the other for their own sake (VIII.3, 1156b–1157a):**
+
+> …the friendship of good people insofar as they are good is friendship primarily and fully, but the other friendships are friendships by similarity… good people will be friends because of themselves, since they are friends insofar as they are good.
+
+**A true friend is "another self" (IX.4, 1166a).** Aristotle roots concern for others in the good person's settled relation to himself:
+
+> The decent person… is related to his friend as he is to himself, since the friend is another himself.
+
+---
+
+## Iris Murdoch — The Sovereignty of Good
 
 3
 The Sovereignty of Good
@@ -284,7 +318,7 @@ as Justice, truthfulness or humility. We can see too the
 
 x,:
 
-=== Martha Nussbaum — Compassion and Reason ===
+## Martha Nussbaum — Compassion and Reason
 
 COMPASSION: THE
 
@@ -432,7 +466,7 @@ as completely impervious to reasoning and argument.
 
 https://doi.org/10.1017/CBO9780511840715.009 Published online by Cambridge University Press
 
-=== Nussbaum — Perception and Revolution ===
+## Nussbaum — Perception and Revolution
 
 Perception and Revolution:
 The Princess Casamassima
@@ -1660,7 +1694,7 @@ as the history of high culture itself; and, second, it in no way militates again
 diversification of the curriculum, as long as one's own tradition is among the top-
 ics to be studied.
 
-=== Nussbaum — Political Emotions (excerpt) ===
+## Nussbaum — Political Emotions (excerpt)
 
 the nation?s goals, its institutions and leaders, its geography, and one?s
 fellow citizens seen as fellow inhabitants of a common public space. Of-
