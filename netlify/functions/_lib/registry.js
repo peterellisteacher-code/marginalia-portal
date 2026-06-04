@@ -31,7 +31,9 @@ const REGISTRY = {
     },
     'millicent': {
         firstName: 'Millicent',
-        password: 'gilbert-rugless',
+        // Set at the teacher's request — intentionally a single word, so it
+        // differs from the lowercase-surname convention used elsewhere.
+        password: 'gilbert',
     },
     'jim': {
         firstName: 'Jim',

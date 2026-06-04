@@ -37,7 +37,7 @@ netlify env:set SESSION_SECRET "$(openssl rand -hex 32)"   # HMAC token signing
 | Grace | "Grace" | ryder |
 | James | "James" | norris |
 | Jim | "Jim" | howie |
-| Millicent | "Millicent" | gilbert-rugless |
+| Millicent | "Millicent" | gilbert (set by teacher; not the surname) |
 | Porsha | "Porsha" | bates |
 | Ripley | "Ripley" | valentine |
 
