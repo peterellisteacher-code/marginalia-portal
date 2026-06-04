@@ -1,0 +1,119 @@
+# Readings pack: stage1_reason_passion
+### Reason and the passions — Plato and Aristotle on gut feeling vs. reasoned judgement
+
+**For the agent:** These are verbatim primary-source passages for a student working on whether we should trust gut instinct / feeling or reasoned thinking — and how reason relates to the appetites and emotions. Quote a specific passage (with its citation) when you point the student toward an argument; do not summarise unprompted. Translations are public domain: **Plato — Benjamin Jowett**; **Aristotle — W. D. Ross**. Citations give the standard reference numbers (Plato: Stephanus; Aristotle: Bekker) so the student can find each passage.
+
+> **Agent orientation (context, not source text — do not quote this as Plato or Aristotle).** The student's question pits "gut instinct" against "reasoned thinking." These two thinkers give a richer map than a simple either/or. Plato (*Republic*, *Phaedrus*) pictures the soul as *divided*: reason ought to rule appetite and spirit — the charioteer mastering an unruly horse. Aristotle agrees reason should govern, but argues the appetites can be *trained* to feel rightly, so in the mature person "instinct" and reason pull together. Two modern foils are already cached elsewhere on this site: Jonathan Haidt (religion pack) reverses the order — intuition first, reasoning after; Martha Nussbaum (virtue / compassion pack) argues emotions are themselves intelligent appraisals, not blind instinct. Use these to help the student find and name more than one position.
+
+---
+
+## Plato — *Phaedrus*: the charioteer and the two horses
+*Trans. Benjamin Jowett. Stephanus 246, 253–254.*
+
+The soul pictured as a charioteer (reason) driving two horses — a noble horse (spirit) and an unruly horse (appetite):
+
+> And let the figure be composite—a pair of winged horses and a charioteer. (246a)
+
+> Now the winged horses and the charioteers of the gods are all of them noble and of noble descent, but those of other races are mixed; the human charioteer drives his in a pair; and one of them is noble and of noble breed, and the other is ignoble and of ignoble breed; and the driving of them of necessity gives a great deal of trouble to him. (246a–b)
+
+The two horses described — the obedient one guided by "word and admonition," the unruly one "hardly yielding to whip and spur":
+
+> The right-hand horse is upright and cleanly made; he has a lofty neck and an aquiline nose; his colour is white, and his eyes dark; he is a lover of honour and modesty and temperance, and the follower of true glory; he needs no touch of the whip, but is guided by word and admonition only. (253d–e)
+
+> The other is a crooked lumbering animal, put together anyhow; he has a short thick neck; he is flat-faced and of a dark colour, with grey eyes and blood-red complexion; the mate of insolence and pride, shag-eared and deaf, hardly yielding to whip and spur. (253e)
+
+After repeated discipline, the unruly horse is at last broken in — appetite mastered through training:
+
+> [The unruly horse] is humbled and follows henceforth the wisdom of the charioteer, and when he sees the beautiful one, he is overwhelmed with fear. (254e)
+
+---
+
+## Plato — *Republic*, Book IV: the divided soul and self-mastery
+*Trans. Benjamin Jowett. Stephanus 430–444.*
+
+Reason and appetite named as two distinct principles in the soul:
+
+> …the one with which man reasons, we may call the rational principle of the soul, the other, with which he loves and hungers and thirsts and feels the flutterings of any other desire, may be termed the irrational or appetitive, the ally of sundry pleasures and satisfactions. (439d)
+
+What "master of himself" really means — the better principle controlling the worse:
+
+> There is something ridiculous in the expression 'master of himself'; for the master is also the servant and the servant the master; and in all these modes of speaking the same person is denoted. (430e)
+
+> The meaning is, I believe, that in the human soul there is a better and also a worse principle; and when the better has the worse under control, then a man is said to be master of himself; and this is a term of praise: but when, owing to evil education or association, the better principle, which is also the smaller, is overwhelmed by the greater mass of the worse—in this case he is blamed and is called the slave of self and unprincipled. (431a–b)
+
+Justice as inner order — each part doing its own work, reason ruling:
+
+> …[justice is] concerned, however, not with the outward man, but with the inward, which is the true self and concernment of man: for the just man does not permit the several elements within him to interfere with one another, or any of them to do the work of others,—he sets in order his own inner life, and is his own master and his own law, and at peace with himself. (443d–e)
+
+> **Agent orientation (context, not source text).** Plato's soul has a *third* part besides reason and appetite: *spirit* (Greek *thumos*) — the seat of anger, honour, and indignation. In the *Republic*, spirit is reason's natural ally: when a person is well brought up, it takes reason's side against appetite (it is the obedient, honour-loving horse of the *Phaedrus*). So Plato's picture is not simply reason vs. feeling — one kind of feeling (spirited honour) can be enlisted to help reason master another (raw appetite).
+
+---
+
+## Plato — *Phaedo* and *Apology*: reason against the body's appetites; the examined life
+*Trans. Benjamin Jowett. Phaedo, Stephanus 66; Apology, Stephanus 21, 38.*
+
+In the *Phaedo*, Socrates argues that the body's appetites and passions actively *get in the way* of clear thinking and the search for truth:
+
+> …while we are in the body, and while the soul is infected with the evils of the body, our desire will not be satisfied? and our desire is of the truth. For the body is a source of endless trouble to us by reason of the mere requirement of food; and is liable also to diseases which overtake and impede us in the search after true being: it fills us full of loves, and lusts, and fears, and fancies of all kinds, and endless foolery, and in fact, as men say, takes away from us the power of thinking at all. Whence come wars, and fightings, and factions? whence but from the body and the lusts of the body? (*Phaedo* 66b–c)
+
+In the *Apology*, Socrates makes the life of reasoned self-examination the highest human good — and locates wisdom in knowing that you do not know:
+
+> …daily to discourse about virtue, and of those other things about which you hear me examining myself and others, is the greatest good of man, and that the unexamined life is not worth living… (*Apology* 38a)
+
+> …although I do not suppose that either of us knows anything really beautiful and good, I am better off than he is,—for he knows nothing, and thinks that he knows; I neither know nor think that I know. (*Apology* 21d)
+
+---
+
+## Aristotle — *Nicomachean Ethics*: trained feeling and practical reason
+*Trans. W. D. Ross. Bekker references given per book / chapter.*
+
+**The function of man is reasoned activity (I.7, 1098a).** Aristotle defines the human good as the activity of the soul guided by reason:
+
+> Now if the function of man is an activity of soul which follows or implies a rational principle… we state the function of man to be a certain kind of life, and this to be an activity or actions of the soul implying a rational principle, and the function of a good man to be the good and noble performance of these… if this is the case, human good turns out to be activity of soul in accordance with virtue, and if there are more than one virtue, in accordance with the best and most complete.
+
+**Appetite can "obey" reason (I.13, 1102b).** The desiring part is not itself reason, but it can listen to reason — as a child heeds a parent:
+
+> [T]he appetitive and in general the desiring element in a sense shares in it, in so far as it listens to and obeys it; this is the sense in which we speak of 'taking account' of one's father or one's friends… one subdivision having it in the strict sense and in itself, and the other having a tendency to obey as one does one's father.
+
+**Virtue is built by habit, not given by nature (II.1, 1103a).** Our "instincts" are not fixed; they are shaped by practice:
+
+> Moral virtue comes about as a result of habit, whence also its name (ethike) is one that is formed by a slight variation from the word ethos (habit)… none of the moral virtues arises in us by nature; for nothing that exists by nature can form a habit contrary to its nature. The stone which by nature moves downwards cannot be habituated to move upwards, not even if one tries to train it by throwing it up ten thousand times… we are adapted by nature to receive them, and are made perfect by habit.
+
+And we become virtuous by *practising* virtue, exactly as we learn a craft by doing it:
+
+> [M]en become builders by building and lyreplayers by playing the lyre; so too we become just by doing just acts, temperate by doing temperate acts, brave by doing brave acts… by doing the acts that we do in our transactions with other men we become just or unjust, and by doing the acts that we do in the presence of danger, and being habituated to feel fear or confidence, we become brave or cowardly. (1103a–b)
+
+**The trained person enjoys the right thing (II.3, 1104b).** You can read a person's character off what gives them pleasure or pain — the well-trained "gut" delights in the good:
+
+> We must take as a sign of states of character the pleasure or pain that ensues on acts; for the man who abstains from bodily pleasures and delights in this very fact is temperate, while the man who is annoyed at it is self-indulgent.
+
+**The trained person feels the right thing at the right time (II.6, 1106b).** Virtue is not the absence of feeling but feeling calibrated by reason:
+
+> …[to feel them] at the right times, with reference to the right objects, towards the right people, with the right motive, and in the right way, is what is both intermediate and best, and this is characteristic of virtue.
+
+> Virtue, then, is a state of character concerned with choice, lying in a mean, i.e. the mean relative to us, this being determined by a rational principle, and by that principle by which the man of practical wisdom would determine it.
+
+**Why this is hard (II.9, 1109a).** The gut reaction is easy; the *right* reaction takes judgement:
+
+> …anyone can get angry—that is easy—or give or spend money; but to do this to the right person, to the right extent, at the right time, with the right motive, and in the right way, that is not for everyone, nor is it easy; wherefore goodness is both rare and laudable and noble.
+
+Because the mean is hard to hit, Aristotle's practical tip is to over-correct against your own bias:
+
+> We must drag ourselves away to the contrary extreme; for we shall get into the intermediate state by drawing well away from error, as people do in straightening sticks that are bent. (1109b)
+
+**Practical wisdom — reason about what to do (VI.5, 1140b):**
+
+> [Practical wisdom]… is a true and reasoned state of capacity to act with regard to the things that are good or bad for man.
+
+**When feeling overrides reason — incontinence / *akrasia* (VII.1–3).** Aristotle's name for losing the inner struggle: knowing the good but being mastered by passion:
+
+> The incontinent man, knowing that what he does is bad, does it as a result of passion, while the continent man, knowing that his appetites are bad, refuses on account of his rational principle to follow them.
+
+---
+
+> **Agent orientation — positions the student could take (context, not source text).**
+> - **Reason should rule (Plato).** Gut feeling is the unruly horse; the good life means reason governing appetite. Ask the student: is a feeling you cannot justify a reason to act?
+> - **Train the feelings (Aristotle).** The mature person's instincts have been *habituated* to track what reason approves, so "trusting your gut" is reliable only once the gut is well-trained. Ask: whose gut, trained how?
+> - **A reasoned defence of instinct (modern foils, already cached here).** Haidt (religion pack) argues intuition comes first and reasoning is often after-the-fact justification; Nussbaum (virtue / compassion pack) argues emotions are themselves intelligent judgements. Point the student to those packs to build the other side.
+> - **Test case to offer the student:** a snap moral judgement — disgust at something harmless, a rescuer rushing into danger without deliberating, "I just *knew* I could trust her." Was the gut right? If so, is that because it was *trained* (Aristotle), or because instinct tracks something reason misses (Haidt, Nussbaum)? If wrong, what should have over-ruled it?
+> - A strong Issues Study will *name* at least two of these positions and defend one. Push the student to say which horse they are backing, and why — and to meet the strongest version of the view they reject.

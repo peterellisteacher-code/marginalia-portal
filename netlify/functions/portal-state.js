@@ -59,6 +59,7 @@ const VALID_PACKS = new Set([
     'stage1_aesthetics',
     'stage1_mind_simulation',
     'lab_applied_normative_ethics',
+    'stage1_reason_passion',
 ]);
 
 const EMPTY_STATE = () => ({

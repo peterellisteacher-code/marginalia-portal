@@ -14,6 +14,7 @@ If a pack file is missing, the chat still works — it falls back to a one-line 
 | `stage1_aesthetics.txt` | Wimsatt & Beardsley, intentional fallacy |
 | `stage1_mind_simulation.txt` | Identity theory, functionalism, dualism, simulation |
 | `lab_applied_normative_ethics.txt` | Singer, Marquis, Thomson, Brave New World |
+| `stage1_reason_passion.txt` | Plato (Republic, Phaedrus) & Aristotle (Nicomachean Ethics) — reason vs. instinct/passion |
 
 The pack ID matches the `data-pack` attribute on the topic chips in `chamber.html`. To add a new topic, register it in `PACK_CONTEXT` in `chat.js` and add a chip to the chamber UI.
 
