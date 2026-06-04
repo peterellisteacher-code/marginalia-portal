@@ -49,6 +49,12 @@ This is a classroom-internal site. The "password" is a lowercase surname, which 
 
 If a stricter posture is wanted later: swap the registry to store `sha256(surname)` instead of plaintext, and gate the landing page itself behind Netlify Identity.
 
+## Whole-site access gate
+
+Every content page (`chamber`, `bank`, `lab`, `exemplars`, `resources`, `drafting`, `explainer`, `portal`) loads `shared/gate.js` as the first script in `<head>`. It checks for a signed-in session (`sessionStorage['marginalia.session']`); if there is none it bounces straight to `index.html`, remembering the intended page in `sessionStorage['marginalia.returnTo']` so login can send the student back. A present session is then re-checked against the server (`auth` → `verify`), so expired (8h) or tampered tokens also bounce. `index.html` (the login page) and `404.html` deliberately do **not** include the gate.
+
+This is a **client-side** gate: it makes every student sign in and keeps casual/outside visitors out, which is what the classroom needs. It is not a hard wall — the static HTML and the readings packs are still fetchable by someone who bypasses JavaScript. The things that are genuinely protected remain the per-student Blob state and the AI endpoints, which require a valid HMAC token server-side. For a true hard wall, put the site behind Netlify Identity + an Edge Function (bigger change).
+
 ## How the agentic chat works
 
 1. Student types a message in the portal.

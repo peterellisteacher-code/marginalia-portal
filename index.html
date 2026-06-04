@@ -446,13 +446,27 @@
                         loginPassword.select();
                         return;
                     }
-                    // Save session and go to portal
+                    // Save session, then send the student where they were headed
+                    // (a gated page they tried to open) or to their portal by default.
                     sessionStorage.setItem('marginalia.session', JSON.stringify({
                         token: data.token,
                         id: data.id,
                         firstName: data.firstName,
                     }));
-                    window.location.href = 'portal.html';
+                    var dest = 'portal.html';
+                    try {
+                        var rt = sessionStorage.getItem('marginalia.returnTo');
+                        sessionStorage.removeItem('marginalia.returnTo');
+                        // Only honour a same-origin absolute path, never the login page itself.
+                        if (rt &&
+                            rt.charAt(0) === '/' && rt.charAt(1) !== '/' &&
+                            rt.indexOf('://') === -1 &&
+                            !/\/index\.html(\?|$)/.test(rt) &&
+                            rt !== '/') {
+                            dest = rt;
+                        }
+                    } catch (e) { /* ignore */ }
+                    window.location.href = dest;
                 } catch (err) {
                     loginError.textContent = 'Could not reach the portal. Check your connection.';
                 }
