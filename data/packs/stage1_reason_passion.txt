@@ -1,7 +1,7 @@
 # Readings pack: stage1_reason_passion
 ### Reason and the passions — Plato and Aristotle on gut feeling vs. reasoned judgement
 
-**For the agent:** These are verbatim primary-source passages for a student working on whether we should trust gut instinct / feeling or reasoned thinking — and how reason relates to the appetites and emotions. Quote a specific passage (with its citation) when you point the student toward an argument; do not summarise unprompted. Translations: **Plato — Benjamin Jowett** (public domain); **Aristotle — Terence Irwin** (Hackett, 2nd ed. 1999 — the translation the class reads). Citations give the standard reference numbers (Plato: Stephanus; Aristotle: Bekker) so the student can find each passage in their own copy.
+**For the agent:** These are verbatim primary-source passages for a student working on whether we should trust gut instinct / feeling or reasoned thinking — and how reason relates to the appetites and emotions. Quote a specific passage (with its citation) when you point the student toward an argument; do not summarise unprompted. Each passage is long enough to make the point clearly on its own. Translations: **Plato — Benjamin Jowett** (public domain); **Aristotle — Terence Irwin** (Hackett, 2nd ed. 1999 — the translation the class reads). Citations give the standard reference numbers (Plato: Stephanus; Aristotle: Bekker) so the student can find each passage in their own copy.
 
 > **Agent orientation (context, not source text — do not quote this as Plato or Aristotle).** The student's question pits "gut instinct" against "reasoned thinking." These two thinkers give a richer map than a simple either/or. Plato (*Republic*, *Phaedrus*) pictures the soul as *divided*: reason ought to rule appetite and spirit — the charioteer mastering an unruly horse. Aristotle agrees reason should govern, but argues the appetites can be *trained* to feel rightly, so in the mature person "instinct" and reason pull together. Two modern foils are already cached elsewhere on this site: Jonathan Haidt (religion pack) reverses the order — intuition first, reasoning after; Martha Nussbaum (virtue / compassion pack) argues emotions are themselves intelligent appraisals, not blind instinct. Use these to help the student find and name more than one position.
 
@@ -60,58 +60,58 @@ In the *Apology*, Socrates makes the life of reasoned self-examination the highe
 
 > …daily to discourse about virtue, and of those other things about which you hear me examining myself and others, is the greatest good of man, and that the unexamined life is not worth living… (*Apology* 38a)
 
-> …although I do not suppose that either of us knows anything really beautiful and good, I am better off than he is,—for he knows nothing, and thinks that he knows; I neither know nor think that I know. (*Apology* 21d)
+> …although I do not suppose that either of us knows anything really beautiful and good, I am better off than he is,—for he knows nothing, and thinks that he knows; I neither know nor think that I know. In this latter particular, then, I seem to have slightly the advantage of him. (*Apology* 21d)
 
 ---
 
 ## Aristotle — *Nicomachean Ethics*: trained feeling and practical reason
 *Trans. Terence Irwin (Hackett, 2nd ed. 1999) — the class text. Bekker references per book / chapter.*
 
-**The human function is reasoned activity (I.7).** Aristotle locates the human good in the soul's reason-guided activity:
+**The human function is reasoned activity (I.7, 1098a).** Aristotle asks what the human being is *for* — and answers that our special work is the activity of the part of us that has reason:
 
-> …the human function is activity of the soul in accord with reason or requiring reason… And so the human good proves to be activity of the soul in accord with virtue, and indeed with the best and most complete virtue, if there are more virtues than one. (1098a)
+> The remaining possibility, then, is some sort of life of action of the [part of the soul] that has reason. One [part] of it has reason as obeying reason; the other has it as itself having reason and thinking… We have found, then, that the human function is activity of the soul in accord with reason or requiring reason… the function of a harpist is to play the harp, and the function of a good harpist is to play it well… And so the human good proves to be activity of the soul in accord with virtue, and indeed with the best and most complete virtue, if there are more virtues than one.
 
-**Appetite can "listen to" reason (I.13).** The desiring part is not itself rational, but it can heed reason:
+**Appetite can "listen to" reason (I.13, 1102b).** The desiring part is not itself rational, but it can heed reason the way a child heeds a parent — which is why advice and correction work on it at all:
 
-> …the [part] with appetites and in general desires shares in reason in a way, insofar as it both listens to reason and obeys it. This is the way in which we are said to 'listen to reason' from father or friends… (1102b)
+> …the [part] with appetites and in general desires shares in reason in a way, insofar as it both listens to reason and obeys it. This is the way in which we are said to 'listen to reason' from father or friends, as opposed to the way in which [we 'give the reason'] in mathematics. The nonrational part also [obeys and] is persuaded in some way by reason, as is shown by correction, and by every sort of reproof and exhortation.
 
-**Character comes from habit, not nature (II.1).** Our "instincts" are trained, not fixed:
+**Character comes from habit, not nature (II.1, 1103a).** Our "instincts" are not fixed at birth; they are built by what we repeatedly do:
 
-> Virtue of character … results from habit; hence its name 'ethical', slightly varied from 'ethos'. … none of the virtues of character arises in us naturally. … A stone … by nature moves downwards, and habituation could not make it move upwards, not even if you threw it up ten thousand times … we are by nature able to acquire them, and we are completed through habit. (1103a)
+> Virtue of character … results from habit; hence its name 'ethical', slightly varied from 'ethos'. Hence it is also clear that none of the virtues of character arises in us naturally. For if something is by nature in one condition, habituation cannot bring it into another condition. A stone, for instance, by nature moves downwards, and habituation could not make it move upwards, not even if you threw it up ten thousand times to habituate it… And so the virtues arise in us neither by nature nor against nature. Rather, we are by nature able to acquire them, and we are completed through habit.
 
-> …we become just by doing just actions, temperate by doing temperate actions, brave by doing brave actions. (1103a–b)
+> …we become builders, for instance, by building, and we become harpists by playing the harp. Similarly, then, we become just by doing just actions, temperate by doing temperate actions, brave by doing brave actions. (1103a–b)
 
-**The trained person enjoys the right thing (II.3).** Character shows in what gives you pleasure or pain:
+**The trained person enjoys the right thing (II.3, 1104b).** You can read someone's character off what gives them pleasure or pain — a well-trained "gut" actually *delights* in the good:
 
-> …we must take someone's pleasure or pain following on his actions to be a sign of his state. For if someone who abstains from bodily pleasures enjoys the abstinence itself, he is temperate; if he is grieved by it, he is intemperate. (1104b)
+> …we must take someone's pleasure or pain following on his actions to be a sign of his state. For if someone who abstains from bodily pleasures enjoys the abstinence itself, he is temperate; if he is grieved by it, he is intemperate. Again, if he stands firm against terrifying situations and enjoys it, or at least does not find it painful, he is brave; if he finds it painful, he is cowardly. For virtue of character is about pleasures and pains.
 
-**Feeling, calibrated by reason, is virtue (II.6).**
+**Feeling, calibrated by reason, is virtue (II.6, 1106b–1107a).** Virtue is not the absence of feeling; it is feeling the right amount, aimed the right way — the mean that reason picks out:
 
-> …having these feelings at the right times, about the right things, toward the right people, for the right end, and in the right way, is the intermediate and best condition, and this is proper to virtue. (1106b)
+> By virtue I mean virtue of character; for this is about feelings and actions… We can be afraid, for instance, or be confident, or have appetites, or get angry, or feel pity, and in general have pleasure or pain, both too much and too little, and in both ways not well. But having these feelings at the right times, about the right things, toward the right people, for the right end, and in the right way, is the intermediate and best condition, and this is proper to virtue.
 
-> Virtue, then, is a state that decides, consisting in a mean … which is defined by reference to reason, that is to say, to the reason by reference to which the prudent person would define it. (1107a)
+> Virtue, then, is a state that decides, consisting in a mean, the mean relative to us, which is defined by reference to reason, that is to say, to the reason by reference to which the prudent person would define it. It is a mean between two vices, one of excess and one of deficiency.
 
-**The gut reaction is easy; the right one is hard (II.9).**
+**The gut reaction is easy; the right one is hard (II.9, 1109a).** Anyone can fire off the feeling; getting it *right* is the achievement:
 
-> …getting angry, or giving and spending money, is easy and everyone can do it; but doing it to the right person, in the right amount, at the right time, for the right end, and in the right way is no longer easy, nor can everyone do it. (1109a)
+> …getting angry, or giving and spending money, is easy and everyone can do it; but doing it to the right person, in the right amount, at the right time, for the right end, and in the right way is no longer easy, nor can everyone do it. Hence doing these things well is rare, praiseworthy, and fine.
 
-**Decision (*prohairesis*) is reasoned, not mere impulse (III.2–3).** Aristotle's key term — a choice that issues from deliberation, not from appetite or the spur of the moment:
+**Decision (*prohairesis*) is reasoned, not mere impulse (III.2–3, 1111b–1113a).** Aristotle's key term names the choice that comes from thinking it through — which is exactly what a spur-of-the-moment urge is not:
 
-> Decision … is apparently voluntary, but not the same as the voluntary… the actions we do on the spur of the moment are said to be voluntary, but not to accord with decision. … the incontinent person acts on appetite, not on decision, but the continent person does the reverse, by acting on decision, not on appetite. (1111b–1112a)
+> Decision … is apparently voluntary, but not the same as the voluntary, which extends more widely. For children and the other animals share in voluntary action, but not in decision; and the actions we do on the spur of the moment are said to be voluntary, but not to accord with decision… the incontinent person acts on appetite, not on decision, but the continent person does the reverse, by acting on decision, not on appetite.
 
-> …decision will be deliberative desire to do an action that is up to us… (1113a)
+> …what we decide to do is whatever action, among those up to us, we deliberate about and [consequently] desire to do. Hence also decision will be deliberative desire to do an action that is up to us; for when we have judged [that it is right] as a result of deliberation, we desire to do it in accord with our wish.
 
-**Decision joins reason and desire (VI.2).**
+**Decision joins reason and desire (VI.2, 1139a).** Notice it is not reason *instead of* desire — good action needs both, working together:
 
-> The principle of decision is desire and goal-directed reason. That is why decision requires understanding and thought, and also a state of character… (1139a)
+> The principle of an action—the source of motion, not the goal—is decision; the principle of decision is desire and goal-directed reason. That is why decision requires understanding and thought, and also a state of character; for acting well or badly requires both thought and character.
 
-**Practical wisdom — *prudence* (VI.5).**
+**Practical wisdom — *prudence* (VI.5, 1140b).** The intellectual skill of working out what to actually do:
 
-> …prudence is a state grasping the truth, involving reason, concerned with action about things that are good or bad for a human being. (1140b)
+> …prudence is a state grasping the truth, involving reason, concerned with action about things that are good or bad for a human being.
 
-**When feeling overrides reason — incontinence / *akrasia* (VII).** Knowing the good but not acting on it:
+**When feeling overrides reason — incontinence / *akrasia* (VII.3, 1147a–b).** Aristotle's careful answer to "how can you know the good and still not do it?": in the heat of feeling you *have* the knowledge but are not *using* it — like someone drunk or asleep reciting words:
 
-> …the incontinent person is the sort to pursue excessive bodily pleasures against correct reason, but not because he is persuaded [it is best]. (1146b)
+> …we speak of knowing in two ways; we ascribe it both to someone who has it without using it and to someone who is using it. Hence it will matter whether someone has the knowledge that his action is wrong, without attending to his knowledge, or he both has it and attends to it… some people, such as those asleep or mad or drunk, both have knowledge in a way and do not have it. Moreover, this is the condition of those affected by strong feelings.
 
 > [The incontinent person] is like a city that votes for all the right decrees and has excellent laws, but does not apply them… (1152a)
 
