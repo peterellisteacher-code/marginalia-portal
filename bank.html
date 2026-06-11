@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Caveat:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="shared/tokens.css">
-    <link rel="stylesheet" href="shared/marginalia.css">
+    <link rel="stylesheet" href="shared/marginalia.css?v=2">
 
     <style>
         .bank-grid {
@@ -258,6 +258,7 @@
             gap: var(--space-sm);
         }
     </style>
+    <script src="shared/guard.js"></script>
 </head>
 <body>
     <a href="#main" class="skip-link">Skip to main content</a>
@@ -344,7 +345,7 @@
     <div id="def-metaphysics" popover="auto"><strong>Metaphysics</strong> — the branch of philosophy about what is real: minds, time, free will, what makes you the same person tomorrow as today.</div>
 
     <script src="shared/glossary.js"></script>
-    <script src="shared/pins.js"></script>
+    <script src="shared/pins.js?v=2"></script>
     <script>
         (() => {
             const container = document.getElementById('bankContainer');
@@ -542,6 +543,13 @@
             };
 
             loadBank().then(renderPins);
+
+            /* Re-render when a background server sync changes the pins
+               (pins.js fires this after pulling the student's saved pins). */
+            window.addEventListener('pins:updated', () => {
+                renderPins();
+                if (bank) render();
+            });
         })();
     </script>
 </body>

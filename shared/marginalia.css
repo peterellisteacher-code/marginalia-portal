@@ -95,6 +95,61 @@ html, body {
     border-bottom-color: var(--marginalia);
 }
 
+/* Session cluster appended to the nav by guard.js */
+.site-nav .nav-desk {
+    color: var(--marginalia);
+    font-weight: 600;
+}
+
+.nav-logout {
+    font-family: var(--font-ui);
+    font-size: var(--text-sm);
+    color: var(--ink-soft);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: var(--space-xs) var(--space-sm);
+    letter-spacing: 0.02em;
+    text-transform: lowercase;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s;
+}
+
+.nav-logout:hover {
+    color: var(--ink);
+    border-bottom-color: var(--marginalia-soft);
+}
+
+/* Autosave status for the drafting scaffold */
+.draft-status {
+    font-family: var(--font-ui);
+    font-size: var(--text-sm);
+    color: var(--aged);
+    font-style: italic;
+}
+
+/* "Is this draft yours?" banner shown when a pre-login draft is found */
+.claim-banner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-sm) var(--space-md);
+    margin: 0 0 var(--space-md);
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--aged-soft);
+    border-left: 4px solid var(--marginalia);
+    background: var(--paper-dark);
+    font-family: var(--font-ui);
+    font-size: var(--text-sm);
+    color: var(--ink);
+}
+
+.claim-banner__actions {
+    display: flex;
+    gap: var(--space-xs);
+    margin-left: auto;
+}
+
 /* ============================================================
    MAIN CONTENT — 12-column grid
    ============================================================ */

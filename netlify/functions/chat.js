@@ -838,8 +838,15 @@ exports.handler = async (event, _ctx) => {
     const student = studentId ? getStudent(studentId) : null;
     if (studentId && !student) return respond(401, { error: 'Student not found.' });
 
-    // Rate-limit per student when signed in, so a shared school NAT does not make
-    // the whole class share one bucket; fall back to IP for anonymous use.
+    // Every mode now requires a signed-in student. The explainer and curator
+    // modes still keep their shared, stateless behaviour — this gate is about
+    // not running an open AI endpoint, not about per-student state.
+    if (!student) {
+        return respond(401, { error: 'Please log in from the welcome page first — your session may have expired.' });
+    }
+
+    // Rate-limit per student so a shared school NAT does not make the whole
+    // class share one bucket.
     const lim = checkRateLimit(studentId || ip);
     if (!lim.ok) return respond(429, { error: `Slow down — try again in ${lim.retryAfter}s.` });
 

@@ -233,10 +233,15 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         mode: 'exemplars',
+                        token: window.MarginaliaSession ? window.MarginaliaSession.token() : null,
                         message: text,
                         history: history.slice(0, -1).slice(-8)
                     })
                 });
+                if (r.status === 401 && window.MarginaliaSession) {
+                    window.MarginaliaSession.expire();
+                    return;
+                }
                 var data = await r.json();
                 typing.remove();
 

@@ -6,12 +6,29 @@ A polished portal for Year 11 Philosophy students working on the Issues Study (A
 
 | Page | Purpose |
 |---|---|
-| `index.html` | Welcome — sets the intellectual stakes |
+| `index.html` | Welcome + class-roster login (the only page reachable logged out) |
+| `portal.html` | Per-student desk: working question, AI agent, resource shelf, reading packs |
 | `explainer.html` | What is an Issues Study? Five principles + A-vs-C exemplar comparison |
 | `bank.html` | 117 philosophical questions, filterable by key area + difficulty + search; pin to revisit |
-| `chamber.html` | Socratic AI agent — refines vague intuitions into tight philosophical questions. Never writes for the student. |
+| `lab.html` | Thought-experiment lab; choices persist per student |
+| `exemplars.html` | The Showroom — exemplar gallery with the Curator agent |
+| `chamber.html` | Socratic AI agent — same persistent conversation thread as the portal |
 | `resources.html` | The class readings library, with chamber links |
-| `drafting.html` | Five-section drafting scaffold with word count + Markdown export |
+| `drafting.html` | Five-section drafting scaffold; autosaves per student to the server |
+
+**Auth model:** every page except `index.html`/`404.html` requires login
+(`shared/guard.js` redirects logged-out visitors to the welcome page). The
+session is an HMAC-signed token (30 days) in `localStorage` under
+`marginalia.session` — shared across tabs, survives restarts. All functions
+(`chat`, `portal-state`) reject requests without a valid token; the page
+gate is client-side JS (workflow, not cryptography), the function gate is
+the real boundary.
+
+**Per-student state** lives in Netlify Blobs (store `marginalia-students`):
+`students/<id>/state.json` for the portal (question, shelf, chat history,
+active pack) and `students/<id>/pages/<page>.json` for per-page state
+(`draft`, `pins`, `lab`). Each page mirrors to a per-student localStorage
+key for offline resilience; the server is the cross-device source of truth.
 
 Aesthetic identity: **Marginalia** — philosophy as a 2,500-year tradition of writing in the margins of texts. See `_design/02-aesthetic-brief.md`.
 
@@ -20,18 +37,20 @@ Pedagogical and aesthetic briefs live in `_design/`.
 ## Architecture
 
 ```
-Browser  ──HTTPS──▶  Netlify (static + Function)  ──HTTPS──▶  Anthropic API
-                                  │                              │
-                                  └── reads ANTHROPIC_API_KEY    └── Claude Haiku 4.5
-                                       from env var                    via @anthropic-ai/sdk
+Browser ──HTTPS──▶ Netlify (static + Functions) ──HTTPS──▶ OpenRouter ──▶ Claude Haiku 4.5
+                        │
+                        ├── auth.js          login / token verify (HMAC, _lib/session.js)
+                        ├── chat.js          Socratic agent (login required, all modes)
+                        ├── portal-state.js  per-student state in Netlify Blobs
+                        └── youtube-*.js     agent tool backends
 ```
 
-The site is purely static HTML/CSS/JS. The only server-side code is `netlify/functions/chat.js`, which:
-1. Authenticates with Anthropic using `ANTHROPIC_API_KEY` from env vars
-2. Calls Claude Haiku 4.5 via the official SDK
+Static HTML/CSS/JS plus four Netlify Functions. `chat.js`:
+1. Requires a valid session token (every mode — there is no anonymous AI access)
+2. Calls Claude Haiku 4.5 via OpenRouter (direct `fetch`, provider pinned to Anthropic — never the Anthropic SDK against OpenRouter)
 3. Always enforces the Socratic system prompt (never writes the essay)
-4. Optionally accepts a `pack` (topic) parameter to add a one-line context note alongside the working question
-5. Marks the system prompt for prompt caching (activates automatically once the prefix exceeds Haiku 4.5's 4096-token minimum — useful when reading excerpts get inlined)
+4. Optionally accepts a `pack` (topic) parameter to inline one cached readings pack
+5. Uses prompt caching on the long stable prefix
 
 ## File tree
 

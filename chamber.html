@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Caveat:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="shared/tokens.css">
-    <link rel="stylesheet" href="shared/marginalia.css">
+    <link rel="stylesheet" href="shared/marginalia.css?v=2">
 
     <style>
         .chamber-grid {
@@ -271,6 +271,7 @@
             line-height: 1.4;
         }
     </style>
+    <script src="shared/guard.js"></script>
 </head>
 <body>
     <a href="#main" class="skip-link">Skip to main content</a>
@@ -378,7 +379,7 @@
     <div id="def-interlocutor" popover="auto">Someone you have a conversation with. The AI here is your interlocutor — a sparring partner for your ideas.</div>
 
     <script src="shared/glossary.js"></script>
-    <script src="shared/pins.js"></script>
+    <script src="shared/pins.js?v=2"></script>
     <script>
         (() => {
             const workingQ = document.getElementById('workingQuestion');
@@ -502,11 +503,16 @@
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
+                            token: window.MarginaliaSession ? window.MarginaliaSession.token() : null,
                             messages: conversation,
                             pack: activePack,
                             workingQuestion: workingQ.textContent.trim()
                         })
                     });
+                    if (r.status === 401 && window.MarginaliaSession) {
+                        window.MarginaliaSession.expire();
+                        return;
+                    }
                     if (!r.ok) {
                         throw new Error('HTTP ' + r.status);
                     }
@@ -548,6 +554,34 @@
             loadInitialQuestion();
             renderPins();
             renderTranscript();
+
+            /* Re-render pins when a background server sync changes them. */
+            window.addEventListener('pins:updated', renderPins);
+
+            /* Seed the transcript from the student's persistent thread (the
+               same server-side history the portal keeps), so the chamber and
+               the portal are one continuous conversation, not two strangers. */
+            (async () => {
+                const token = window.MarginaliaSession ? window.MarginaliaSession.token() : null;
+                if (!token) return;
+                try {
+                    const r = await fetch('/.netlify/functions/portal-state', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'load', token })
+                    });
+                    if (!r.ok) return;
+                    const data = await r.json();
+                    const history = Array.isArray(data.chatHistory) ? data.chatHistory : [];
+                    if (!history.length || conversation.length) return;
+                    history.forEach(turn => {
+                        const role = (turn.role === 'assistant' || turn.role === 'model') ? 'model' : 'user';
+                        const text = String(turn.content || turn.text || '');
+                        if (text) conversation.push({ role, text });
+                    });
+                    renderTranscript();
+                } catch (e) { /* offline — chamber still works, just without the back-story */ }
+            })();
         })();
     </script>
 </body>

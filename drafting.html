@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Caveat:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="shared/tokens.css">
-    <link rel="stylesheet" href="shared/marginalia.css">
+    <link rel="stylesheet" href="shared/marginalia.css?v=2">
 
     <!-- =====================================================================
          PRINT STYLES — @media print
@@ -318,6 +318,7 @@
             gap: var(--space-sm);
         }
     </style>
+    <script src="shared/guard.js"></script>
 </head>
 <body>
     <a href="#main" class="skip-link">Skip to main content</a>
@@ -435,6 +436,8 @@
                         </p>
                     </div>
 
+                    <p class="draft-status" id="draftStatus" role="status" aria-live="polite"></p>
+
                     <div class="marg-note">
                         <span class="marg-note__author">Reminder</span>
                         800 words is a maximum, not a target. A tighter argument always beats a longer one.
@@ -442,7 +445,7 @@
 
                     <div class="marg-note">
                         <span class="marg-note__author">Save as you go</span>
-                        Your draft auto-saves to this browser — it will still be here next time you open this page on the same device. To move it to another device or share it, export below.
+                        Your draft auto-saves to your account as you type — open this page on any device, signed in as you, and it follows you. Export below if you want your own copy.
                     </div>
 
                     <div class="export-actions">
@@ -465,37 +468,222 @@
 
     <script>
         (() => {
-            const KEY = 'marginalia.draft';
+            /* -----------------------------------------------------------------
+               Persistence: per-student and server-synced.
+               - localStorage (key scoped by student id) is the instant,
+                 offline-safe copy.
+               - The server (portal-state, page 'draft') is the cross-device
+                 source of truth, written on a 1.5s debounce after typing.
+               This is the highest-stakes artefact on the site — the actual
+               assessment piece — so it gets both layers plus a status line.
+               ----------------------------------------------------------------- */
+            const SID = window.MarginaliaSession ? window.MarginaliaSession.id() : null;
+            const TOKEN = window.MarginaliaSession ? window.MarginaliaSession.token() : null;
+            const LEGACY_KEY = 'marginalia.draft';   /* pre-login, device-global */
+            const KEY = 'marginalia.draft.' + (SID || 'anon');
             const textareas = document.querySelectorAll('[data-section]');
             const totalValue = document.getElementById('totalValue');
             const totalCounter = document.getElementById('totalCounter');
             const printWordTotal = document.getElementById('printWordTotal');
+            const draftStatus = document.getElementById('draftStatus');
 
             const wordCount = (s) => (s || '').trim().split(/\s+/).filter(Boolean).length;
 
-            // -----------------------------------------------------------------
-            // FEATURE 2: localStorage persistence with sessionStorage migration
-            // -----------------------------------------------------------------
-            function load() {
+            // ---- local store: { sections: {...}, updatedAt } ----------------
+            function readLocal() {
                 try {
-                    // Migrate from old sessionStorage key if localStorage is empty
-                    if (!localStorage.getItem(KEY) && sessionStorage.getItem(KEY)) {
-                        localStorage.setItem(KEY, sessionStorage.getItem(KEY));
-                        sessionStorage.removeItem(KEY);
+                    const parsed = JSON.parse(localStorage.getItem(KEY));
+                    if (!parsed) return { sections: {}, updatedAt: 0 };
+                    if (parsed.sections && typeof parsed.sections === 'object') {
+                        return { sections: parsed.sections, updatedAt: parsed.updatedAt || 0 };
                     }
-                    const saved = JSON.parse(localStorage.getItem(KEY)) || {};
-                    textareas.forEach(t => {
-                        if (saved[t.dataset.section]) t.value = saved[t.dataset.section];
+                    return { sections: parsed, updatedAt: 0 };  /* old flat shape */
+                } catch (e) { return { sections: {}, updatedAt: 0 }; }
+            }
+            function sectionsFromDom() {
+                const obj = {};
+                textareas.forEach(t => { obj[t.dataset.section] = t.value; });
+                return obj;
+            }
+            function applySections(sections) {
+                textareas.forEach(t => {
+                    const v = sections && sections[t.dataset.section];
+                    t.value = typeof v === 'string' ? v : '';
+                });
+            }
+            function hasContent(sections) {
+                return !!sections && typeof sections === 'object' &&
+                    Object.keys(sections).some(k => String(sections[k] || '').trim() !== '');
+            }
+
+            function setStatus(msg) {
+                if (draftStatus) draftStatus.textContent = msg;
+            }
+
+            // ---- save: local immediately, server on a debounce --------------
+            let pushTimer = null;
+            let lastPushedJson = null;
+            let dirty = false;   /* student has typed since page load */
+
+            function save() {
+                const sections = sectionsFromDom();
+                let localOk = true;
+                try { localStorage.setItem(KEY, JSON.stringify({ sections, updatedAt: Date.now() })); }
+                catch (e) { localOk = false; /* private mode / quota */ }
+                if (TOKEN) {
+                    setStatus('Saving…');
+                    clearTimeout(pushTimer);
+                    pushTimer = setTimeout(() => { pushToServer(sections, localOk); }, 1500);
+                } else {
+                    setStatus(localOk ? 'Saved on this device' : 'Not saving — tell Mr Ellis');
+                }
+            }
+
+            async function pushToServer(sections, localOk) {
+                try {
+                    const r = await fetch('/.netlify/functions/portal-state', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'set_page', token: TOKEN, page: 'draft',
+                            data: { sections, updatedAt: Date.now() }
+                        })
                     });
-                } catch (e) { /* ignore corrupt data */ }
+                    if (r.status === 401) {
+                        setStatus('Session expired — log in again to keep saving');
+                        return;
+                    }
+                    const data = await r.json().catch(() => ({}));
+                    if (r.ok && data.ok !== false) {
+                        lastPushedJson = JSON.stringify(sections);
+                        setStatus('Saved');
+                    } else {
+                        setStatus(localOk ? 'Saved on this device only' : 'Not saved — tell Mr Ellis');
+                    }
+                } catch (e) {
+                    setStatus(localOk ? 'Saved on this device only' : 'Not saved — tell Mr Ellis');
+                }
+            }
+
+            /* Flush an unpushed draft when the page is being left — keepalive
+               lets the request outlive the page. */
+            window.addEventListener('pagehide', () => {
+                if (!TOKEN) return;
+                const sections = sectionsFromDom();
+                if (JSON.stringify(sections) === lastPushedJson) return;
+                if (!dirty) return;
+                clearTimeout(pushTimer);
+                try {
+                    fetch('/.netlify/functions/portal-state', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'set_page', token: TOKEN, page: 'draft',
+                            data: { sections, updatedAt: Date.now() }
+                        }),
+                        keepalive: true
+                    }).catch(() => {});
+                } catch (e) { /* best effort */ }
+            });
+
+            // ---- load: local first (fast), then reconcile with server -------
+            function loadLocalIntoDom() {
+                /* Adopt a draft left in the old per-tab sessionStorage slot. */
+                try {
+                    if (!localStorage.getItem(LEGACY_KEY) && sessionStorage.getItem(LEGACY_KEY)) {
+                        localStorage.setItem(LEGACY_KEY, sessionStorage.getItem(LEGACY_KEY));
+                        sessionStorage.removeItem(LEGACY_KEY);
+                    }
+                } catch (e) { /* ignore */ }
+                applySections(readLocal().sections);
                 updateCounts();
                 updateMirrors();
             }
 
-            function save() {
-                const obj = {};
-                textareas.forEach(t => { obj[t.dataset.section] = t.value; });
-                localStorage.setItem(KEY, JSON.stringify(obj));
+            async function syncFromServer() {
+                if (!TOKEN) { maybeOfferLegacy(); return; }
+                try {
+                    const r = await fetch('/.netlify/functions/portal-state', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'get_page', token: TOKEN, page: 'draft' })
+                    });
+                    if (r.status === 401) { setStatus('Session expired — log in again'); return; }
+                    const res = await r.json();
+                    if (!res || res.ok !== true) { maybeOfferLegacy(); return; }
+                    const server = res.data;
+                    const local = readLocal();
+                    if (server && hasContent(server.sections)) {
+                        const serverAt = typeof server.updatedAt === 'number' ? server.updatedAt : (res.updatedAt || 0);
+                        if (!dirty && serverAt >= (local.updatedAt || 0)) {
+                            /* Server is newest and the student hasn't typed yet. */
+                            applySections(server.sections);
+                            try { localStorage.setItem(KEY, JSON.stringify({ sections: server.sections, updatedAt: serverAt })); } catch (e) {}
+                            updateCounts();
+                            updateMirrors();
+                            lastPushedJson = JSON.stringify(server.sections);
+                        } else if (hasContent(local.sections) && (local.updatedAt || 0) > serverAt) {
+                            /* This device is newer — push it up. */
+                            pushToServer(local.sections, true);
+                        }
+                    } else if (hasContent(local.sections)) {
+                        /* First sync for this student: seed the server. */
+                        pushToServer(local.sections, true);
+                    } else {
+                        maybeOfferLegacy();
+                    }
+                } catch (e) {
+                    /* offline — the local copy is already on screen */
+                    maybeOfferLegacy();
+                }
+            }
+
+            // ---- pre-login draft found on this device: ask, don't assume ----
+            function maybeOfferLegacy() {
+                if (!SID) return;
+                if (hasContent(readLocal().sections) || hasContent(sectionsFromDom())) return;
+                let legacy = null;
+                try { legacy = JSON.parse(localStorage.getItem(LEGACY_KEY)); } catch (e) { return; }
+                if (!hasContent(legacy)) return;
+                try { if (localStorage.getItem('marginalia.draft.dismissed.' + SID)) return; } catch (e) {}
+                showClaimBanner(legacy);
+            }
+
+            function showClaimBanner(legacySections) {
+                const main = document.getElementById('main');
+                if (!main) return;
+                const banner = document.createElement('div');
+                banner.className = 'claim-banner';
+                const msg = document.createElement('span');
+                msg.textContent = 'There’s a draft saved on this computer from before logins existed. Is it yours?';
+                const actions = document.createElement('div');
+                actions.className = 'claim-banner__actions';
+                const yes = document.createElement('button');
+                yes.type = 'button';
+                yes.className = 'btn btn--clarity btn--small';
+                yes.textContent = 'Yes — keep it';
+                const no = document.createElement('button');
+                no.type = 'button';
+                no.className = 'btn btn--ghost btn--small';
+                no.textContent = 'Not mine';
+                yes.addEventListener('click', () => {
+                    applySections(legacySections);
+                    updateCounts();
+                    updateMirrors();
+                    dirty = true;
+                    save();
+                    try { localStorage.removeItem(LEGACY_KEY); } catch (e) {}
+                    banner.remove();
+                });
+                no.addEventListener('click', () => {
+                    try { localStorage.setItem('marginalia.draft.dismissed.' + SID, '1'); } catch (e) {}
+                    banner.remove();
+                });
+                actions.appendChild(yes);
+                actions.appendChild(no);
+                banner.appendChild(msg);
+                banner.appendChild(actions);
+                main.insertBefore(banner, main.firstChild);
             }
 
             // -----------------------------------------------------------------
@@ -535,6 +723,7 @@
 
             textareas.forEach(t => {
                 t.addEventListener('input', () => {
+                    dirty = true;
                     save();
                     updateCounts();
                     updateMirrors();
@@ -594,9 +783,9 @@
             async function loadShelfForPrint() {
                 const shelf = document.getElementById('printShelf');
                 if (!shelf) return;
-                let session = null;
-                try { session = JSON.parse(sessionStorage.getItem('marginalia.session')); } catch (e) { /* ignore */ }
-                if (!session || !session.token) { shelf.innerHTML = ''; return; }
+                const sessionToken = window.MarginaliaSession ? window.MarginaliaSession.token() : null;
+                if (!sessionToken) { shelf.innerHTML = ''; return; }
+                const session = { token: sessionToken };
                 try {
                     const r = await fetch('/.netlify/functions/portal-state', {
                         method: 'POST',
@@ -631,12 +820,14 @@
             document.getElementById('clearDraft').onclick = () => {
                 if (!confirm('Clear all sections of your draft? This cannot be undone.')) return;
                 textareas.forEach(t => { t.value = ''; });
+                dirty = true;
                 save();
                 updateCounts();
                 updateMirrors();
             };
 
-            load();
+            loadLocalIntoDom();
+            syncFromServer();
         })();
     </script>
 </body>

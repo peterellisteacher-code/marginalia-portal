@@ -10,8 +10,14 @@
  *   add_resource        — { resource: { kind, title, url?, description?, videoId?, thumbnail?, addedBy } }
  *                          returns { ok: true, resource: <stored resource> }
  *   remove_resource     — { resourceId } — returns { ok: true }
+ *   get_page            — { page } — returns { ok: true, page, data, updatedAt }
+ *   set_page            — { page, data } — returns { ok: true }
  *
- * Storage: Netlify Blobs, store "marginalia-students", key "students/<studentId>/state.json"
+ * Storage: Netlify Blobs, store "marginalia-students":
+ *   key "students/<studentId>/state.json"        — portal state (above)
+ *   key "students/<studentId>/pages/<page>.json" — per-page state (draft,
+ *       pins, lab). Separate keys so a draft autosave can never clobber a
+ *       concurrent chat-history write and vice versa.
  */
 
 'use strict';
@@ -50,6 +56,15 @@ function store(_context) {
 
 function stateKey(studentId) {
     return `students/${studentId}/state.json`;
+}
+
+// Per-page state (drafting scaffold, pinned questions, lab choices). Each
+// page gets its own blob so writes from different pages never contend.
+const VALID_PAGE_IDS = new Set(['draft', 'pins', 'lab']);
+const MAX_PAGE_BYTES = 64_000;
+
+function pageKey(studentId, page) {
+    return `students/${studentId}/pages/${page}.json`;
 }
 
 const VALID_PACKS = new Set([
@@ -236,6 +251,53 @@ async function actionRemoveResource(studentId, payload, context, json) {
     return json(200, { ok: true });
 }
 
+async function actionGetPage(studentId, payload, context, json) {
+    const page = String(payload.page || '');
+    if (!VALID_PAGE_IDS.has(page)) {
+        return json(400, { error: `Unknown page id. Valid: ${[...VALID_PAGE_IDS].join(', ')}` });
+    }
+    try {
+        const s = store(context);
+        const stored = await s.get(pageKey(studentId, page), { type: 'json' });
+        return json(200, {
+            ok: true,
+            page,
+            data: stored && stored.data !== undefined ? stored.data : null,
+            updatedAt: stored && typeof stored.updatedAt === 'number' ? stored.updatedAt : 0,
+        });
+    } catch (err) {
+        console.error('portal-state: page blob read error', err);
+        throw { isBlobError: true };
+    }
+}
+
+async function actionSetPage(studentId, payload, context, json) {
+    const page = String(payload.page || '');
+    if (!VALID_PAGE_IDS.has(page)) {
+        return json(400, { error: `Unknown page id. Valid: ${[...VALID_PAGE_IDS].join(', ')}` });
+    }
+    if (payload.data === undefined) {
+        return json(400, { error: 'data is required' });
+    }
+    let raw;
+    try {
+        raw = JSON.stringify(payload.data);
+    } catch (_) {
+        return json(400, { error: 'data must be JSON-serialisable' });
+    }
+    if (typeof raw !== 'string' || raw.length > MAX_PAGE_BYTES) {
+        return json(400, { error: 'data too large' });
+    }
+    try {
+        const s = store(context);
+        await s.setJSON(pageKey(studentId, page), { data: payload.data, updatedAt: Date.now() });
+        return json(200, { ok: true });
+    } catch (err) {
+        console.error('portal-state: page blob write error', err);
+        throw { isBlobError: true };
+    }
+}
+
 // ── Handler ───────────────────────────────────────────────────────────────────
 
 exports.handler = async (event, _netlifyContext) => {
@@ -281,8 +343,12 @@ exports.handler = async (event, _netlifyContext) => {
                 return await actionRemoveResource(studentId, payload, undefined, json);
             case 'set_active_pack':
                 return await actionSetActivePack(studentId, payload, undefined, json);
+            case 'get_page':
+                return await actionGetPage(studentId, payload, undefined, json);
+            case 'set_page':
+                return await actionSetPage(studentId, payload, undefined, json);
             default:
-                return json(400, { error: `Unknown action: "${action}". Valid: load, set_working_question, add_resource, remove_resource, set_active_pack` });
+                return json(400, { error: `Unknown action: "${action}". Valid: load, set_working_question, add_resource, remove_resource, set_active_pack, get_page, set_page` });
         }
     } catch (err) {
         if (err && err.isBlobError) {

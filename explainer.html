@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Caveat:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="shared/tokens.css">
-    <link rel="stylesheet" href="shared/marginalia.css">
+    <link rel="stylesheet" href="shared/marginalia.css?v=2">
 
     <style>
         /* This page scrolls inside the main region (header/footer stay put),
@@ -337,6 +337,7 @@
         }
         .feature-video__caption strong { color: var(--ink); font-weight: 600; }
     </style>
+    <script src="shared/guard.js"></script>
 </head>
 <body>
     <a href="#main" class="skip-link">Skip to main content</a>
@@ -570,8 +571,17 @@
                     const r = await fetch('/.netlify/functions/chat', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ mode: 'explain', message: text, history: history.slice(0, -1).slice(-8) })
+                        body: JSON.stringify({
+                            mode: 'explain',
+                            token: window.MarginaliaSession ? window.MarginaliaSession.token() : null,
+                            message: text,
+                            history: history.slice(0, -1).slice(-8)
+                        })
                     });
+                    if (r.status === 401 && window.MarginaliaSession) {
+                        window.MarginaliaSession.expire();
+                        return;
+                    }
                     const data = await r.json();
                     if (!r.ok) throw new Error(data.error || ('HTTP ' + r.status));
                     const reply = data.reply || '(no reply)';

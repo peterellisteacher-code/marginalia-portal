@@ -52,7 +52,8 @@
 
     /** Redirect to login, clearing session. */
     function redirectToLogin() {
-        sessionStorage.removeItem('marginalia.session');
+        try { localStorage.removeItem('marginalia.session'); } catch (e) { /* ignore */ }
+        try { sessionStorage.removeItem('marginalia.session'); } catch (e) { /* ignore */ }
         window.location.href = 'index.html';
     }
 
@@ -134,8 +135,16 @@
     ================================================================ */
 
     async function init() {
-        /* 1. Read session from sessionStorage */
-        const raw = sessionStorage.getItem('marginalia.session');
+        /* 1. Read session from localStorage (shared across tabs). Adopt a
+           session left in the old per-tab sessionStorage slot so nobody is
+           bounced by the upgrade mid-lesson. */
+        try {
+            if (!localStorage.getItem('marginalia.session') && sessionStorage.getItem('marginalia.session')) {
+                localStorage.setItem('marginalia.session', sessionStorage.getItem('marginalia.session'));
+                sessionStorage.removeItem('marginalia.session');
+            }
+        } catch (e) { /* storage unavailable — handled below */ }
+        const raw = localStorage.getItem('marginalia.session');
         if (!raw) { redirectToLogin(); return; }
 
         try {
@@ -176,8 +185,10 @@
         /* 5. Load portal state (working question + resources) */
         await loadPortalState();
 
-        /* 6. Render pinned questions */
+        /* 6. Render pinned questions (and re-render when a server sync
+           changes them — pins.js fires 'pins:updated') */
         renderPinnedStrip();
+        window.addEventListener('pins:updated', renderPinnedStrip);
 
         /* 7. Wire up events */
         wireEvents();
@@ -716,8 +727,15 @@
             return;
         }
 
+        /* Idempotent: this re-runs when a background server sync updates the
+           pins ('pins:updated'), so clear before re-appending. */
+        pinnedStrip.textContent = '';
+
         const pins = window.pins.list();
-        if (!pins || pins.length === 0) return; /* leave hidden */
+        if (!pins || pins.length === 0) {
+            if (pinnedSection) pinnedSection.setAttribute('hidden', '');
+            return;
+        }
 
         /* The section wrapper holds the hidden attribute (so the heading and
            hint are revealed together with the chips). The chips themselves
@@ -906,8 +924,7 @@
     function wireEvents() {
         /* Logout */
         logoutBtn.addEventListener('click', function () {
-            sessionStorage.removeItem('marginalia.session');
-            window.location.href = 'index.html';
+            redirectToLogin();
         });
 
         /* Save as PDF */

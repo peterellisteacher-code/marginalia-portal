@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Caveat:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="shared/tokens.css">
-    <link rel="stylesheet" href="shared/marginalia.css">
+    <link rel="stylesheet" href="shared/marginalia.css?v=2">
 
     <style>
         /* Landing-specific composition */
@@ -365,6 +365,52 @@
 
             let pendingStudent = null;  // { id, firstName, house? }
 
+            /* ---- session helpers (mirrors shared/guard.js, which this page
+               deliberately does not load — it must stay reachable logged out) */
+            const SESSION_KEY = 'marginalia.session';
+
+            function readSession() {
+                try { return JSON.parse(localStorage.getItem(SESSION_KEY)); }
+                catch (e) { return null; }
+            }
+
+            function tokenExpiry(token) {
+                if (typeof token !== 'string' || !token) return 0;
+                try {
+                    const parts = atob(token.replace(/-/g, '+').replace(/_/g, '/')).split('|');
+                    if (parts.length !== 3) return 0;
+                    const exp = Number(parts[1]);
+                    return isFinite(exp) ? exp : 0;
+                } catch (e) { return 0; }
+            }
+
+            function sessionIsValid(s) {
+                return !!(s && s.token && s.id && tokenExpiry(s.token) > Date.now());
+            }
+
+            /* Where to go after login: back to the page the guard bounced the
+               student from (?from=...), if it is one of ours; else the portal. */
+            const PAGES = ['portal.html', 'bank.html', 'lab.html', 'chamber.html',
+                'drafting.html', 'exemplars.html', 'explainer.html', 'resources.html'];
+            function destination() {
+                const from = new URLSearchParams(window.location.search).get('from');
+                return PAGES.indexOf(from) !== -1 ? from : 'portal.html';
+            }
+
+            /* Already signed in on this device? Offer to continue. */
+            (function offerContinue() {
+                const s = readSession();
+                if (!sessionIsValid(s)) return;
+                const wrap = document.createElement('p');
+                wrap.className = 'portal-entry__continue';
+                const btn = document.createElement('a');
+                btn.className = 'btn btn--clarity';
+                btn.href = destination();
+                btn.textContent = 'Continue as ' + (s.firstName || s.id) + ' →';
+                wrap.appendChild(btn);
+                nameGrid.parentNode.insertBefore(wrap, nameGrid);
+            })();
+
             function escapeHtml(s) {
                 return String(s).replace(/[&<>"']/g, function (c) {
                     return ({
@@ -446,13 +492,16 @@
                         loginPassword.select();
                         return;
                     }
-                    // Save session and go to portal
-                    sessionStorage.setItem('marginalia.session', JSON.stringify({
+                    // Save session (localStorage: shared across tabs, survives
+                    // restarts) and continue — to the page that bounced them
+                    // here, or to their portal.
+                    localStorage.setItem(SESSION_KEY, JSON.stringify({
                         token: data.token,
                         id: data.id,
                         firstName: data.firstName,
                     }));
-                    window.location.href = 'portal.html';
+                    try { sessionStorage.removeItem(SESSION_KEY); } catch (e) { /* old slot */ }
+                    window.location.href = destination();
                 } catch (err) {
                     loginError.textContent = 'Could not reach the portal. Check your connection.';
                 }

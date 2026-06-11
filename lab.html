@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Caveat:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="shared/tokens.css">
-    <link rel="stylesheet" href="shared/marginalia.css">
+    <link rel="stylesheet" href="shared/marginalia.css?v=2">
 
     <style>
         .lab-main { overflow-y: auto; padding: var(--space-lg) var(--space-lg) var(--space-2xl); }
@@ -245,6 +245,7 @@
             .bench { grid-template-columns: 1fr; }
         }
     </style>
+    <script src="shared/guard.js"></script>
 </head>
 <body>
     <a href="#main" class="skip-link">Skip to main content</a>
@@ -290,7 +291,7 @@
 
     <div id="def-thought-experiment" popover="auto">An imagined scenario designed to test a philosophical idea by appealing to your intuitions — like a controlled experiment, but run in the mind rather than a lab.</div>
 
-    <script src="shared/pins.js"></script>
+    <script src="shared/pins.js?v=2"></script>
     <script src="shared/glossary.js"></script>
     <script src="shared/youtube.js"></script>
     <script>
@@ -402,23 +403,53 @@
                 }
             ];
 
-            const STORE_KEY = 'marginalia.lab';
+            /* Choices are per-student (key scoped by id) and sync to the
+               server (portal-state page 'lab') so they follow the student
+               across devices. localStorage stays the fast offline copy. */
+            const SID = window.MarginaliaSession ? window.MarginaliaSession.id() : null;
+            const TOKEN = window.MarginaliaSession ? window.MarginaliaSession.token() : null;
+            const LEGACY_STORE_KEY = 'marginalia.lab';
+            const STORE_KEY = 'marginalia.lab.' + (SID || 'anon');
             const bench = document.getElementById('bench');
             const labCount = document.getElementById('labCount');
+
+            /* One-time adoption of pre-login choices on this device. */
+            try {
+                if (SID && !localStorage.getItem(STORE_KEY) && localStorage.getItem(LEGACY_STORE_KEY)) {
+                    localStorage.setItem(STORE_KEY, localStorage.getItem(LEGACY_STORE_KEY));
+                    localStorage.removeItem(LEGACY_STORE_KEY);
+                }
+            } catch (e) { /* ignore */ }
 
             function loadChoices() {
                 try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; }
                 catch (e) { return {}; }
             }
+
+            let pushTimer = null;
+            function pushChoices() {
+                if (!TOKEN) return;
+                clearTimeout(pushTimer);
+                pushTimer = setTimeout(() => {
+                    fetch('/.netlify/functions/portal-state', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'set_page', token: TOKEN, page: 'lab', data: loadChoices() })
+                    }).catch(() => { /* offline — local copy still holds */ });
+                }, 800);
+            }
+
             function saveChoice(id, idx) {
                 const all = loadChoices();
                 all[id] = idx;
                 try { localStorage.setItem(STORE_KEY, JSON.stringify(all)); } catch (e) { /* private mode */ }
+                pushChoices();
             }
             function clearChoice(id) {
                 const all = loadChoices();
                 delete all[id];
                 try { localStorage.setItem(STORE_KEY, JSON.stringify(all)); } catch (e) {}
+                pushChoices();
             }
 
             function updateCount() {
@@ -528,8 +559,32 @@
                 return card;
             }
 
-            EXPERIMENTS.forEach(exp => bench.appendChild(buildCard(exp)));
-            updateCount();
+            /* Pull the student's saved choices from the server BEFORE building
+               the cards (restore is baked in at build time). Bounded wait so an
+               offline lab still opens promptly from the local copy. */
+            (async () => {
+                if (TOKEN) {
+                    try {
+                        const res = await Promise.race([
+                            fetch('/.netlify/functions/portal-state', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ action: 'get_page', token: TOKEN, page: 'lab' })
+                            }).then(r => r.json()),
+                            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2500))
+                        ]);
+                        if (res && res.ok === true) {
+                            if (res.data && typeof res.data === 'object') {
+                                localStorage.setItem(STORE_KEY, JSON.stringify(res.data));
+                            } else if (res.data === null && Object.keys(loadChoices()).length > 0) {
+                                pushChoices();   /* first sync: seed server from this device */
+                            }
+                        }
+                    } catch (e) { /* offline / slow — use the local copy */ }
+                }
+                EXPERIMENTS.forEach(exp => bench.appendChild(buildCard(exp)));
+                updateCount();
+            })();
         })();
     </script>
 </body>

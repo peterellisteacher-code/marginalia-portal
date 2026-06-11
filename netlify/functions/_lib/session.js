@@ -7,14 +7,16 @@
  * SESSION_SECRET must be set in Netlify env vars in production. In dev,
  * a fallback string is used (NOT secure -- only acceptable for `netlify dev`).
  *
- * Default lifetime: 8 hours -- one school day plus.
+ * Default lifetime: 30 days. The token now lives in localStorage (shared
+ * across tabs, survives restarts), so a short lifetime would just force a
+ * daily re-login without buying real security -- the password is a surname.
  */
 
 'use strict';
 
 const crypto = require('crypto');
 
-const SESSION_LIFETIME_MS = 8 * 60 * 60 * 1000;
+const SESSION_LIFETIME_MS = 30 * 24 * 60 * 60 * 1000;
 
 function secret() {
     if (process.env.SESSION_SECRET) return process.env.SESSION_SECRET;
