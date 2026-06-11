@@ -1,0 +1,125 @@
+# Readings pack: stage1_reason_passion
+### Reason and the passions — Plato and Aristotle on gut feeling vs. reasoned judgement
+
+**For the agent:** These are verbatim primary-source passages for a student working on whether we should trust gut instinct / feeling or reasoned thinking — and how reason relates to the appetites and emotions. Quote a specific passage (with its citation) when you point the student toward an argument; do not summarise unprompted. Each passage is long enough to make the point clearly on its own. Translations: **Plato — Benjamin Jowett** (public domain); **Aristotle — Terence Irwin** (Hackett, 2nd ed. 1999 — the translation the class reads). Citations give the standard reference numbers (Plato: Stephanus; Aristotle: Bekker) so the student can find each passage in their own copy.
+
+> **Agent orientation (context, not source text — do not quote this as Plato or Aristotle).** The student's question pits "gut instinct" against "reasoned thinking." These two thinkers give a richer map than a simple either/or. Plato (*Republic*, *Phaedrus*) pictures the soul as *divided*: reason ought to rule appetite and spirit — the charioteer mastering an unruly horse. Aristotle agrees reason should govern, but argues the appetites can be *trained* to feel rightly, so in the mature person "instinct" and reason pull together. Two modern foils are already cached elsewhere on this site: Jonathan Haidt (religion pack) reverses the order — intuition first, reasoning after; Martha Nussbaum (virtue / compassion pack) argues emotions are themselves intelligent appraisals, not blind instinct. Use these to help the student find and name more than one position.
+
+---
+
+## Plato — *Phaedrus*: the charioteer and the two horses
+*Trans. Benjamin Jowett. Stephanus 246, 253–254.*
+
+The soul pictured as a charioteer (reason) driving two horses — a noble horse (spirit) and an unruly horse (appetite):
+
+> And let the figure be composite—a pair of winged horses and a charioteer. (246a)
+
+> Now the winged horses and the charioteers of the gods are all of them noble and of noble descent, but those of other races are mixed; the human charioteer drives his in a pair; and one of them is noble and of noble breed, and the other is ignoble and of ignoble breed; and the driving of them of necessity gives a great deal of trouble to him. (246a–b)
+
+The two horses described — the obedient one guided by "word and admonition," the unruly one "hardly yielding to whip and spur":
+
+> The right-hand horse is upright and cleanly made; he has a lofty neck and an aquiline nose; his colour is white, and his eyes dark; he is a lover of honour and modesty and temperance, and the follower of true glory; he needs no touch of the whip, but is guided by word and admonition only. (253d–e)
+
+> The other is a crooked lumbering animal, put together anyhow; he has a short thick neck; he is flat-faced and of a dark colour, with grey eyes and blood-red complexion; the mate of insolence and pride, shag-eared and deaf, hardly yielding to whip and spur. (253e)
+
+After repeated discipline, the unruly horse is at last broken in — appetite mastered through training:
+
+> [The unruly horse] is humbled and follows henceforth the wisdom of the charioteer, and when he sees the beautiful one, he is overwhelmed with fear. (254e)
+
+---
+
+## Plato — *Republic*, Book IV: the divided soul and self-mastery
+*Trans. Benjamin Jowett. Stephanus 430–444.*
+
+Reason and appetite named as two distinct principles in the soul:
+
+> …the one with which man reasons, we may call the rational principle of the soul, the other, with which he loves and hungers and thirsts and feels the flutterings of any other desire, may be termed the irrational or appetitive, the ally of sundry pleasures and satisfactions. (439d)
+
+What "master of himself" really means — the better principle controlling the worse:
+
+> There is something ridiculous in the expression 'master of himself'; for the master is also the servant and the servant the master; and in all these modes of speaking the same person is denoted. (430e)
+
+> The meaning is, I believe, that in the human soul there is a better and also a worse principle; and when the better has the worse under control, then a man is said to be master of himself; and this is a term of praise: but when, owing to evil education or association, the better principle, which is also the smaller, is overwhelmed by the greater mass of the worse—in this case he is blamed and is called the slave of self and unprincipled. (431a–b)
+
+Justice as inner order — each part doing its own work, reason ruling:
+
+> …[justice is] concerned, however, not with the outward man, but with the inward, which is the true self and concernment of man: for the just man does not permit the several elements within him to interfere with one another, or any of them to do the work of others,—he sets in order his own inner life, and is his own master and his own law, and at peace with himself. (443d–e)
+
+> **Agent orientation (context, not source text).** Plato's soul has a *third* part besides reason and appetite: *spirit* (Greek *thumos*) — the seat of anger, honour, and indignation. In the *Republic*, spirit is reason's natural ally: when a person is well brought up, it takes reason's side against appetite (it is the obedient, honour-loving horse of the *Phaedrus*). So Plato's picture is not simply reason vs. feeling — one kind of feeling (spirited honour) can be enlisted to help reason master another (raw appetite).
+
+---
+
+## Plato — *Phaedo* and *Apology*: reason against the body's appetites; the examined life
+*Trans. Benjamin Jowett. Phaedo, Stephanus 66; Apology, Stephanus 21, 38.*
+
+In the *Phaedo*, Socrates argues that the body's appetites and passions actively *get in the way* of clear thinking and the search for truth:
+
+> …while we are in the body, and while the soul is infected with the evils of the body, our desire will not be satisfied? and our desire is of the truth. For the body is a source of endless trouble to us by reason of the mere requirement of food; and is liable also to diseases which overtake and impede us in the search after true being: it fills us full of loves, and lusts, and fears, and fancies of all kinds, and endless foolery, and in fact, as men say, takes away from us the power of thinking at all. Whence come wars, and fightings, and factions? whence but from the body and the lusts of the body? (*Phaedo* 66b–c)
+
+In the *Apology*, Socrates makes the life of reasoned self-examination the highest human good — and locates wisdom in knowing that you do not know:
+
+> …daily to discourse about virtue, and of those other things about which you hear me examining myself and others, is the greatest good of man, and that the unexamined life is not worth living… (*Apology* 38a)
+
+> …although I do not suppose that either of us knows anything really beautiful and good, I am better off than he is,—for he knows nothing, and thinks that he knows; I neither know nor think that I know. In this latter particular, then, I seem to have slightly the advantage of him. (*Apology* 21d)
+
+---
+
+## Aristotle — *Nicomachean Ethics*: trained feeling and practical reason
+*Trans. Terence Irwin (Hackett, 2nd ed. 1999) — the class text. Bekker references per book / chapter.*
+
+**The human function is reasoned activity (I.7, 1098a).** Aristotle asks what the human being is *for* — and answers that our special work is the activity of the part of us that has reason:
+
+> The remaining possibility, then, is some sort of life of action of the [part of the soul] that has reason. One [part] of it has reason as obeying reason; the other has it as itself having reason and thinking… We have found, then, that the human function is activity of the soul in accord with reason or requiring reason… the function of a harpist is to play the harp, and the function of a good harpist is to play it well… And so the human good proves to be activity of the soul in accord with virtue, and indeed with the best and most complete virtue, if there are more virtues than one.
+
+**Appetite can "listen to" reason (I.13, 1102b).** The desiring part is not itself rational, but it can heed reason the way a child heeds a parent — which is why advice and correction work on it at all:
+
+> …the [part] with appetites and in general desires shares in reason in a way, insofar as it both listens to reason and obeys it. This is the way in which we are said to 'listen to reason' from father or friends, as opposed to the way in which [we 'give the reason'] in mathematics. The nonrational part also [obeys and] is persuaded in some way by reason, as is shown by correction, and by every sort of reproof and exhortation.
+
+**Character comes from habit, not nature (II.1, 1103a).** Our "instincts" are not fixed at birth; they are built by what we repeatedly do:
+
+> Virtue of character … results from habit; hence its name 'ethical', slightly varied from 'ethos'. Hence it is also clear that none of the virtues of character arises in us naturally. For if something is by nature in one condition, habituation cannot bring it into another condition. A stone, for instance, by nature moves downwards, and habituation could not make it move upwards, not even if you threw it up ten thousand times to habituate it… And so the virtues arise in us neither by nature nor against nature. Rather, we are by nature able to acquire them, and we are completed through habit.
+
+> …we become builders, for instance, by building, and we become harpists by playing the harp. Similarly, then, we become just by doing just actions, temperate by doing temperate actions, brave by doing brave actions. (1103a–b)
+
+**The trained person enjoys the right thing (II.3, 1104b).** You can read someone's character off what gives them pleasure or pain — a well-trained "gut" actually *delights* in the good:
+
+> …we must take someone's pleasure or pain following on his actions to be a sign of his state. For if someone who abstains from bodily pleasures enjoys the abstinence itself, he is temperate; if he is grieved by it, he is intemperate. Again, if he stands firm against terrifying situations and enjoys it, or at least does not find it painful, he is brave; if he finds it painful, he is cowardly. For virtue of character is about pleasures and pains.
+
+**Feeling, calibrated by reason, is virtue (II.6, 1106b–1107a).** Virtue is not the absence of feeling; it is feeling the right amount, aimed the right way — the mean that reason picks out:
+
+> By virtue I mean virtue of character; for this is about feelings and actions… We can be afraid, for instance, or be confident, or have appetites, or get angry, or feel pity, and in general have pleasure or pain, both too much and too little, and in both ways not well. But having these feelings at the right times, about the right things, toward the right people, for the right end, and in the right way, is the intermediate and best condition, and this is proper to virtue.
+
+> Virtue, then, is a state that decides, consisting in a mean, the mean relative to us, which is defined by reference to reason, that is to say, to the reason by reference to which the prudent person would define it. It is a mean between two vices, one of excess and one of deficiency.
+
+**The gut reaction is easy; the right one is hard (II.9, 1109a).** Anyone can fire off the feeling; getting it *right* is the achievement:
+
+> …getting angry, or giving and spending money, is easy and everyone can do it; but doing it to the right person, in the right amount, at the right time, for the right end, and in the right way is no longer easy, nor can everyone do it. Hence doing these things well is rare, praiseworthy, and fine.
+
+**Decision (*prohairesis*) is reasoned, not mere impulse (III.2–3, 1111b–1113a).** Aristotle's key term names the choice that comes from thinking it through — which is exactly what a spur-of-the-moment urge is not:
+
+> Decision … is apparently voluntary, but not the same as the voluntary, which extends more widely. For children and the other animals share in voluntary action, but not in decision; and the actions we do on the spur of the moment are said to be voluntary, but not to accord with decision… the incontinent person acts on appetite, not on decision, but the continent person does the reverse, by acting on decision, not on appetite.
+
+> …what we decide to do is whatever action, among those up to us, we deliberate about and [consequently] desire to do. Hence also decision will be deliberative desire to do an action that is up to us; for when we have judged [that it is right] as a result of deliberation, we desire to do it in accord with our wish.
+
+**Decision joins reason and desire (VI.2, 1139a).** Notice it is not reason *instead of* desire — good action needs both, working together:
+
+> The principle of an action—the source of motion, not the goal—is decision; the principle of decision is desire and goal-directed reason. That is why decision requires understanding and thought, and also a state of character; for acting well or badly requires both thought and character.
+
+**Practical wisdom — *prudence* (VI.5, 1140b).** The intellectual skill of working out what to actually do:
+
+> …prudence is a state grasping the truth, involving reason, concerned with action about things that are good or bad for a human being.
+
+**When feeling overrides reason — incontinence / *akrasia* (VII.3, 1147a–b).** Aristotle's careful answer to "how can you know the good and still not do it?": in the heat of feeling you *have* the knowledge but are not *using* it — like someone drunk or asleep reciting words:
+
+> …we speak of knowing in two ways; we ascribe it both to someone who has it without using it and to someone who is using it. Hence it will matter whether someone has the knowledge that his action is wrong, without attending to his knowledge, or he both has it and attends to it… some people, such as those asleep or mad or drunk, both have knowledge in a way and do not have it. Moreover, this is the condition of those affected by strong feelings.
+
+> [The incontinent person] is like a city that votes for all the right decrees and has excellent laws, but does not apply them… (1152a)
+
+---
+
+> **Agent orientation — positions the student could take (context, not source text).**
+> - **Reason should rule (Plato).** Gut feeling is the unruly horse; the good life means reason governing appetite. Ask the student: is a feeling you cannot justify a reason to act?
+> - **Train the feelings (Aristotle).** The mature person's instincts have been *habituated* to track what reason approves, so "trusting your gut" is reliable only once the gut is well-trained. Ask: whose gut, trained how?
+> - **A reasoned defence of instinct (modern foils, already cached here).** Haidt (religion pack) argues intuition comes first and reasoning is often after-the-fact justification; Nussbaum (virtue / compassion pack) argues emotions are themselves intelligent judgements. Point the student to those packs to build the other side.
+> - **Test case to offer the student:** a snap moral judgement — disgust at something harmless, a rescuer rushing into danger without deliberating, "I just *knew* I could trust her." Was the gut right? If so, is that because it was *trained* (Aristotle), or because instinct tracks something reason misses (Haidt, Nussbaum)? If wrong, what should have over-ruled it?
+> - A strong Issues Study will *name* at least two of these positions and defend one. Push the student to say which horse they are backing, and why — and to meet the strongest version of the view they reject.

@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Access gate: requires a signed-in student session; bounces to login otherwise. -->
+    <script src="shared/guard.js"></script>
     <title>The Thought-Experiment Lab | Marginalia</title>
     <meta name="description" content="Step into the great philosophical thought experiments — the trolley problem, the experience machine, Mary's room — make a choice, and see what your instincts reveal.">
 
@@ -245,7 +248,6 @@
             .bench { grid-template-columns: 1fr; }
         }
     </style>
-    <script src="shared/guard.js"></script>
 </head>
 <body>
     <a href="#main" class="skip-link">Skip to main content</a>

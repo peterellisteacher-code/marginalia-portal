@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Access gate: requires a signed-in student session; bounces to login otherwise. -->
+    <script src="shared/guard.js"></script>
     <title>Your portal | Marginalia</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -646,6 +649,7 @@
                         <button class="pack-chip" type="button" data-pack="stage1_aesthetics" aria-pressed="false">Aesthetics</button>
                         <button class="pack-chip" type="button" data-pack="stage1_mind_simulation" aria-pressed="false">Mind &amp; simulation</button>
                         <button class="pack-chip" type="button" data-pack="lab_applied_normative_ethics" aria-pressed="false">Applied ethics</button>
+                        <button class="pack-chip" type="button" data-pack="stage1_reason_passion" aria-pressed="false">Reason &amp; instinct</button>
                     </div>
                 </section>
 

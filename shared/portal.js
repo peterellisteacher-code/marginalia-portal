@@ -167,14 +167,18 @@
             verifyData = await r.json();
             if (!r.ok || !verifyData.ok) { redirectToLogin(); return; }
         } catch (e) {
-            redirectToLogin();
-            return;
+            /* Network blip (not a rejected token) — don't lock the student out;
+               match shared/guard.js and keep the cached session. The token still
+               gates the actual data calls server-side. */
+            verifyData = null;
         }
 
         /* Update firstName/id from server in case they changed. session.id is
            the cache + seed key, so make sure it is populated. */
-        session.firstName = verifyData.firstName || session.firstName;
-        session.id = verifyData.id || session.id;
+        if (verifyData) {
+            session.firstName = verifyData.firstName || session.firstName;
+            session.id = verifyData.id || session.id;
+        }
 
         /* 3. Set welcome label */
         setText(welcomeLabel, 'Welcome, ' + session.firstName);

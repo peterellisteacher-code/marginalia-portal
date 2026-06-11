@@ -493,14 +493,16 @@
                         return;
                     }
                     // Save session (localStorage: shared across tabs, survives
-                    // restarts) and continue — to the page that bounced them
-                    // here, or to their portal.
+                    // restarts), then send the student where they were headed
+                    // (the ?from= page the guard bounced them off) or to their
+                    // portal by default.
                     localStorage.setItem(SESSION_KEY, JSON.stringify({
                         token: data.token,
                         id: data.id,
                         firstName: data.firstName,
                     }));
                     try { sessionStorage.removeItem(SESSION_KEY); } catch (e) { /* old slot */ }
+                    try { sessionStorage.removeItem('marginalia.returnTo'); } catch (e) { /* old gate.js slot */ }
                     window.location.href = destination();
                 } catch (err) {
                     loginError.textContent = 'Could not reach the portal. Check your connection.';

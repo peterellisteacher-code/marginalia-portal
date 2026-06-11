@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Access gate: requires a signed-in student session; bounces to login otherwise. -->
+    <script src="shared/guard.js"></script>
     <title>The Socratic Chamber | Marginalia</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -138,7 +141,20 @@
         }
 
         .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: var(--space-md);
             margin-bottom: var(--space-md);
+        }
+
+        .chat-header__text {
+            min-width: 0;
+        }
+
+        .chamber-clear {
+            flex-shrink: 0;
+            white-space: nowrap;
         }
 
         .chat-header__title {
@@ -271,7 +287,6 @@
             line-height: 1.4;
         }
     </style>
-    <script src="shared/guard.js"></script>
 </head>
 <body>
     <a href="#main" class="skip-link">Skip to main content</a>
@@ -317,6 +332,7 @@
                         <button type="button" class="chip" data-pack="stage1_aesthetics" aria-pressed="false">aesthetics</button>
                         <button type="button" class="chip" data-pack="stage1_mind_simulation" aria-pressed="false">mind / simulation</button>
                         <button type="button" class="chip" data-pack="lab_applied_normative_ethics" aria-pressed="false">applied ethics</button>
+                        <button type="button" class="chip" data-pack="stage1_reason_passion" aria-pressed="false">reason &amp; instinct</button>
                     </div>
 
                     <p class="working-panel__instructions">
@@ -333,8 +349,11 @@
 
                 <aside class="chat-panel">
                     <header class="chat-header">
-                        <h2 class="chat-header__title">In the margin</h2>
-                        <p class="chat-header__subtitle">A <button class="term" popovertarget="def-socratic" aria-describedby="def-socratic">Socratic</button> <button class="term" popovertarget="def-interlocutor" aria-describedby="def-interlocutor">interlocutor</button>. Sharpens your question; never writes it for you.</p>
+                        <div class="chat-header__text">
+                            <h2 class="chat-header__title">In the margin</h2>
+                            <p class="chat-header__subtitle">A <button class="term" popovertarget="def-socratic" aria-describedby="def-socratic">Socratic</button> <button class="term" popovertarget="def-interlocutor" aria-describedby="def-interlocutor">interlocutor</button>. Sharpens your question; never writes it for you.</p>
+                        </div>
+                        <button type="button" class="btn btn--ghost btn--small chamber-clear" id="clearBtn" hidden>New chat</button>
                     </header>
 
                     <div class="agent-warning">
@@ -388,6 +407,7 @@
             const form = document.getElementById('chatForm');
             const input = document.getElementById('chatInput');
             const sendBtn = document.getElementById('sendBtn');
+            const clearBtn = document.getElementById('clearBtn');
             const packChips = document.querySelectorAll('[data-pack]');
 
             let conversation = [];   // {role: 'user'|'model', text: string}
@@ -397,6 +417,92 @@
             const escape = (s) => String(s).replace(/[&<>"']/g, (c) => ({
                 '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
             }[c]));
+
+            // --- Persistence (localStorage on this device + Netlify Blobs on the
+            // server). The whole site requires a login now, so every chamber visit
+            // has a student session: we mirror the chat to the student's Blobs store
+            // (a SEPARATE slot from the portal) so it follows them across devices,
+            // and keep localStorage as an instant/offline copy.
+            const SESSION_KEY = 'marginalia.session';
+            const token = (() => {
+                if (window.MarginaliaSession) return window.MarginaliaSession.token();
+                try { return (JSON.parse(localStorage.getItem(SESSION_KEY)) || {}).token || null; }
+                catch (e) { return null; }
+            })();
+            /* Scope the device copy by student id so two students on one
+               school computer never see each other's chamber thread. */
+            const STORE_KEY = 'marginalia.chamber.' + ((window.MarginaliaSession && window.MarginaliaSession.id()) || 'anon');
+            let serverSaveTimer = null;
+
+            function saveLocal() {
+                try {
+                    localStorage.setItem(STORE_KEY, JSON.stringify({
+                        conversation: conversation.slice(-40),   // cap at 40 turns, matching the portal
+                        workingQuestion: workingQ.textContent,
+                        activePack,
+                        updatedAt: Date.now()
+                    }));
+                } catch (e) {
+                    /* private mode / quota — the chat just won't persist on this device */
+                }
+            }
+
+            // Debounced, best-effort sync to the student's server-side chamber slot.
+            function saveServer() {
+                if (!token) return;
+                clearTimeout(serverSaveTimer);
+                serverSaveTimer = setTimeout(() => {
+                    fetch('/.netlify/functions/portal-state', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'chamber_save',
+                            token,
+                            conversation: conversation.slice(-40),
+                            workingQuestion: workingQ.textContent,
+                            activePack
+                        })
+                    }).catch(() => { /* offline — localStorage still holds it */ });
+                }, 600);
+            }
+
+            function saveState() {
+                saveLocal();
+                saveServer();
+            }
+
+            function loadServer() {
+                if (!token) return Promise.resolve(null);
+                return fetch('/.netlify/functions/portal-state', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'chamber_load', token })
+                }).then(r => (r.ok ? r.json() : null)).catch(() => null);
+            }
+
+            function loadSaved() {
+                try {
+                    return JSON.parse(localStorage.getItem(STORE_KEY)) || {};
+                } catch (e) {
+                    return {};
+                }
+            }
+
+            function restoreSaved() {
+                const saved = loadSaved();
+                if (Array.isArray(saved.conversation)) {
+                    conversation = saved.conversation
+                        .filter(t => t && (t.role === 'user' || t.role === 'model') && typeof t.text === 'string')
+                        .map(t => ({ role: t.role, text: t.text }));
+                }
+                if (typeof saved.workingQuestion === 'string' && saved.workingQuestion.trim() !== '') {
+                    workingQ.textContent = saved.workingQuestion;
+                    workingQ.dataset.empty = 'false';
+                }
+                if (typeof saved.activePack === 'string' && saved.activePack) {
+                    selectPack(saved.activePack);
+                }
+            }
 
             // --- Working question ---
             const params = new URLSearchParams(window.location.search);
@@ -409,6 +515,10 @@
                         if (q) {
                             workingQ.textContent = q.question;
                             workingQ.dataset.empty = 'false';
+                            // A chosen-question deep-link is an explicit fresh start:
+                            // clear any restored transcript so an old, unrelated chat
+                            // is not left on screen under the new working question.
+                            conversation = [];
                             // Auto-pick the matching pack if any
                             const cluster = bank.clusters[q.cluster];
                             const packMap = {
@@ -422,10 +532,14 @@
                                 'simulation': 'stage1_mind_simulation',
                                 'personal_identity': 'stage1_mind_simulation',
                                 'personhood': 'lab_applied_normative_ethics',
-                                'animal_ethics': 'lab_applied_normative_ethics'
+                                'animal_ethics': 'lab_applied_normative_ethics',
+                                'emotion_knowledge': 'stage1_reason_passion',
+                                'moral_foundations': 'stage1_religion_ethics'
                             };
                             const matched = packMap[q.cluster];
                             if (matched) selectPack(matched);
+                            saveState();
+                            renderTranscript();
                         }
                     });
                 }
@@ -433,6 +547,7 @@
 
             workingQ.addEventListener('input', () => {
                 workingQ.dataset.empty = workingQ.textContent.trim() === '' ? 'true' : 'false';
+                saveState();
             });
 
             // --- Pins display ---
@@ -454,6 +569,7 @@
                 workingQ.textContent = card.dataset.text;
                 workingQ.dataset.empty = 'false';
                 workingQ.focus();
+                saveState();
             });
 
             // --- Pack selector ---
@@ -466,6 +582,7 @@
                     c.setAttribute('aria-pressed', String(on));
                 });
                 activePack = packId;
+                saveState();
             }
 
             packChips.forEach(chip => {
@@ -474,6 +591,7 @@
 
             // --- Chat ---
             function renderTranscript() {
+                clearBtn.hidden = conversation.length === 0;
                 if (conversation.length === 0 && !isThinking) {
                     transcript.innerHTML = '<p class="empty-chat"><strong>Start when you’re ready.</strong> A good first message: tell the agent the topic you’re drawn to, and why it pulls at you. It won’t hand you a question — but it will help you turn that pull into one of your own.</p>';
                     return;
@@ -496,6 +614,7 @@
                 if (!text.trim() || isThinking) return;
                 conversation.push({ role: 'user', text });
                 isThinking = true;
+                saveState();   // keep the student's message even if they leave mid-reply
                 renderTranscript();
 
                 try {
@@ -503,7 +622,8 @@
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            token: window.MarginaliaSession ? window.MarginaliaSession.token() : null,
+                            mode: 'chamber',
+                            token,
                             messages: conversation,
                             pack: activePack,
                             workingQuestion: workingQ.textContent.trim()
@@ -525,6 +645,7 @@
                     });
                 } finally {
                     isThinking = false;
+                    saveState();
                     renderTranscript();
                 }
             }
@@ -544,44 +665,58 @@
                 }
             });
 
-            // Honour ?pack=… from the readings page ("Discuss in chamber →"),
-            // so the matching readings are pre-focused for the agent.
-            const initialPack = params.get('pack');
-            if (initialPack && Array.from(packChips).some(c => c.dataset.pack === initialPack)) {
-                selectPack(initialPack);
-            }
+            // Start a fresh conversation. Working question and pins are kept —
+            // only the chat transcript is cleared.
+            clearBtn.addEventListener('click', () => {
+                if (conversation.length === 0) return;
+                if (!confirm('Start a new conversation? This clears the chat above. Your working question and pins stay.')) return;
+                conversation = [];
+                saveState();
+                renderTranscript();
+                input.focus();
+            });
 
-            loadInitialQuestion();
+            // Restore this device's saved chamber session first (instant), then
+            // reconcile with the student's server-side copy (Blobs) so the chat
+            // follows them across devices. URL params then refine it: a ?q=
+            // question deep-link is an explicit fresh start (loadInitialQuestion
+            // loads the chosen question and clears the old transcript); a ?pack=
+            // topic link only refocuses the readings and keeps the conversation.
+            restoreSaved();
             renderPins();
             renderTranscript();
 
             /* Re-render pins when a background server sync changes them. */
             window.addEventListener('pins:updated', renderPins);
 
-            /* Seed the transcript from the student's persistent thread (the
-               same server-side history the portal keeps), so the chamber and
-               the portal are one continuous conversation, not two strangers. */
-            (async () => {
-                const token = window.MarginaliaSession ? window.MarginaliaSession.token() : null;
-                if (!token) return;
-                try {
-                    const r = await fetch('/.netlify/functions/portal-state', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ action: 'load', token })
-                    });
-                    if (!r.ok) return;
-                    const data = await r.json();
-                    const history = Array.isArray(data.chatHistory) ? data.chatHistory : [];
-                    if (!history.length || conversation.length) return;
-                    history.forEach(turn => {
-                        const role = (turn.role === 'assistant' || turn.role === 'model') ? 'model' : 'user';
-                        const text = String(turn.content || turn.text || '');
-                        if (text) conversation.push({ role, text });
-                    });
+            const localTs = Number(loadSaved().updatedAt) || 0;
+            const initialPack = params.get('pack');
+
+            // Adopt the server copy when it is at least as recent as this device's
+            // (so newer offline edits aren't clobbered), then apply URL deep-links.
+            loadServer().then((srv) => {
+                if (srv && srv.ok && (Number(srv.updatedAt) || 0) >= localTs) {
+                    if (Array.isArray(srv.conversation)) {
+                        conversation = srv.conversation
+                            .filter(t => t && (t.role === 'user' || t.role === 'model') && typeof t.text === 'string')
+                            .map(t => ({ role: t.role, text: t.text }));
+                    }
+                    if (typeof srv.workingQuestion === 'string' && srv.workingQuestion.trim() !== '') {
+                        workingQ.textContent = srv.workingQuestion;
+                        workingQ.dataset.empty = 'false';
+                    }
+                    if (typeof srv.activePack === 'string' && srv.activePack) selectPack(srv.activePack);
+                    saveLocal();   // mirror the server copy onto this device
                     renderTranscript();
-                } catch (e) { /* offline — chamber still works, just without the back-story */ }
-            })();
+                }
+            }).finally(() => {
+                // Deep-links win over the restored / server state.
+                if (initialPack && Array.from(packChips).some(c => c.dataset.pack === initialPack)) {
+                    selectPack(initialPack);
+                }
+                loadInitialQuestion();   // ?q= loads the chosen question + clears the transcript
+                renderTranscript();
+            });
         })();
     </script>
 </body>

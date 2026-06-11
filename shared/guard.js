@@ -79,6 +79,27 @@
         expire: function () { clear(); window.location.replace('index.html'); }
     };
 
+    /* ---- second gate: confirm the token still verifies server-side ----
+       Catches tampered tokens (client-side expiry decode can't). Network
+       hiccups are tolerated — we keep the cached session rather than lock
+       a student out over a blip; the functions re-verify everything anyway. */
+    if (isValid(session)) {
+        fetch('/.netlify/functions/auth', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'verify', token: session.token })
+        })
+            .then(function (r) {
+                /* Only an explicit rejection bounces; a 5xx or weird payload
+                   is a server problem, not a bad session. */
+                if (r.status === 401) {
+                    clear();
+                    location.replace('index.html');
+                }
+            })
+            .catch(function () { /* offline / function down — keep the session */ });
+    }
+
     /* ---- header wiring (after DOM is ready) ---- */
     document.addEventListener('DOMContentLoaded', function () {
         var nav = document.querySelector('.site-nav');
