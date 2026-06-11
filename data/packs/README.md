@@ -15,6 +15,7 @@ If a pack file is missing, the chat still works — it falls back to a one-line 
 | `stage1_mind_simulation.txt` | Identity theory, functionalism, dualism, simulation |
 | `lab_applied_normative_ethics.txt` | Singer, Marquis, Thomson, Brave New World |
 | `stage1_reason_passion.txt` | Plato (Republic, Phaedrus) & Aristotle (Nicomachean Ethics) — reason vs. instinct/passion |
+| `stage1_personal_identity.txt` | Parfit, "Personal Identity" (1971) full text — fission, q-memory, survival without identity |
 
 The pack ID matches the `data-pack` attribute on the topic chips in `chamber.html`. There is no allow-list to edit in `chat.js` — it loads `data/packs/<id>.txt` by filename. To add a new topic: drop the `.txt` here, add the id to `VALID_PACKS` in `netlify/functions/portal-state.js`, and add a chip in `chamber.html` and `portal.html` (optionally a `packMap` entry and a `resources.html` card).
 
